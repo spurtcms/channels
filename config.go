@@ -1,0 +1,22 @@
+package channels
+
+import (
+	"github.com/spurtcms/auth"
+	"gorm.io/gorm"
+)
+
+type Config struct {
+	DB               *gorm.DB
+	AuthEnable       bool
+	PermissionEnable bool
+	Authenticate     auth.Authentication
+}
+
+type Channel struct {
+	DB               *gorm.DB
+	AuthEnable       bool
+	PermissionEnable bool
+	Authenticate     auth.Authentication
+	AuthFlg          bool
+	PermissionFlg    bool
+}
