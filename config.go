@@ -2,6 +2,7 @@ package channels
 
 import (
 	"github.com/spurtcms/auth"
+	role "github.com/spurtcms/team-roles"
 	"gorm.io/gorm"
 )
 
@@ -9,14 +10,15 @@ type Config struct {
 	DB               *gorm.DB
 	AuthEnable       bool
 	PermissionEnable bool
-	Authenticate     auth.Authentication
+	Auth             *auth.Auth
+	Permissions      *role.PermissionConfig
+	Migration        bool
 }
 
 type Channel struct {
 	DB               *gorm.DB
 	AuthEnable       bool
 	PermissionEnable bool
-	Authenticate     auth.Authentication
-	AuthFlg          bool
-	PermissionFlg    bool
+	Auth             *auth.Auth
+	Permissions      *role.PermissionConfig
 }

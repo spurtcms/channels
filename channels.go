@@ -3,11 +3,17 @@ package channels
 // Channelsetup used to initialie channel configuration
 func ChannelSetup(config Config) *Channel {
 
+	if config.Migration {
+
+		MigrateTables(config.DB)
+	}
+
 	return &Channel{
 		DB:               config.DB,
 		AuthEnable:       config.AuthEnable,
 		PermissionEnable: config.PermissionEnable,
-		Authenticate:     config.Authenticate,
+		Auth:             config.Auth,
+		Permissions:      config.Permissions,
 	}
 
 }
@@ -15,12 +21,12 @@ func ChannelSetup(config Config) *Channel {
 // get all channel list
 func (channel Channel) ListChannel(limit, offset int, filter Filter, activestatus bool) (channelList []tblchannel, channelcount int, err error) {
 
-	if channel.AuthEnable && !channel.AuthFlg {
+	if channel.AuthEnable && !channel.Auth.AuthFlg {
 
 		return []tblchannel{}, 0, ErrorAuth
 	}
 
-	if channel.PermissionEnable && !channel.PermissionFlg {
+	if channel.PermissionEnable && !channel.Permissions.PermissionFlg {
 
 		return []tblchannel{}, 0, ErrorPermission
 
@@ -52,12 +58,12 @@ func (channel Channel) ListChannel(limit, offset int, filter Filter, activestatu
 /*Get channel by name*/
 func (channel Channel) GetchannelByName(channelname string) (channels tblchannel, err error) {
 
-	if channel.AuthEnable && !channel.AuthFlg {
+	if channel.AuthEnable && !channel.Auth.AuthFlg {
 
 		return tblchannel{}, ErrorAuth
 	}
 
-	if channel.PermissionEnable && !channel.PermissionFlg {
+	if channel.PermissionEnable && !channel.Permissions.PermissionFlg {
 
 		return tblchannel{}, ErrorPermission
 

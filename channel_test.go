@@ -20,11 +20,13 @@ func TestChannelList(t *testing.T) {
 
 	token, _ := Auth.CreateToken()
 
+	Auth.VerifyToken(token,SecretKey)
+
 	channel := ChannelSetup(Config{
 		DB:               &gorm.DB{},
 		AuthEnable:       false,
 		PermissionEnable: false,
-		Authenticate:     auth.Authentication{Token: token, SecretKey: SecretKey},
+		Auth:             Auth,
 	})
 
 	chanlist, count, err := channel.ListChannel(10, 0, Filter{}, true)
