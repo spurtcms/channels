@@ -148,7 +148,7 @@ type TblFieldType struct {
 // MigrateTable creates this package related tables in your database
 func MigrateTables(db *gorm.DB) {
 
-	db.AutoMigrate(
+	if err := db.AutoMigrate(
 		&TblChannelCategorie{},
 		&TblChannelEntrie{},
 		&TblChannelEntryField{},
@@ -157,7 +157,10 @@ func MigrateTables(db *gorm.DB) {
 		&TblFieldOption{},
 		&TblFieldType{},
 		&TblField{},
-	)
+	); err != nil {
+
+		panic(err)
+	}
 
 	db.Exec(`CREATE INDEX IF NOT EXISTS email_unique
     ON public.tbl_members USING btree

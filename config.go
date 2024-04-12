@@ -12,7 +12,6 @@ type Config struct {
 	PermissionEnable bool
 	Auth             *auth.Auth
 	Permissions      *role.PermissionConfig
-	Migration        bool
 }
 
 type Channel struct {

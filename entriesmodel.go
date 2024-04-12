@@ -2,9 +2,11 @@ package channels
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
-type TblChannelEntries struct {
+type tblchannelentries struct {
 	Id               int
 	Title            string `form:"title" binding:"required"`
 	Slug             string `form:"slug" binding:"required"`
@@ -65,4 +67,85 @@ type Author struct {
 	CreatedBy        int       `json:"CreatedBy"`
 }
 
+type EntriesFilter struct {
+	Keyword     string
+	Title       string
+	ChannelName string
+	Status      string
+	UserName    string
+	CategoryId  string
+}
 
+type EntriesModel struct{}
+
+var EntryModel EntriesModel
+
+/*List Channel Entry*/
+func (Ch EntriesModel) ChannelEntryList(limit, offset, chid int, filter EntriesFilter, publishedflg bool, RoleId int, activechannel bool, DB *gorm.DB) (chentry []tblchannelentries, chentcount int64, err error) {
+
+	query := DB.Table("tbl_channel_entries").Select("tbl_channel_entries.*,tbl_users.username,tbl_channels.channel_name").Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Joins("inner join tbl_channels on tbl_channels.id = tbl_channel_entries.channel_id").Where("tbl_channel_entries.is_deleted=0").Order("id desc")
+
+	if RoleId != 1 {
+
+		query = query.Where("channel_id in (select id from tbl_channels where channel_name in (select display_name from tbl_module_permissions inner join tbl_modules on tbl_modules.id = tbl_module_permissions.module_id inner join tbl_role_permissions on tbl_role_permissions.permission_id = tbl_module_permissions.id where role_id =(?) and tbl_modules.module_name='Entries' )) ", RoleId)
+
+	}
+
+	if activechannel {
+
+		query = query.Where("tbl_channels.is_active =1")
+	}
+
+	if publishedflg {
+
+		query = query.Where("tbl_channel_entries.status=1")
+
+	}
+
+	if chid != 0 {
+
+		query = query.Where("tbl_channel_entries.channel_id=?", chid)
+	}
+
+	if filter.UserName != "" {
+
+		query = query.Debug().Where("LOWER(TRIM(tbl_users.username)) ILIKE LOWER(TRIM(?))", "%"+filter.UserName+"%")
+
+	}
+
+	if filter.Keyword != "" {
+
+		query = query.Where("LOWER(TRIM(title)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(channel_name)) ILIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
+
+	}
+
+	if filter.Status != "" {
+
+		query = query.Where("tbl_channel_entries.status=?", filter.Status)
+
+	}
+	if filter.Title != "" {
+
+		query = query.Where("LOWER(TRIM(title)) ILIKE LOWER(TRIM(?))", "%"+filter.Title+"%")
+
+	}
+
+	if filter.ChannelName != "" {
+
+		query = query.Where("LOWER(TRIM(channel_name)) ILIKE LOWER(TRIM(?))", "%"+filter.ChannelName+"%")
+
+	}
+
+	if limit != 0 {
+
+		query.Limit(limit).Offset(offset).Order("id asc").Find(&chentry)
+
+	} else {
+
+		query.Find(&chentry).Count(&chentcount)
+
+		return chentry, chentcount, nil
+	}
+
+	return chentry, 0, nil
+}
