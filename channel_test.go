@@ -38,3 +38,12 @@ func TestChannelList(t *testing.T) {
 
 	fmt.Println(chanlist, count)
 }
+
+func TestGetchannelByName(t *testing.B) {
+
+}
+
+func TestGetChannelById(t *testing.T) {
+
+	
+}
