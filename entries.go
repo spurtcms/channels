@@ -2,14 +2,16 @@ package channels
 
 import (
 	"log"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/spurtcms/categories"
 )
 
-/*all channel Entries List*/
-//if channelid 0 get all channel entries
-// if channelid not eq 0 to get particular entries of the channel
-func (channel *Channel) GetAllChannelEntriesList(channelid int, limit, offset int, filter EntriesFilter) (entries []tblchannelentries, filterentriescount int, totalentriescount int, err error) {
+// get channel Entries List
+func (channel *Channel) ChannelEntriesList(entry Entries) (entries []tblchannelentries, filterentriescount int, totalentriescount int, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -18,31 +20,229 @@ func (channel *Channel) GetAllChannelEntriesList(channelid int, limit, offset in
 		return []tblchannelentries{}, 0, 0, autherr
 	}
 
-	if filter.Status == "Draft" {
+	if entry.Status == "Draft" {
 
-		filter.Status = "0"
+		entry.Status = "0"
 
-	} else if filter.Status == "Published" {
+	} else if entry.Status == "Published" {
 
-		filter.Status = "1"
+		entry.Status = "1"
 
-	} else if filter.Status == "Unpublished" {
+	} else if entry.Status == "Unpublished" {
 
-		filter.Status = "2"
+		entry.Status = "2"
 	}
 
-	chnentry, _, _ := EntryModel.ChannelEntryList(limit, offset, channelid, filter, channel.Permissions.RoleId, true, channel.DB)
+	var categoryid string
 
-	_, filtercount, _ := EntryModel.ChannelEntryList(0, 0, channelid, filter, channel.Permissions.RoleId, true, channel.DB)
+	if entry.CategoryId != 0 && entry.CategoryId > 0 {
 
-	_, entrcount, _ := EntryModel.ChannelEntryList(0, 0, channelid, EntriesFilter{}, channel.Permissions.RoleId, true, channel.DB)
+		categoryid = Categories(entry.CategoryId, channel.DB)
 
-	return chnentry, int(filtercount), int(entrcount), nil
+	}
+
+	if entry.CategoryName != "" {
+
+		categoryid = CategoriesByUsingName(entry.CategoryName, channel.DB)
+	}
+
+	chnentry, _, _ := EntryModel.ChannelEntryList(entry, channel, categoryid, channel.DB)
+
+	_, filtercount, _ := EntryModel.ChannelEntryList(entry, channel, categoryid, channel.DB)
+
+	_, entrcount, _ := EntryModel.ChannelEntryList(entry, channel, categoryid, channel.DB)
+
+	var final_entries_list []tblchannelentries
+
+	for _, entries := range chnentry {
+
+		if entry.AuthorDetails {
+
+			authorDetails, _ := EntryModel.GetAuthorDetails(channel.DB, entries.CreatedBy)
+
+			if authorDetails.AuthorID != 0 {
+
+				var modified_profileImage string
+
+				if authorDetails.ProfileImagePath != nil {
+
+					modified_profileImage = entry.ImageUrlPath + *authorDetails.ProfileImagePath
+				}
+
+				authorDetails.ProfileImagePath = &modified_profileImage
+
+				entries.AuthorDetail = authorDetails
+			}
+
+		}
+
+		var memberId string
+
+		var final_fieldsList []tblfield
+
+		if entry.AdditionalFields {
+
+			sections, _ := EntryModel.GetSectionsUnderEntries(channel.DB, entries.ChannelId, entry.FieldTypeId)
+
+			entries.Sections = sections
+
+			fields, _ := EntryModel.GetFieldsInEntries(channel.DB, entries.ChannelId, entry.FieldTypeId)
+
+			for _, field := range fields {
+
+				var modified_field_path string
+
+				if field.ImagePath != "" {
+
+					modified_field_path = entry.ImageUrlPath + strings.TrimPrefix(field.ImagePath, "/")
+				}
+
+				field.ImagePath = modified_field_path
+
+				fieldValue, _ := EntryModel.GetFieldValue(channel.DB, field.Id, entries.Id)
+
+				if fieldValue.Id != 0 {
+
+					field.FieldValue = fieldValue
+
+					if field.FieldTypeId == entry.MemberFieldTypeId {
+
+						memberId = fieldValue.FieldValue
+					}
+				}
+
+				fieldOptions, _ := EntryModel.GetFieldOptions(channel.DB, field.Id)
+
+				if len(fieldOptions) > 0 {
+
+					field.FieldOptions = fieldOptions
+
+				}
+
+				final_fieldsList = append(final_fieldsList, field)
+			}
+		}
+
+		if entry.MemberProfile {
+
+			entries.Fields = final_fieldsList
+
+			conv_memid, _ := strconv.Atoi(memberId)
+
+			memberProfile, _ := EntryModel.GetMemberProfile(channel.DB, conv_memid)
+
+			var modified_profile_path string
+
+			if memberProfile.CompanyLogo != "" {
+
+				modified_profile_path = entry.ImageUrlPath + strings.TrimPrefix(memberProfile.CompanyLogo, "/")
+			}
+
+			memberProfile.CompanyLogo = modified_profile_path
+
+			entries.MemberProfiles = memberProfile
+
+		}
+
+		splittedArr := strings.Split(entries.CategoriesId, ",")
+
+		var parentCatId int
+
+		var indivCategories [][]categories.TblCategories
+
+		for _, catId := range splittedArr {
+
+			conv_id, _ := strconv.Atoi(catId)
+
+			var indivCategory []categories.TblCategories
+
+			category, _ := EntryModel.GetGraphqlEntriesCategoryByParentId(channel.DB, conv_id)
+
+			var modified_category_path string
+
+			if category.ImagePath != "" {
+
+				modified_category_path = entry.ImageUrlPath + strings.TrimPrefix(category.ImagePath, "/")
+			}
+
+			category.ImagePath = modified_category_path
+
+			if category.Id != 0 {
+
+				indivCategory = append(indivCategory, category)
+			}
+
+			parentCatId = category.ParentId
+
+			if parentCatId != 0 {
+
+				var count int
+
+			LOOP:
+
+				for {
+
+					count = count + 1 //count increment used to check how many times the loop gets executed
+
+					parentCategory, _ := EntryModel.GetGraphqlEntriesCategoryByParentId(channel.DB, parentCatId)
+
+					var modified_category_path string
+
+					if parentCategory.ImagePath != "" {
+
+						modified_category_path = entry.ImageUrlPath + strings.TrimPrefix(parentCategory.ImagePath, "/")
+					}
+
+					parentCategory.ImagePath = modified_category_path
+
+					if parentCategory.Id != 0 {
+
+						indivCategory = append(indivCategory, parentCategory)
+					}
+
+					parentCatId = parentCategory.ParentId
+
+					if parentCatId != 0 { //mannuall condition to break the loop in overlooping situations
+
+						goto LOOP
+
+					} else if count > 49 {
+
+						break //use to break the loop if infinite loop doesn't break ,So forcing the loop to break at overlooping conditions
+
+					} else {
+
+						break
+					}
+
+				}
+
+			}
+
+			if len(indivCategory) > 0 {
+
+				sort.SliceStable(indivCategory, func(i, j int) bool {
+
+					return indivCategory[i].Id < indivCategory[j].Id
+
+				})
+
+				indivCategories = append(indivCategories, indivCategory)
+			}
+
+		}
+
+		entries.Categories = indivCategories
+
+		final_entries_list = append(final_entries_list, entries)
+	}
+
+	return final_entries_list, int(filtercount), int(entrcount), nil
 
 }
 
 // get entry details
-func (channel *Channel) GetEntryDetailsById(ChannelName string, EntryId int) (tblchannelentries, error) {
+func (channel *Channel) EntryDetailsById(ChannelName string, EntryId int) (tblchannelentries, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -211,6 +411,27 @@ func (channel *Channel) DeleteEntry(ChannelName string, modifiedby int, Entryid 
 	if err1 != nil {
 
 		log.Println(err)
+	}
+
+	return true, nil
+
+}
+
+// Makefeature helps to highlights entry, only one entry should be featured of each channel and that is also optional
+func (channel *Channel) MakeFeatureEntry(channelid, entryid, status int) (flag bool, err error) {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return false, autherr
+	}
+
+	merr := EntryModel.MakeFeature(channelid, entryid, status, channel.DB)
+
+	if merr != nil {
+
+		return false, merr
 	}
 
 	return true, nil

@@ -49,7 +49,7 @@ func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestat
 
 		if entriescount {
 
-			_, entrcount, _ := EntryModel.ChannelEntryList(0, 0, val.Id, EntriesFilter{}, channel.Permissions.RoleId, false, channel.DB)
+			_, entrcount, _ := EntryModel.ChannelEntryList(Entries{}, channel, Empty, channel.DB)
 
 			val.EntriesCount = int(entrcount)
 		}

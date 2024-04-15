@@ -34,7 +34,7 @@ type TblGroupField struct {
 	FieldId   int `gorm:"type:integer"`
 }
 
-type TblChannelEntrie struct {
+type TblChannelEntries struct {
 	Id              int       `gorm:"primaryKey;auto_increment;type:serial"`
 	Title           string    `gorm:"type:character varying"`
 	Slug            string    `gorm:"type:character varying"`
@@ -150,7 +150,7 @@ func MigrateTables(db *gorm.DB) {
 
 	if err := db.AutoMigrate(
 		&TblChannelCategorie{},
-		&TblChannelEntrie{},
+		&TblChannelEntries{},
 		&TblChannelEntryField{},
 		&TblChannel{},
 		&TblFieldGroup{},

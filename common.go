@@ -6,6 +6,7 @@ var (
 	ErrorAuth       = errors.New("auth enabled not initialised")
 	ErrorPermission = errors.New("permissions enabled not initialised")
 	ErrorChannelId  = errors.New("invalid channelid")
+	Empty           string
 )
 
 func TruncateDescription(description string, limit int) string {
