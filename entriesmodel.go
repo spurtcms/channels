@@ -1,10 +1,12 @@
 package channels
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/spurtcms/categories"
 	"github.com/spurtcms/member"
+	access "github.com/spurtcms/member-access"
 	"github.com/spurtcms/team"
 	"gorm.io/gorm"
 )
@@ -89,11 +91,26 @@ type Entries struct {
 	MemberProfile            bool   //if you want member profile pls enable memberprofile true
 	AdditionalFields         bool   //if you want additionalfields pls enable additionalfields true
 	AuthorDetails            bool   //if you want authordetails pls enable authordetails true
+	ContentHide              bool   //if you want hide content only for memberaccesscontrol enable true otherwise it doesn't fetch the entry
 	MemberAccessControl      bool
 	MemberId                 int
 	ImageUrlPath             string
 	FieldTypeId              int
 	MemberFieldTypeId        int
+}
+
+type IndivEntriesReq struct {
+	ChannelName       string
+	EntryId           int
+	MemberProfile     bool //if you want member profile pls enable memberprofile true
+	AdditionalFields  bool //if you want additionalfields pls enable additionalfields true
+	AuthorDetails     bool //if you want authordetails pls enable authordetails true
+	ContentHide       bool //if you want show entries name without content enable true, ensure want hide content only must be restricted in memberaccess
+	CategoriesEnable  bool //
+	MemberId          int
+	ImageUrlPath      string
+	FieldTypeId       int
+	MemberFieldTypeId int
 }
 
 type SEODetails struct {
@@ -110,6 +127,7 @@ type AdditionalFields struct {
 	FieldValue    string
 	FieldId       int
 	MultipleValue []string
+	ModifiedBy    int
 }
 
 type EntriesRequired struct {
@@ -129,6 +147,17 @@ type EntriesRequired struct {
 	Tag         string
 	Excerpt     string
 	CreatedBy   int
+	ModifiedBy  int
+}
+
+type RecentActivities struct {
+	Contenttype string
+	Title       string
+	User        string
+	Imagepath   string
+	Createdon   time.Time
+	Active      string
+	Channelname string
 }
 
 type EntriesModel struct{}
@@ -164,7 +193,7 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 
 	if filter.UserName != "" {
 
-		query = query.Debug().Where("LOWER(TRIM(tbl_users.username)) ILIKE LOWER(TRIM(?))", "%"+filter.UserName+"%")
+		query = query.Where("LOWER(TRIM(tbl_users.username)) ILIKE LOWER(TRIM(?))", "%"+filter.UserName+"%")
 
 	}
 
@@ -197,6 +226,18 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 
 	}
 
+	if filter.MemberAccessControl {
+
+		_, entryid := EntryModel.MemberAccessCheck(filter.MemberId, DB)
+
+		if !filter.ContentHide {
+
+			query = query.Where("id not in (?)", entryid)
+
+		}
+
+	}
+
 	if filter.Limit != 0 {
 
 		query.Limit(filter.Limit).Offset(filter.Offset).Order("id asc").Find(&chentry)
@@ -209,6 +250,32 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 	}
 
 	return chentry, 0, nil
+}
+
+func (ch EntriesModel) MemberAccessCheck(memberid int, DB *gorm.DB) ([]int, []int) {
+
+	var channelid, entryid []int
+
+	var mem member.TblMember
+
+	//get membergroup id
+	DB.Table("tbl_members").Select("member_group_id").Where("is_deleted=0 and id=?", memberid).First(&mem)
+
+	SUB := `select id from tbl_access_control_user_groups where is_deleted=0 and member_group_id=` + strconv.Itoa(mem.Id)
+
+	var accessgroup []access.TblAccessControlPages
+
+	DB.Table("tbl_access_control_pages").Where("access_control_user_group_id in (?)", SUB).Find(&accessgroup)
+
+	for _, val := range accessgroup {
+
+		channelid = append(channelid, val.ChannelId)
+
+		entryid = append(entryid, val.EntryId)
+
+	}
+
+	return channelid, entryid
 }
 
 /*Create channel entry*/
@@ -259,11 +326,33 @@ func (Ch EntriesModel) DeleteChannelEntryFieldId(chentry *TblChannelEntryField, 
 }
 
 /*Edit Channel Entry*/
-func (Ch EntriesModel) GetChannelEntryById(id int, DB *gorm.DB) (tblchanentry tblchannelentries, err error) {
+func (Ch EntriesModel) GetChannelEntryById(ent IndivEntriesReq, DB *gorm.DB) (tblchanentry tblchannelentries, err error) {
 
-	if err := DB.Table("tbl_channel_entries").Where("is_deleted=0 and id=?", id).Preload("TblChannelEntryField", func(db *gorm.DB) *gorm.DB {
+	query := DB.Table("tbl_channel_entries").Where("is_deleted=0 and id=?", ent.EntryId)
+
+	if ent.ContentHide {
+
+		_, entryid := EntryModel.MemberAccessCheck(ent.MemberId, DB)
+
+		for _, val := range entryid {
+
+			if val == ent.EntryId {
+
+				query = query.Omit("tbl_channel_entries.description")
+
+				break
+			}
+		}
+
+	}
+
+	query = query.Preload("TblChannelEntryField", func(db *gorm.DB) *gorm.DB {
 		return db.Select("tbl_channel_entry_fields.*,tbl_fields.field_type_id").Joins("inner join tbl_fields on tbl_fields.Id = tbl_channel_entry_fields.field_id")
-	}).Find(&tblchanentry).Error; err != nil {
+	})
+
+	query.Find(&tblchanentry)
+
+	if err := query.Error; err != nil {
 
 		return tblchannelentries{}, err
 
@@ -383,4 +472,110 @@ func (ch EntriesModel) MakeFeature(channelid, entryid, status int, DB *gorm.DB) 
 	}
 
 	return nil
+}
+
+func (ch EntriesModel) PublishQuery(chl *TblChannelEntries, id int, DB *gorm.DB) error {
+
+	if err := DB.Table("tbl_channel_entries").Where("id =?", id).UpdateColumns(map[string]interface{}{"status": chl.Status, "modified_on": chl.ModifiedOn, "modified_by": chl.ModifiedBy}).Error; err != nil {
+
+		return err
+
+	}
+
+	return nil
+}
+
+/*Update Channel Entry Details*/
+func (Ch EntriesModel) UpdateChannelEntryDetails(entry *TblChannelEntries, entryid int, DB *gorm.DB) error {
+
+	if err := DB.Debug().Table("tbl_channel_entries").Where("id=?", entryid).UpdateColumns(map[string]interface{}{"title": entry.Title, "description": entry.Description, "slug": entry.Slug, "cover_image": entry.CoverImage, "thumbnail_image": entry.ThumbnailImage, "meta_title": entry.MetaTitle, "meta_description": entry.MetaDescription, "keyword": entry.Keyword, "categories_id": entry.CategoriesId, "related_articles": entry.RelatedArticles, "status": entry.Status, "modified_on": entry.ModifiedOn, "modified_by": entry.ModifiedBy, "user_id": entry.UserId, "channel_id": entry.ChannelId, "author": entry.Author, "create_time": entry.CreateTime, "published_time": entry.PublishedTime, "reading_time": entry.ReadingTime, "sort_order": entry.SortOrder, "tags": entry.Tags, "excerpt": entry.Excerpt, "image_alt_tag": entry.ImageAltTag}).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+
+}
+
+/*create channel entry field*/
+func (Ch EntriesModel) CreateSingleEntrychannelFields(entryfield *TblChannelEntryField, DB *gorm.DB) error {
+
+	if err := DB.Table("tbl_channel_entry_fields").Create(&entryfield).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+
+}
+
+/*Update Channel Entry Details*/
+func (Ch EntriesModel) UpdateChannelEntryAdditionalDetails(entry TblChannelEntryField, DB *gorm.DB) error {
+
+	if err := DB.Table("tbl_channel_entry_fields").Where("id=?", entry.Id).UpdateColumns(map[string]interface{}{"field_name": entry.FieldName, "field_value": entry.FieldValue, "modified_by": entry.ModifiedBy, "modified_on": entry.ModifiedOn}).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+}
+
+func (Ch EntriesModel) AllentryCount(DB *gorm.DB) (count int64, err error) {
+
+	if err := DB.Table("tbl_channel_entries").Where("is_deleted = 0 ").Count(&count).Error; err != nil {
+
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (Ch EntriesModel) NewentryCount(DB *gorm.DB) (count int64, err error) {
+
+	if err := DB.Table("tbl_channel_entries").Where("is_deleted = 0 AND created_on >=?", time.Now().AddDate(0, 0, -10)).Count(&count).Error; err != nil {
+
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (Ch EntriesModel) Newchannels(DB *gorm.DB) (chn []tblchannel, err error) {
+
+	if err := DB.Table("tbl_channels").Select("tbl_channels.*,tbl_users.username,tbl_users.profile_image_path").
+		Joins("inner join tbl_users on tbl_users.id = tbl_channels.created_by").
+		Where("tbl_channels.is_deleted=0 and tbl_channels.is_active=1 and tbl_channels.created_on >= ?", time.Now().Add(-24*time.Hour).Format("2006-01-02 15:04:05")).
+		Order("created_on desc").Limit(6).Find(&chn).Error; err != nil {
+
+		return []tblchannel{}, err
+	}
+
+	return chn, nil
+
+}
+
+func (Ch EntriesModel) Newentries(DB *gorm.DB) (entries []tblchannelentries, err error) {
+
+	if err := DB.Table("tbl_channel_entries").Select("tbl_channel_entries.*,tbl_users.username,tbl_users.profile_image_path").
+		Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Where("tbl_channel_entries.is_deleted=0 and tbl_channel_entries.created_on >=?", time.Now().Add(-24*time.Hour).Format("2006-01-02 15:04:05")).
+		Order("created_on desc").Limit(6).Find(&entries).Error; err != nil {
+
+		return []tblchannelentries{}, err
+	}
+
+	return entries, nil
+
+}
+
+// update imagepath
+func (Ch EntriesModel) UpdateImagePath(Imagepath string, DB *gorm.DB) error {
+
+	if err := DB.Model(TblChannelEntries{}).Where("cover_image=?", Imagepath).UpdateColumns(map[string]interface{}{
+		"cover_image": ""}).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+
 }

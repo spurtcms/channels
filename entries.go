@@ -242,7 +242,7 @@ func (channel *Channel) ChannelEntriesList(entry Entries) (entries []tblchannele
 }
 
 // get entry details
-func (channel *Channel) EntryDetailsById(ChannelName string, EntryId int) (tblchannelentries, error) {
+func (channel *Channel) EntryDetailsById(Ent IndivEntriesReq) (tblchannelentries, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -250,12 +250,192 @@ func (channel *Channel) EntryDetailsById(ChannelName string, EntryId int) (tblch
 
 		return tblchannelentries{}, autherr
 	}
-
-	Entry, err := EntryModel.GetChannelEntryById(EntryId, channel.DB)
+	
+	Entry, err := EntryModel.GetChannelEntryById(Ent, channel.DB)
 
 	if err != nil {
 
 		return tblchannelentries{}, nil
+	}
+
+	if Ent.AuthorDetails {
+
+		authorDetails, _ := EntryModel.GetAuthorDetails(channel.DB, Entry.CreatedBy)
+
+		if authorDetails.AuthorID != 0 {
+
+			var modified_profileImage string
+
+			if authorDetails.ProfileImagePath != nil {
+
+				modified_profileImage = Ent.ImageUrlPath + *authorDetails.ProfileImagePath
+			}
+
+			authorDetails.ProfileImagePath = &modified_profileImage
+
+			Entry.AuthorDetail = authorDetails
+		}
+
+	}
+
+	var memberId string
+
+	if Ent.AdditionalFields {
+
+		sections, _ := EntryModel.GetSectionsUnderEntries(channel.DB, Entry.ChannelId, Ent.FieldTypeId)
+
+		Entry.Sections = sections
+
+		var final_fieldsList []tblfield
+
+		fields, _ := EntryModel.GetFieldsInEntries(channel.DB, Entry.ChannelId, Ent.FieldTypeId)
+
+		for _, field := range fields {
+
+			var modified_field_path string
+
+			if field.ImagePath != "" {
+
+				modified_field_path = Ent.ImageUrlPath + strings.TrimPrefix(field.ImagePath, "/")
+			}
+
+			field.ImagePath = modified_field_path
+
+			fieldValue, _ := EntryModel.GetFieldValue(channel.DB, field.Id, Entry.Id)
+
+			if fieldValue.Id != 0 {
+
+				field.FieldValue = fieldValue
+
+				if field.FieldTypeId == Ent.MemberFieldTypeId {
+
+					memberId = fieldValue.FieldValue
+				}
+			}
+
+			fieldOptions, _ := EntryModel.GetFieldOptions(channel.DB, field.Id)
+
+			if len(fieldOptions) > 0 {
+
+				field.FieldOptions = fieldOptions
+
+			}
+
+			final_fieldsList = append(final_fieldsList, field)
+		}
+	}
+
+	if Ent.MemberProfile {
+
+		conv_memid, _ := strconv.Atoi(memberId)
+
+		memberProfile, _ := EntryModel.GetMemberProfile(channel.DB, conv_memid)
+
+		var modified_profile_path string
+
+		if memberProfile.CompanyLogo != "" {
+
+			modified_profile_path = Ent.ImageUrlPath + strings.TrimPrefix(memberProfile.CompanyLogo, "/")
+		}
+
+		memberProfile.CompanyLogo = modified_profile_path
+
+		Entry.MemberProfiles = memberProfile
+
+	}
+
+	if Ent.CategoriesEnable {
+
+		splittedArr := strings.Split(Entry.CategoriesId, ",")
+
+		var parentCatId int
+
+		var indivCategories [][]categories.TblCategories
+
+		for _, catId := range splittedArr {
+
+			var indivCategory []categories.TblCategories
+
+			conv_id, _ := strconv.Atoi(catId)
+
+			category, _ := EntryModel.GetGraphqlEntriesCategoryByParentId(channel.DB, conv_id)
+
+			var modified_category_path string
+
+			if category.ImagePath != "" {
+
+				modified_category_path = Ent.ImageUrlPath + strings.TrimPrefix(category.ImagePath, "/")
+			}
+
+			category.ImagePath = modified_category_path
+
+			if category.Id != 0 {
+
+				indivCategory = append(indivCategory, category)
+			}
+
+			parentCatId = category.ParentId
+
+			if parentCatId != 0 {
+
+				var count int
+
+			LOOP:
+
+				for {
+
+					count = count + 1 //count increment used to check how many times the loop gets executed
+
+					parentCategory, _ := EntryModel.GetGraphqlEntriesCategoryByParentId(channel.DB, parentCatId)
+
+					var modified_category_path string
+
+					if parentCategory.ImagePath != "" {
+
+						modified_category_path = Ent.ImageUrlPath + strings.TrimPrefix(parentCategory.ImagePath, "/")
+					}
+
+					parentCategory.ImagePath = modified_category_path
+
+					if parentCategory.Id != 0 {
+
+						indivCategory = append(indivCategory, parentCategory)
+					}
+
+					parentCatId = parentCategory.ParentId
+
+					if parentCatId != 0 { //mannuall condition to break the loop in overlooping situations
+
+						goto LOOP
+
+					} else if count > 49 {
+
+						break //use to break the loop if infinite loop doesn't break ,So forcing the loop to break at overlooping conditions
+
+					} else {
+
+						break
+					}
+
+				}
+
+			}
+
+			if len(indivCategory) > 0 {
+
+				sort.SliceStable(indivCategory, func(i, j int) bool {
+
+					return indivCategory[i].Id < indivCategory[j].Id
+
+				})
+
+				indivCategories = append(indivCategories, indivCategory)
+			}
+
+		}
+
+		Entry.Categories = indivCategories
+
 	}
 
 	return Entry, nil
@@ -373,6 +553,134 @@ func (channel *Channel) CreateChannelEntryFields(entryid int, createdby int, Add
 
 }
 
+// update entry
+func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName string, EntryId int) (bool, error) {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return false, autherr
+	}
+
+	var Entries TblChannelEntries
+
+	Entries.Title = entriesrequired.Title
+
+	Entries.Description = entriesrequired.Content
+
+	Entries.CoverImage = entriesrequired.CoverImage
+
+	Entries.MetaTitle = entriesrequired.SEODetails.MetaTitle
+
+	Entries.MetaDescription = entriesrequired.SEODetails.MetaDescription
+
+	Entries.Keyword = entriesrequired.SEODetails.MetaKeywords
+
+	Entries.ImageAltTag = entriesrequired.SEODetails.ImageAltTag
+
+	if entriesrequired.SEODetails.MetaSlug == "" {
+
+		Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.Title), " ", "_")
+
+	} else {
+
+		Entries.Slug = entriesrequired.SEODetails.MetaSlug
+
+	}
+
+	Entries.Status = entriesrequired.Status
+
+	Entries.ChannelId = entriesrequired.ChannelId
+
+	Entries.CategoriesId = entriesrequired.CategoryIds
+
+	Entries.ModifiedBy = entriesrequired.ModifiedBy
+
+	Entries.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	Entries.Author = entriesrequired.Author
+
+	Entries.CreateTime = entriesrequired.CreateTime
+
+	Entries.PublishedTime = entriesrequired.PublishTime
+
+	Entries.ReadingTime = entriesrequired.ReadingTime
+
+	Entries.SortOrder = entriesrequired.SortOrder
+
+	Entries.Tags = entriesrequired.Tag
+
+	Entries.Excerpt = entriesrequired.Excerpt
+
+	err := EntryModel.UpdateChannelEntryDetails(&Entries, EntryId, channel.DB)
+
+	if err != nil {
+
+		return false, err
+	}
+
+	return true, nil
+}
+
+// update entry additional fields
+func (channel *Channel) UpdateAdditionalField(AdditionalFields []AdditionalFields, EntryId int) (bool, error) {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return false, autherr
+	}
+
+	for _, val := range AdditionalFields {
+
+		if val.Id == 0 {
+
+			var Entrfield TblChannelEntryField
+
+			Entrfield.ChannelEntryId = EntryId
+
+			Entrfield.FieldName = val.FieldName
+
+			Entrfield.FieldValue = val.FieldValue
+
+			Entrfield.FieldId = val.FieldId
+
+			Entrfield.CreatedBy = val.ModifiedBy
+
+			Entrfield.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+			EntryModel.CreateSingleEntrychannelFields(&Entrfield, channel.DB)
+
+		} else {
+
+			var Entrfield TblChannelEntryField
+
+			Entrfield.Id = val.Id
+
+			Entrfield.ChannelEntryId = EntryId
+
+			Entrfield.FieldName = val.FieldName
+
+			Entrfield.FieldValue = val.FieldValue
+
+			Entrfield.FieldId = val.FieldId
+
+			Entrfield.ModifiedBy = val.ModifiedBy
+
+			Entrfield.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+			EntryModel.UpdateChannelEntryAdditionalDetails(Entrfield, channel.DB)
+
+		}
+
+	}
+
+	return true, nil
+
+}
+
 /**/
 func (channel *Channel) DeleteEntry(ChannelName string, modifiedby int, Entryid int) (bool, error) {
 
@@ -433,6 +741,30 @@ func (channel *Channel) MakeFeatureEntry(channelid, entryid, status int) (flag b
 
 		return false, merr
 	}
+
+	return true, nil
+
+}
+
+// change entries status
+func (channel *Channel) EntryStatus(ChannelName string, EntryId int, status int, modifiedby int) (bool, error) {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return false, autherr
+	}
+
+	var Entries TblChannelEntries
+
+	Entries.Status = status
+
+	Entries.ModifiedBy = modifiedby
+
+	Entries.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	EntryModel.PublishQuery(&Entries, EntryId, channel.DB)
 
 	return true, nil
 

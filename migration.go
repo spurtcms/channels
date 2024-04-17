@@ -53,11 +53,12 @@ type TblChannelEntries struct {
 	ViewCount       int       `gorm:"DEFAULT:0"`
 	Author          string    `gorm:"type:character varying"`
 	SortOrder       int       `gorm:"type:integer"`
-	CreateDate      string    `gorm:"type:character varying"`
-	PublishedTime   string    `gorm:"type:character varying"`
+	CreateTime      time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	PublishedTime   time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
 	ReadingTime     int       `gorm:"type:integer;DEFAULT:0"`
 	Tags            string    `gorm:"type:character varying"`
 	Excerpt         string    `gorm:"type:character varying"`
+	ImageAltTag     string    `gorm:"type:character varying"`
 	CreatedOn       time.Time `gorm:"type:timestamp without time zone"`
 	CreatedBy       int       `gorm:"type:integer"`
 	ModifiedBy      int       `gorm:"DEFAULT:NULL"`

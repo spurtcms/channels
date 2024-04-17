@@ -17,6 +17,8 @@ github.com/spurtcms/categories v0.0.0-20240412120409-33a35a711a2a h1:u80UfwbgP/v
 github.com/spurtcms/categories v0.0.0-20240412120409-33a35a711a2a/go.mod h1:rPrXi7aK4YHGYV6JjA9zyvcqP1fZXIon3k5iBo2BBz8=
 github.com/spurtcms/member v0.0.0-20240404121904-b393756a414f h1:z1hJ2TpZv0ClMqfy46aTIWMVnP1lDgLaTR5QzMt5aWA=
 github.com/spurtcms/member v0.0.0-20240404121904-b393756a414f/go.mod h1:nAZ7M+buGaygvEuBNS5kx+NKe718Qqi7qWLOmrt47cE=
+github.com/spurtcms/member-access v0.0.0-20240417065557-5d9d2a136a58 h1:pMfkTi/azQqknvR9yQTsToF30pMLYO54Z0IX4YT5d68=
+github.com/spurtcms/member-access v0.0.0-20240417065557-5d9d2a136a58/go.mod h1:K5471wn+y+SU1yAEyIZDuyRpZeJcV4iyuJz4XsOz0eg=
 github.com/spurtcms/team v0.0.0-20240412134927-73aa24961d8e h1:uJpPqXjrCV0vQWcGU6arqd1hDisMQ6icaFAICDdIjjo=
 github.com/spurtcms/team v0.0.0-20240412134927-73aa24961d8e/go.mod h1:RGowQUUv0M3o6QYzlxWMQUIEXJRYwJAgY6rlc508kTM=
 github.com/spurtcms/team-roles v0.0.0-20240408120508-91359eac1f8d h1:zMMmAe+Sil0Bm+4zxEMaWoN9Jw+CuxLjU10P/GlzvOs=
