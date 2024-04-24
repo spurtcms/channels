@@ -13,6 +13,8 @@ github.com/spurtcms/auth v0.0.0-20240405121723-db35cf465418 h1:nHsYhQuo+cCiezFtK
 github.com/spurtcms/auth v0.0.0-20240405121723-db35cf465418/go.mod h1:twSrHwCvx8mSOtS75Vcjoo4jLNX3jIf7NLadvZH932c=
 github.com/spurtcms/auth v0.0.0-20240408103324-e2b7dc7dcac1 h1:8poq9DT6nLFe6Eivp/mWRpRVXhMfvORWbRfwcgJZHAI=
 github.com/spurtcms/auth v0.0.0-20240408103324-e2b7dc7dcac1/go.mod h1:twSrHwCvx8mSOtS75Vcjoo4jLNX3jIf7NLadvZH932c=
+github.com/spurtcms/auth v0.0.0-20240422143037-2687a406bba1 h1:6M/Y3cycWMYaZK1nA+kCMsxoMmYNVynRRpM1gcVSk9o=
+github.com/spurtcms/auth v0.0.0-20240422143037-2687a406bba1/go.mod h1:R/BQhE+PUZ/eGTgS23lv62uWkzfu/NzVWHxibC6yu1g=
 github.com/spurtcms/categories v0.0.0-20240412120409-33a35a711a2a h1:u80UfwbgP/vaYPgCGvgzaVmBdRuqpjUcafTUnihZ9Y0=
 github.com/spurtcms/categories v0.0.0-20240412120409-33a35a711a2a/go.mod h1:rPrXi7aK4YHGYV6JjA9zyvcqP1fZXIon3k5iBo2BBz8=
 github.com/spurtcms/member v0.0.0-20240404121904-b393756a414f h1:z1hJ2TpZv0ClMqfy46aTIWMVnP1lDgLaTR5QzMt5aWA=
@@ -25,6 +27,8 @@ github.com/spurtcms/team-roles v0.0.0-20240408120508-91359eac1f8d h1:zMMmAe+Sil0
 github.com/spurtcms/team-roles v0.0.0-20240408120508-91359eac1f8d/go.mod h1:5HOK30Lr10UQ1HLmXcPaluBRPCLUcYgQg31vBQYKoRQ=
 github.com/spurtcms/team-roles v0.0.0-20240412124411-68306085d01b h1:mrShlDGupqPB0KOdiy0Bq462ZwgTHkrm5QBiY/NeI1I=
 github.com/spurtcms/team-roles v0.0.0-20240412124411-68306085d01b/go.mod h1:5HOK30Lr10UQ1HLmXcPaluBRPCLUcYgQg31vBQYKoRQ=
+github.com/spurtcms/team-roles v0.0.0-20240415142624-666b8897005b h1:hnAdxkSBR6IWK/itrdFBdbNy+jjSnDIYuF6ZGET8OoM=
+github.com/spurtcms/team-roles v0.0.0-20240415142624-666b8897005b/go.mod h1:5HOK30Lr10UQ1HLmXcPaluBRPCLUcYgQg31vBQYKoRQ=
 golang.org/x/crypto v0.21.0 h1:X31++rzVUdKhX5sWmSOFZxx8UW/ldWx55cbf08iNAMA=
 golang.org/x/crypto v0.21.0/go.mod h1:0BP7YvVV9gBbVKyeTG0Gyn+gZm94bibOW5BjDEYAOMs=
 gorm.io/datatypes v1.2.0 h1:5YT+eokWdIxhJgWHdrb2zYUimyk0+TaFth+7a0ybzco=

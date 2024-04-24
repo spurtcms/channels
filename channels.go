@@ -22,7 +22,6 @@ func ChannelSetup(config Config) *Channel {
 		AuthEnable:       config.AuthEnable,
 		PermissionEnable: config.PermissionEnable,
 		Auth:             config.Auth,
-		Permissions:      config.Permissions,
 	}
 
 }

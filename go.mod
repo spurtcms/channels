@@ -3,8 +3,8 @@ module github.com/spurtcms/channels
 go 1.19
 
 require (
-	github.com/spurtcms/auth v0.0.0-20240408103324-e2b7dc7dcac1
-	github.com/spurtcms/team-roles v0.0.0-20240412124411-68306085d01b
+	github.com/spurtcms/auth v0.0.0-20240422143037-2687a406bba1
+	github.com/spurtcms/team-roles v0.0.0-20240415142624-666b8897005b
 	gorm.io/gorm v1.25.9
 )
 

@@ -26,7 +26,7 @@ func AuthandPermission(channel *Channel) error {
 		return ErrorAuth
 	}
 	//check permission enable if enabled, use team-role pkg otherwise it will return error
-	if channel.PermissionEnable && !channel.Permissions.PermissionFlg {
+	if channel.PermissionEnable && !channel.Auth.PermissionFlg {
 
 		return ErrorPermission
 
