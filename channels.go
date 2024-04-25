@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spurtcms/auth"
 	"github.com/spurtcms/categories"
 	permission "github.com/spurtcms/team-roles"
 	"gorm.io/gorm"
@@ -60,6 +61,250 @@ func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestat
 	_, chcount, _ := CH.Channellist(0, 0, filter, activestatus, channel.DB)
 
 	return chnallist, int(chcount), nil
+}
+
+/*create channel*/
+func (channel *Channel) CreateChannel(channelcreate ChannelCreate) (TblChannel, error) {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return TblChannel{}, autherr
+	}
+
+	/*create channel*/
+	var cchannel TblChannel
+
+	cchannel.ChannelName = channelcreate.ChannelName
+
+	cchannel.ChannelDescription = channelcreate.ChannelDescription
+
+	cchannel.SlugName = strings.ToLower(strings.ReplaceAll(channelcreate.ChannelName, " ", " "))
+
+	cchannel.IsActive = 1
+
+	cchannel.CreatedBy = channelcreate.CreatedBy
+
+	cchannel.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	ch, chanerr := CH.CreateChannel(&cchannel, channel.DB)
+
+	if chanerr != nil {
+
+		log.Println(chanerr)
+	}
+
+	/*This is for module permission creation*/
+	var modperms auth.TblModulePermission
+
+	modperms.DisplayName = ch.ChannelName
+
+	modperms.RouteName = "/channel/entrylist/" + strconv.Itoa(ch.Id)
+
+	modperms.SlugName = strings.ReplaceAll(strings.ToLower(ch.ChannelName), " ", "_")
+
+	modperms.CreatedBy = channelcreate.CreatedBy
+
+	modperms.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	modperms.ModuleId = 8
+
+	modperms.FullAccessPermission = 1
+
+	// modid, _ := permission.AS.CreateModulePermission(&modperms, channel.DB)
+
+	for _, categoriesid := range channelcreate.CategoryIds {
+
+		var channelcategory TblChannelCategorie
+
+		channelcategory.ChannelId = ch.Id
+
+		channelcategory.CategoryId = categoriesid
+
+		channelcategory.CreatedAt = channelcreate.CreatedBy
+
+		channelcategory.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+		err := CH.CreateChannelCategory(&channelcategory, channel.DB)
+
+		if err != nil {
+
+			log.Println(err)
+
+		}
+
+	}
+
+	return ch, nil
+
+}
+
+/*create additional fields*/
+func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalField, channelid int) error {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return autherr
+	}
+
+	/*Temp store section id*/
+	type tempsection struct {
+		Id           int
+		SectionId    int
+		NewSectionId int
+	}
+
+	var TempSections []tempsection
+
+	/*create Section*/
+	for _, sectionvalue := range channelcreate.Sections {
+
+		var cfld TblField
+
+		cfld.FieldName = strings.TrimSpace(sectionvalue.SectionName)
+
+		cfld.FieldTypeId = sectionvalue.MasterFieldId
+
+		cfld.CreatedBy = channelcreate.CreatedBy
+
+		cfld.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+		cfid, fiderr := CH.CreateFields(&cfld, channel.DB)
+
+		if fiderr != nil {
+
+			log.Println(fiderr)
+		}
+
+		/*create group field*/
+		var grpfield TblGroupField
+
+		grpfield.ChannelId = channelid
+
+		grpfield.FieldId = cfid.Id
+
+		grpfielderr := CH.CreateGroupField(&grpfield, channel.DB)
+
+		if grpfielderr != nil {
+
+			log.Println(grpfielderr)
+
+		}
+
+		var TempSection tempsection
+
+		TempSection.Id = cfid.Id
+
+		TempSection.SectionId = sectionvalue.SectionId
+
+		TempSection.NewSectionId = sectionvalue.SectionNewId
+
+		TempSections = append(TempSections, TempSection)
+
+	}
+
+	/*create field*/
+	for _, val := range channelcreate.FieldValues {
+
+		var cfld TblField
+
+		cfld.FieldName = strings.TrimSpace(val.FieldName)
+
+		cfld.FieldTypeId = val.MasterFieldId
+
+		cfld.CreatedBy = channelcreate.CreatedBy
+
+		cfld.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+		cfld.OrderIndex = val.OrderIndex
+
+		cfld.ImagePath = val.IconPath
+
+		cfld.CharacterAllowed = val.CharacterAllowed
+
+		cfld.Url = val.Url
+
+		if val.MasterFieldId == 4 {
+
+			cfld.DatetimeFormat = val.DateFormat
+
+			cfld.TimeFormat = val.TimeFormat
+
+		}
+		if val.MasterFieldId == 6 {
+
+			cfld.DatetimeFormat = val.DateFormat
+		}
+
+		if len(val.OptionValue) > 0 {
+
+			cfld.OptionExist = 1
+		}
+
+		for _, sectionid := range TempSections {
+
+			if sectionid.SectionId == val.SectionId && sectionid.NewSectionId == val.SectionNewId {
+
+				cfld.SectionParentId = sectionid.Id
+
+			}
+
+		}
+
+		cfid, fiderr := CH.CreateFields(&cfld, channel.DB)
+
+		if fiderr != nil {
+
+			log.Println(fiderr)
+
+		}
+
+		/*option value create*/
+		for _, opt := range val.OptionValue {
+
+			var fldopt TblFieldOption
+
+			fldopt.OptionName = opt.Value
+
+			fldopt.OptionValue = opt.Value
+
+			fldopt.FieldId = cfid.Id
+
+			fldopt.CreatedBy = channelcreate.CreatedBy
+
+			fldopt.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+			fopterr := CH.CreateFieldOption(&fldopt, channel.DB)
+
+			if fopterr != nil {
+
+				log.Println(fopterr)
+
+			}
+
+		}
+
+		/*create group field*/
+		var grpfield TblGroupField
+
+		grpfield.ChannelId = channelid
+
+		grpfield.FieldId = cfid.Id
+
+		grpfielderr := CH.CreateGroupField(&grpfield, channel.DB)
+
+		if grpfielderr != nil {
+
+			log.Println(grpfielderr)
+
+		}
+
+	}
+
+	return nil
 }
 
 /*Get channel by name*/
@@ -376,7 +621,7 @@ func (channel *Channel) EditChannel(ChannelName string, ChannelDescription strin
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
-			var createCateogry tblchannelcategory
+			var createCateogry TblChannelCategorie
 
 			createCateogry.ChannelId = channelid
 

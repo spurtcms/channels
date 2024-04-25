@@ -127,6 +127,19 @@ type ChannelUpdate struct {
 	ModifiedBy         int
 }
 
+type ChannelCreate struct {
+	ChannelName        string
+	ChannelDescription string
+	CategoryIds []string
+	CreatedBy   int
+}
+
+type ChannelAddtionalField struct {
+	Sections    []Section
+	FieldValues []Fiedlvalue
+	CreatedBy   int
+}
+
 type FieldValueId struct {
 	Id     int
 	CValue int
@@ -169,6 +182,19 @@ func (Ch ChannelModel) Channellist(limit, offset int, filter Filter, activestatu
 	}
 
 	return chn, 0, nil
+}
+
+/*Craete channel */
+func (Ch ChannelModel) CreateChannel(chn *TblChannel, DB *gorm.DB) (TblChannel, error) {
+
+	if err := DB.Table("tbl_channels").Create(&chn).Error; err != nil {
+
+		return TblChannel{}, err
+
+	}
+
+	return *chn, nil
+
 }
 
 func (Ch ChannelModel) GetChannelByChannelName(name string, DB *gorm.DB) (ch tblchannel, err error) {
@@ -329,9 +355,9 @@ func (Ch ChannelModel) CheckChannelCategoryAlreadyExitst(channelid int, category
 }
 
 /*Create Channel Categories*/
-func (Ch ChannelModel) CreateChannelCategory(channelcategory *tblchannelcategory, DB *gorm.DB) error {
+func (Ch ChannelModel) CreateChannelCategory(channelcategory *TblChannelCategorie, DB *gorm.DB) error {
 
-	if err := DB.Table("tbl_channel_categories").Create(&channelcategory).Error; err != nil {
+	if err := DB.Model(TblChannelCategorie{}).Create(&channelcategory).Error; err != nil {
 
 		return err
 	}
