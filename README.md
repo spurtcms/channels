@@ -20,7 +20,118 @@ go get github.com/spurtcms/Channels
 ```
 
 
-# Create new channel
+# Usage Example
+``` bash
+import(
+	"github.com/spurtcms/auth"
+	"github.com/spurtcms/channel"
+)
+
+func main() {
+
+	Auth := auth.AuthSetup(auth.Config{
+		UserId:     1,
+		ExpiryTime: 2,
+		SecretKey:  SecretKey,
+	})
+
+	token, _ := Auth.CreateToken()
+
+	Auth.VerifyToken(token, SecretKey)
+
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+
+	channel := ChannelSetup(Config{
+		DB:               &gorm.DB{},
+		AuthEnable:       true,
+		PermissionEnable: true,
+		Auth:             Auth,
+	})
+
+	//channels
+	if permisison {
+
+		//list channel
+		channellist, count, err := channel.ListChannel(10, 0, Filter{Keyword: ""}, true, true)
+		fmt.Println(channellist, count, err)
+
+		//create channel
+		cchannel, err := channel.CreateChannel(ChannelCreate{ChannelName: "demo", ChannelDescription: "demo", CategoryIds: []string{"56,77"}, CreatedBy: 1})
+		fmt.Println(cchannel, err)
+
+		//update channel
+		uerr := channel.EditChannel("demo2", "demo2", 2, 1, []string{"55,44"})
+		fmt.Println(uerr)
+
+		//delete channel
+		derr := channel.DeleteChannel(1, 1)
+		fmt.Println(derr)
+
+		//create additionfield
+		aerr := channel.CreateAdditionalFields(ChannelAddtionalField{
+			Sections: []Section{
+				{SectionId: 1, SectionName: "New", MasterFieldId: 12, OrderIndex: 1}},
+			FieldValues: []Fiedlvalue{{
+				MasterFieldId: 1,
+				SectionId:     1,
+				FieldName:     "",
+				OrderIndex:    2,
+				DateFormat:    "",
+			}},
+		}, 1)
+		fmt.Println(aerr)
+
+	}
+
+	cpermisison, _ := Auth.IsGranted("Entries", auth.CRUD)
+
+	if cpermisison {
+
+		//channelentries list
+		entries, filtercount, overallcount, err := channel.ChannelEntriesList(Entries{
+			ChannelId:                1,
+			Limit:                    10,
+			Offset:                   0,
+			Keyword:                  "",
+			ChannelName:              "",
+			SelectedCategoryFilter:   true,
+			Publishedonly:            true,
+			ActiveChannelEntriesonly: true,
+			MemberProfile:            true,
+		})
+
+		fmt.Println(entries, filtercount, overallcount, err)
+
+		//create entry
+		entry, flg, cerr := channel.CreateEntry(EntriesRequired{
+			Title:      "demo",
+			Content:    "demo",
+			CoverImage: "",
+		})
+
+		fmt.Println(entry, flg, cerr)
+
+		//update entry
+		channel.UpdateEntry(EntriesRequired{
+			Title:      "demo2",
+			Content:    "demo2",
+			CoverImage: "",
+		}, "demo", 1)
+
+		//delete entry
+		flg, derr := channel.DeleteEntry("demo", 1, 1)
+
+		if derr != nil {
+
+			fmt.Println(derr)
+		}
+
+	}
+}
+
+```
+
+
 
 
 # Getting help
