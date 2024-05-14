@@ -16,7 +16,7 @@ The Channels work in harmony to enhance content management in websites. Channels
 # Installation
 
 ``` bash
-go get github.com/spurtcms/Channels
+go get github.com/spurtcms/channels
 ```
 
 

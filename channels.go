@@ -28,18 +28,18 @@ func ChannelSetup(config Config) *Channel {
 }
 
 // get all channel list
-func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestatus bool, entriescount bool) (channelList []tblchannel, channelcount int, err error) {
+func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestatus bool, entriescount bool) (channelList []Tblchannel, channelcount int, err error) {
 
 	autherr := AuthandPermission(channel)
 
 	if autherr != nil {
 
-		return []tblchannel{}, 0, autherr
+		return []Tblchannel{}, 0, autherr
 	}
 
 	channellist, _, _ := CH.Channellist(limit, offset, filter, activestatus, channel.DB)
 
-	var chnallist []tblchannel
+	var chnallist []Tblchannel
 
 	for _, val := range channellist {
 
@@ -308,20 +308,20 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 }
 
 /*Get channel by name*/
-func (channel *Channel) GetchannelByName(channelname string) (channels tblchannel, err error) {
+func (channel *Channel) GetchannelByName(channelname string) (channels Tblchannel, err error) {
 
 	autherr := AuthandPermission(channel)
 
 	if autherr != nil {
 
-		return tblchannel{}, autherr
+		return Tblchannel{}, autherr
 	}
 
 	channellist, err1 := CH.GetChannelByChannelName(channelname, channel.DB)
 
 	if err1 != nil {
 
-		return tblchannel{}, err1
+		return Tblchannel{}, err1
 	}
 
 	return channellist, nil
@@ -329,20 +329,20 @@ func (channel *Channel) GetchannelByName(channelname string) (channels tblchanne
 }
 
 /*Get Channels By Id*/
-func (channel *Channel) GetChannelsById(channelid int) (channelList tblchannel, SelectedCategories []categories.Arrangecategories, err error) {
+func (channel *Channel) GetChannelsById(channelid int) (channelList Tblchannel, SelectedCategories []categories.Arrangecategories, err error) {
 
 	autherr := AuthandPermission(channel)
 
 	if autherr != nil {
 
-		return tblchannel{}, []categories.Arrangecategories{}, autherr
+		return Tblchannel{}, []categories.Arrangecategories{}, autherr
 	}
 
 	channellist, err := CH.GetChannelById(channelid, channel.DB)
 
 	if err != nil {
 
-		return tblchannel{}, []categories.Arrangecategories{}, err
+		return Tblchannel{}, []categories.Arrangecategories{}, err
 
 	}
 

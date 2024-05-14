@@ -540,14 +540,14 @@ func (Ch EntriesModel) NewentryCount(DB *gorm.DB) (count int64, err error) {
 	return count, nil
 }
 
-func (Ch EntriesModel) Newchannels(DB *gorm.DB) (chn []tblchannel, err error) {
+func (Ch EntriesModel) Newchannels(DB *gorm.DB) (chn []Tblchannel, err error) {
 
 	if err := DB.Table("tbl_channels").Select("tbl_channels.*,tbl_users.username,tbl_users.profile_image_path").
 		Joins("inner join tbl_users on tbl_users.id = tbl_channels.created_by").
 		Where("tbl_channels.is_deleted=0 and tbl_channels.is_active=1 and tbl_channels.created_on >= ?", time.Now().Add(-24*time.Hour).Format("2006-01-02 15:04:05")).
 		Order("created_on desc").Limit(6).Find(&chn).Error; err != nil {
 
-		return []tblchannel{}, err
+		return []Tblchannel{}, err
 	}
 
 	return chn, nil

@@ -415,7 +415,7 @@ func TestDeleteChannelPermissions(t *testing.T) {
 	}
 }
 
-// test chanegechannelstatus function 
+// test chanegechannelstatus function
 func TestChangeChannelStatus(t *testing.T) {
 
 	db, _ := DBSetup()
@@ -446,14 +446,14 @@ func TestChangeChannelStatus(t *testing.T) {
 
 	if permisison {
 
-		flg,err := channel.ChangeChannelStatus(3,0,1)
+		flg, err := channel.ChangeChannelStatus(3, 0, 1)
 
 		if err != nil {
 
 			panic(err)
 		}
 
-		fmt.Println(flg,err)
+		fmt.Println(flg, err)
 	} else {
 
 		log.Println("permissions enabled not initialised")
@@ -461,7 +461,7 @@ func TestChangeChannelStatus(t *testing.T) {
 	}
 }
 
-// test getallmasterfieldtype function 
+// test getallmasterfieldtype function
 func TestGetAllMasterFieldType(t *testing.T) {
 
 	db, _ := DBSetup()
@@ -492,14 +492,14 @@ func TestGetAllMasterFieldType(t *testing.T) {
 
 	if permisison {
 
-		fields,err := channel.GetAllMasterFieldType()
+		fields, err := channel.GetAllMasterFieldType()
 
 		if err != nil {
 
 			panic(err)
 		}
 
-		fmt.Println(fields,err)
+		fmt.Println(fields, err)
 	} else {
 
 		log.Println("permissions enabled not initialised")
@@ -538,7 +538,7 @@ func TestEditChannel(t *testing.T) {
 
 	if permisison {
 
-		err := channel.EditChannel("go","about golang",1,3,[]string{"1", "2"})
+		err := channel.EditChannel("go", "about golang", 1, 3, []string{"1", "2"})
 
 		if err != nil {
 
@@ -587,13 +587,13 @@ func TestUpdateChannelField(t *testing.T) {
 		field1 := Section{SectionId: 1, SectionName: "text", MasterFieldId: 2, OrderIndex: 1}
 		field2 := Section{SectionId: 2, SectionName: "date&time", OrderIndex: 2}
 
-		optval1 := OptionValues{Value: "1",FieldId: 7}
-		optval2 := OptionValues{Value: "2",FieldId: 7}
+		optval1 := OptionValues{Value: "1", FieldId: 7}
+		optval2 := OptionValues{Value: "2", FieldId: 7}
 
-		field1value := Fiedlvalue{Url: "/defaultchannel", OrderIndex: 1, OptionValue: []OptionValues{optval1, optval2},FieldId: 7}
-		field2value := Fiedlvalue{Url: "/defaultchannel", OrderIndex: 2,FieldId: 8}
+		field1value := Fiedlvalue{Url: "/defaultchannel", OrderIndex: 1, OptionValue: []OptionValues{optval1, optval2}, FieldId: 7}
+		field2value := Fiedlvalue{Url: "/defaultchannel", OrderIndex: 2, FieldId: 8}
 
-		err := channel.UpdateChannelField(ChannelUpdate{Sections: []Section{field1},FieldValues: []Fiedlvalue{field1value,field2value},Deletesections: []Section{field2},DeleteFields: []Fiedlvalue{field2value},DeleteOptionsvalue: []OptionValues{optval2},CategoryIds:[]string{"1", "2"},ModifiedBy: 1},3)
+		err := channel.UpdateChannelField(ChannelUpdate{Sections: []Section{field1}, FieldValues: []Fiedlvalue{field1value, field2value}, Deletesections: []Section{field2}, DeleteFields: []Fiedlvalue{field2value}, DeleteOptionsvalue: []OptionValues{optval2}, CategoryIds: []string{"1", "2"}, ModifiedBy: 1}, 3)
 
 		if err != nil {
 

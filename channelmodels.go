@@ -12,7 +12,7 @@ type Filter struct {
 	Keyword string
 }
 
-type tblchannel struct {
+type Tblchannel struct {
 	Id                 int                 `gorm:"column:id"`
 	ChannelName        string              `gorm:"column:channel_name"`
 	ChannelDescription string              `gorm:"column:channel_description"`
@@ -155,7 +155,7 @@ func IsDeleted(db *gorm.DB) *gorm.DB {
 }
 
 /*channel list*/
-func (Ch ChannelModel) Channellist(limit, offset int, filter Filter, activestatus bool, DB *gorm.DB) (chn []tblchannel, chcount int64, err error) {
+func (Ch ChannelModel) Channellist(limit, offset int, filter Filter, activestatus bool, DB *gorm.DB) (chn []Tblchannel, chcount int64, err error) {
 
 	query := DB.Model(TblChannel{}).Scopes(IsDeleted).Order("id desc")
 
@@ -197,22 +197,22 @@ func (Ch ChannelModel) CreateChannel(chn *TblChannel, DB *gorm.DB) (TblChannel, 
 
 }
 
-func (Ch ChannelModel) GetChannelByChannelName(name string, DB *gorm.DB) (ch tblchannel, err error) {
+func (Ch ChannelModel) GetChannelByChannelName(name string, DB *gorm.DB) (ch Tblchannel, err error) {
 
 	if err := DB.Table("tbl_channels").Where("channel_name=? and is_deleted=0", name).First(&ch).Error; err != nil {
 
-		return tblchannel{}, err
+		return Tblchannel{}, err
 	}
 
 	return ch, nil
 }
 
 /*Get Channel*/
-func (Ch ChannelModel) GetChannelById(id int, DB *gorm.DB) (ch tblchannel, err error) {
+func (Ch ChannelModel) GetChannelById(id int, DB *gorm.DB) (ch Tblchannel, err error) {
 
 	if err := DB.Table("tbl_channels").Where("id=?", id).First(&ch).Error; err != nil {
 
-		return tblchannel{}, err
+		return Tblchannel{}, err
 	}
 
 	return ch, nil

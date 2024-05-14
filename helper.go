@@ -67,20 +67,20 @@ func (channel *Channel) DashboardEntriesCount() (totalcount int, lasttendayscoun
 	return int(allentrycount), int(entrycount), nil
 }
 
-func (channel *Channel) DashboardChannellist() (channelList []tblchannel, err error) {
+func (channel *Channel) DashboardChannellist() (channelList []Tblchannel, err error) {
 
 	autherr := AuthandPermission(channel)
 
 	if autherr != nil {
 
-		return []tblchannel{}, autherr
+		return []Tblchannel{}, autherr
 	}
 
 	Newchannels, err := EntryModel.Newchannels(channel.DB)
 
 	if err != nil {
 
-		return []tblchannel{}, err
+		return []Tblchannel{}, err
 
 	}
 
