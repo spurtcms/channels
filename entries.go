@@ -11,13 +11,13 @@ import (
 )
 
 // get channel Entries List
-func (channel *Channel) ChannelEntriesList(entry Entries) (entries []tblchannelentries, filterentriescount int, totalentriescount int, err error) {
+func (channel *Channel) ChannelEntriesList(entry Entries) (entries []Tblchannelentries, filterentriescount int, totalentriescount int, err error) {
 
 	autherr := AuthandPermission(channel)
 
 	if autherr != nil {
 
-		return []tblchannelentries{}, 0, 0, autherr
+		return []Tblchannelentries{}, 0, 0, autherr
 	}
 
 	if entry.Status == "Draft" {
@@ -52,7 +52,7 @@ func (channel *Channel) ChannelEntriesList(entry Entries) (entries []tblchannele
 
 	_, entrcount, _ := EntryModel.ChannelEntryList(Entries{Limit: 0,Offset: 0,Keyword: entry.Keyword,ChannelName: entry.ChannelName,Status: entry.Status,Title: entry.Title,UserName: entry.UserName,Publishedonly: entry.Publishedonly,ActiveChannelEntriesonly: entry.ActiveChannelEntriesonly,CategoryId: entry.ChannelId,MemberAccessControl: entry.MemberAccessControl,ChannelId: entry.ChannelId}, channel, categoryid, channel.DB)
 
-	var final_entries_list []tblchannelentries
+	var final_entries_list []Tblchannelentries
 
 	for _, entries := range chnentry {
 
@@ -242,20 +242,20 @@ func (channel *Channel) ChannelEntriesList(entry Entries) (entries []tblchannele
 }
 
 // get entry details
-func (channel *Channel) EntryDetailsById(Ent IndivEntriesReq) (tblchannelentries, error) {
+func (channel *Channel) EntryDetailsById(Ent IndivEntriesReq) (Tblchannelentries, error) {
 
 	autherr := AuthandPermission(channel)
 
 	if autherr != nil {
 
-		return tblchannelentries{}, autherr
+		return Tblchannelentries{}, autherr
 	}
 	
 	Entry, err := EntryModel.GetChannelEntryById(Ent, channel.DB)
 
 	if err != nil {
 
-		return tblchannelentries{}, nil
+		return Tblchannelentries{}, nil
 	}
 
 	if Ent.AuthorDetails {
@@ -442,16 +442,16 @@ func (channel *Channel) EntryDetailsById(Ent IndivEntriesReq) (tblchannelentries
 }
 
 // create entry
-func (channel *Channel) CreateEntry(entriesrequired EntriesRequired) (entry tblchannelentries, flg bool, err error) {
+func (channel *Channel) CreateEntry(entriesrequired EntriesRequired) (entry Tblchannelentries, flg bool, err error) {
 
 	autherr := AuthandPermission(channel)
 
 	if autherr != nil {
 
-		return tblchannelentries{}, false, autherr
+		return Tblchannelentries{}, false, autherr
 	}
 
-	var Entries tblchannelentries
+	var Entries Tblchannelentries
 
 	Entries.Title = entriesrequired.Title
 
@@ -691,7 +691,7 @@ func (channel *Channel) DeleteEntry(ChannelName string, modifiedby int, Entryid 
 		return false, autherr
 	}
 
-	var entries tblchannelentries
+	var entries Tblchannelentries
 
 	entries.Id = Entryid
 
@@ -765,6 +765,61 @@ func (channel *Channel) EntryStatus(ChannelName string, EntryId int, status int,
 	Entries.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
 	EntryModel.PublishQuery(&Entries, EntryId, channel.DB)
+
+	return true, nil
+
+}
+
+
+// make feature function 
+func (channel *Channel) MakeFeature(channelid, entryid, status int) (flag bool, err error) {
+
+	merr := CH.MakeFeature(channelid, entryid, status, channel.DB)
+
+	if merr != nil {
+
+		return false, merr
+	}
+
+	return true, nil
+
+}
+
+// MULTI SELECT ENTRY DELETE FUNCTION//
+func (channel *Channel) DeleteSelectedEntry(Entryid []int,modifiedby int) (bool, error) {
+
+	var entries TblChannelEntries
+
+	entries.IsDeleted = 1
+
+	entries.DeletedBy = modifiedby
+
+	entries.DeletedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	err := EntryModel.DeleteSelectedChannelEntryId(&entries, Entryid, channel.DB)
+
+	var field TblChannelEntryField
+
+	field.DeletedBy = modifiedby
+
+	field.DeletedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	err1 := EntryModel.DeleteSelectedChannelEntryFieldId(&field, Entryid, channel.DB)
+
+	if err != nil {
+
+		log.Println(err)
+
+		return false,err
+
+	}
+
+	if err1 != nil {
+
+		log.Println(err)
+
+		return false, err1
+	}
 
 	return true, nil
 

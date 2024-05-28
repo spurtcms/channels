@@ -26,7 +26,7 @@ type Tblchannel struct {
 	ModifiedBy         int                 `gorm:"column:modified_by;DEFAULT:NULL"`
 	DateString         string              `gorm:"-"`
 	EntriesCount       int                 `gorm:"-"`
-	ChannelEntries     []tblchannelentries `gorm:"-"`
+	ChannelEntries     []Tblchannelentries `gorm:"-"`
 	ProfileImagePath   string              `gorm:"<-:false"`
 	Username           string              `gorm:"<-:false"`
 }

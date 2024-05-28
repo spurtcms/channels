@@ -73,6 +73,7 @@ type TblChannelEntryField struct {
 	Id             int       `gorm:"primaryKey;auto_increment;type:serial"`
 	FieldName      string    `gorm:"type:character varying"`
 	FieldValue     string    `gorm:"type:character varying"`
+	FieldTypeId    int       `gorm:"-:migration;<-false"`
 	ChannelEntryId int       `gorm:"type:integer"`
 	FieldId        int       `gorm:"type:integer"`
 	CreatedOn      time.Time `gorm:"type:timestamp without time zone"`
@@ -184,4 +185,3 @@ func MigrateTables(db *gorm.DB) {
 	db.Exec(`INSERT INTO public.tbl_field_types(id, type_name, type_slug, is_active, is_deleted, created_by, created_on) VALUES (1, 'Label', 'label', 1,  0, 1, '2023-03-14 11:09:12'), (2, 'Text', 'text', 1,  0, 1, '2023-03-14 11:09:12'),(3, 'Link', 'link', 1,  0, 1, '2023-03-14 11:09:12'),(4, 'Date & Time', 'date&time', 1,  0, 1, '2023-03-14 11:09:12'), (5, 'Select', 'select', 1,  0, 1, '2023-03-14 11:09:12'),(6, 'Date', 'date', 1,  0, 1, '2023-03-14 11:09:12'),(7, 'TextBox', 'textbox', 1,  0, 1, '2023-03-14 11:09:12'),(8, 'TextArea', 'textarea', 1, 0, 1, '2023-03-14 11:09:12'), (9, 'Radio Button', 'radiobutton', 1, 0, 1, '2023-03-14 11:09:12'),(10, 'CheckBox', 'checkbox', 1, 0, 1, '2023-03-14 11:09:12'),(11, 'Text Editor', 'texteditor', 1, 0, 1, '2023-03-14 11:09:12'),(12, 'Section', 'section', 1, 0, 1, '2023-03-14 11:09:12'),(13, 'Section Break', 'sectionbreak', 1, 0, 1, '2023-03-14 11:09:12'),(14, 'Members', 'member', 1,  0, 1, '2023-03-14 11:09:12');
 	`)
 }
-

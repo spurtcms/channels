@@ -89,20 +89,20 @@ func (channel *Channel) DashboardChannellist() (channelList []Tblchannel, err er
 }
 
 /*DashboardEntries */
-func (channel *Channel) DashboardEntrieslist() (entries []tblchannelentries, err error) {
+func (channel *Channel) DashboardEntrieslist() (entries []Tblchannelentries, err error) {
 
 	autherr := AuthandPermission(channel)
 
 	if autherr != nil {
 
-		return []tblchannelentries{}, autherr
+		return []Tblchannelentries{}, autherr
 	}
 
 	Newentries, err := EntryModel.Newentries(channel.DB)
 
 	if err != nil {
 
-		return []tblchannelentries{}, err
+		return []Tblchannelentries{}, err
 
 	}
 
