@@ -9,6 +9,7 @@ import (
 
 	"github.com/spurtcms/auth"
 	"github.com/spurtcms/categories"
+	"github.com/spurtcms/channels/migration"
 	permission "github.com/spurtcms/team-roles"
 	"gorm.io/gorm"
 )
@@ -16,7 +17,7 @@ import (
 // Channelsetup used to initialie channel configuration
 func ChannelSetup(config Config) *Channel {
 
-	MigrateTables(config.DB)
+	migration.AutoMigration(config.DB, config.DataBaseType)
 
 	return &Channel{
 		DB:               config.DB,

@@ -1,4 +1,4 @@
-package channels
+package postgres
 
 import (
 	"time"
@@ -148,7 +148,7 @@ type TblFieldType struct {
 }
 
 // MigrateTable creates this package related tables in your database
-func MigrateTables(db *gorm.DB) {
+func MigrationTables(db *gorm.DB) {
 
 	if err := db.AutoMigrate(
 		&TblChannelCategorie{},
