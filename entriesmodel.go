@@ -34,8 +34,8 @@ type Tblchannelentries struct {
 	Keyword              string                       `gorm:"column:keyword"`
 	CategoriesId         string                       `gorm:"column:categories_id"`
 	RelatedArticles      string                       `gorm:"column:related_articles"`
-	CreatedDate          string                       `gorm:"-"`
-	ModifiedDate         string                       `gorm:"-"`
+	CreatedDate          string                       `gorm:"-;<-false"`
+	ModifiedDate         string                       `gorm:"-;<-false"`
 	Username             string                       `gorm:"<-:false"`
 	CategoryGroup        string                       `gorm:"-:migration;<-:false"`
 	ChannelName          string                       `gorm:"-:migration;<-:false"`
@@ -54,7 +54,7 @@ type Tblchannelentries struct {
 	Author               string                       `gorm:"column:author"`
 	SortOrder            int                          `gorm:"column:sort_order"`
 	CreateTime           time.Time                    `gorm:"column:created_date"`
-	PublishedTime        time.Time                    `gorm:"column:published_time"`
+	PublishedTime        time.Time                    `gorm:"column:published_time;default:null"`
 	ReadingTime          int                          `gorm:"column:reading_time;DEFAULT:0"`
 	Tags                 string                       `gorm:"column:tags"`
 	Excerpt              string                       `gorm:"column:excerpt"`
@@ -193,13 +193,13 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 
 	if filter.UserName != "" {
 
-		query = query.Where("LOWER(TRIM(tbl_users.username)) ILIKE LOWER(TRIM(?))", "%"+filter.UserName+"%")
+		query = query.Where("LOWER(TRIM(tbl_users.username)) LIKE LOWER(TRIM(?))", "%"+filter.UserName+"%")
 
 	}
 
 	if filter.Keyword != "" {
 
-		query = query.Where("LOWER(TRIM(title)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(channel_name)) ILIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
+		query = query.Where("LOWER(TRIM(title)) LIKE LOWER(TRIM(?)) OR LOWER(TRIM(channel_name)) LIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
 
 	}
 
@@ -210,13 +210,13 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 	}
 	if filter.Title != "" {
 
-		query = query.Where("LOWER(TRIM(title)) ILIKE LOWER(TRIM(?))", "%"+filter.Title+"%")
+		query = query.Where("LOWER(TRIM(title)) LIKE LOWER(TRIM(?))", "%"+filter.Title+"%")
 
 	}
 
 	if filter.ChannelName != "" {
 
-		query = query.Where("LOWER(TRIM(channel_name)) ILIKE LOWER(TRIM(?))", "%"+filter.ChannelName+"%")
+		query = query.Where("LOWER(TRIM(channel_name)) LIKE LOWER(TRIM(?))", "%"+filter.ChannelName+"%")
 
 	}
 
@@ -592,7 +592,6 @@ func (ch ChannelModel) MakeFeature(channelid, entryid, status int, DB *gorm.DB) 
 
 	return nil
 }
-
 
 /*Delete MULTI Channel Entry Field*/
 func (Ch EntriesModel) DeleteSelectedChannelEntryId(chentry *TblChannelEntries, id []int, DB *gorm.DB) error {

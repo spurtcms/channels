@@ -2,7 +2,7 @@ package channels
 
 import (
 	"errors"
-	"log"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -93,7 +93,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate) (TblChannel, 
 
 	if chanerr != nil {
 
-		log.Println(chanerr)
+		fmt.Println(chanerr)
 	}
 
 	/*This is for module permission creation*/
@@ -110,6 +110,10 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate) (TblChannel, 
 	modperms.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
 	modperms.ModuleId = 8
+
+	modperms.AssignPermission = 1
+
+	modperms.OrderIndex = 2
 
 	modperms.FullAccessPermission = 1
 
@@ -131,7 +135,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate) (TblChannel, 
 
 		if err != nil {
 
-			log.Println(err)
+			fmt.Println(err)
 
 		}
 
@@ -177,7 +181,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 
 		if fiderr != nil {
 
-			log.Println(fiderr)
+			fmt.Println(fiderr)
 		}
 
 		/*create group field*/
@@ -191,7 +195,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 
 		if grpfielderr != nil {
 
-			log.Println(grpfielderr)
+			fmt.Println(grpfielderr)
 
 		}
 
@@ -259,7 +263,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 
 		if fiderr != nil {
 
-			log.Println(fiderr)
+			fmt.Println(fiderr)
 
 		}
 
@@ -282,7 +286,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 
 			if fopterr != nil {
 
-				log.Println(fopterr)
+				fmt.Println(fopterr)
 
 			}
 
@@ -299,7 +303,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 
 		if grpfielderr != nil {
 
-			log.Println(grpfielderr)
+			fmt.Println(grpfielderr)
 
 		}
 
@@ -351,7 +355,7 @@ func (channel *Channel) GetChannelsById(channelid int) (channelList Tblchannel, 
 
 	if err1 != nil {
 
-		log.Println(err)
+		fmt.Println(err)
 	}
 
 	var FinalSelectedCategories []categories.Arrangecategories
@@ -747,7 +751,7 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 
 			if fiderr != nil {
 
-				log.Println(fiderr)
+				fmt.Println(fiderr)
 			}
 
 			/*create group field*/
@@ -761,7 +765,7 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 
 			if grpfielderr != nil {
 
-				log.Println(grpfielderr)
+				fmt.Println(grpfielderr)
 
 			}
 
@@ -846,7 +850,7 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 
 			if fiderr != nil {
 
-				log.Println(fiderr)
+				fmt.Println(fiderr)
 
 			}
 
@@ -861,7 +865,7 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 
 			if grpfielderr != nil {
 
-				log.Println(grpfielderr)
+				fmt.Println(grpfielderr)
 
 			}
 
@@ -898,7 +902,7 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 
 				if fopterr != nil {
 
-					log.Println(fopterr)
+					fmt.Println(fopterr)
 
 				}
 

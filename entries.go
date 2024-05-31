@@ -1,7 +1,7 @@
 package channels
 
 import (
-	"log"
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -48,9 +48,9 @@ func (channel *Channel) ChannelEntriesList(entry Entries) (entries []Tblchannele
 
 	chnentry, _, _ := EntryModel.ChannelEntryList(entry, channel, categoryid, channel.DB)
 
-	_, filtercount,_  := EntryModel.ChannelEntryList(Entries{Limit: 0,Offset: 0,Keyword: entry.Keyword,ChannelName: entry.ChannelName,Status: entry.Status,Title: entry.Title,UserName: entry.UserName,Publishedonly: entry.Publishedonly,ActiveChannelEntriesonly: entry.ActiveChannelEntriesonly,CategoryId: entry.ChannelId,MemberAccessControl: entry.MemberAccessControl,ChannelId: entry.ChannelId}, channel, categoryid, channel.DB)
+	_, filtercount, _ := EntryModel.ChannelEntryList(Entries{Limit: 0, Offset: 0, Keyword: entry.Keyword, ChannelName: entry.ChannelName, Status: entry.Status, Title: entry.Title, UserName: entry.UserName, Publishedonly: entry.Publishedonly, ActiveChannelEntriesonly: entry.ActiveChannelEntriesonly, CategoryId: entry.ChannelId, MemberAccessControl: entry.MemberAccessControl, ChannelId: entry.ChannelId}, channel, categoryid, channel.DB)
 
-	_, entrcount, _ := EntryModel.ChannelEntryList(Entries{Limit: 0,Offset: 0,Keyword: entry.Keyword,ChannelName: entry.ChannelName,Status: entry.Status,Title: entry.Title,UserName: entry.UserName,Publishedonly: entry.Publishedonly,ActiveChannelEntriesonly: entry.ActiveChannelEntriesonly,CategoryId: entry.ChannelId,MemberAccessControl: entry.MemberAccessControl,ChannelId: entry.ChannelId}, channel, categoryid, channel.DB)
+	_, entrcount, _ := EntryModel.ChannelEntryList(Entries{Limit: 0, Offset: 0, Keyword: entry.Keyword, ChannelName: entry.ChannelName, Status: entry.Status, Title: entry.Title, UserName: entry.UserName, Publishedonly: entry.Publishedonly, ActiveChannelEntriesonly: entry.ActiveChannelEntriesonly, CategoryId: entry.ChannelId, MemberAccessControl: entry.MemberAccessControl, ChannelId: entry.ChannelId}, channel, categoryid, channel.DB)
 
 	var final_entries_list []Tblchannelentries
 
@@ -250,7 +250,7 @@ func (channel *Channel) EntryDetailsById(Ent IndivEntriesReq) (Tblchannelentries
 
 		return Tblchannelentries{}, autherr
 	}
-	
+
 	Entry, err := EntryModel.GetChannelEntryById(Ent, channel.DB)
 
 	if err != nil {
@@ -505,7 +505,7 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired) (entry Tblc
 
 	if err != nil {
 
-		log.Println(err)
+		fmt.Println(err)
 	}
 
 	return Entriess, true, nil
@@ -713,12 +713,12 @@ func (channel *Channel) DeleteEntry(ChannelName string, modifiedby int, Entryid 
 
 	if err != nil {
 
-		log.Println(err)
+		fmt.Println(err)
 	}
 
 	if err1 != nil {
 
-		log.Println(err)
+		fmt.Println(err)
 	}
 
 	return true, nil
@@ -770,8 +770,7 @@ func (channel *Channel) EntryStatus(ChannelName string, EntryId int, status int,
 
 }
 
-
-// make feature function 
+// make feature function
 func (channel *Channel) MakeFeature(channelid, entryid, status int) (flag bool, err error) {
 
 	merr := CH.MakeFeature(channelid, entryid, status, channel.DB)
@@ -786,7 +785,7 @@ func (channel *Channel) MakeFeature(channelid, entryid, status int) (flag bool, 
 }
 
 // MULTI SELECT ENTRY DELETE FUNCTION//
-func (channel *Channel) DeleteSelectedEntry(Entryid []int,modifiedby int) (bool, error) {
+func (channel *Channel) DeleteSelectedEntry(Entryid []int, modifiedby int) (bool, error) {
 
 	var entries TblChannelEntries
 
@@ -808,15 +807,15 @@ func (channel *Channel) DeleteSelectedEntry(Entryid []int,modifiedby int) (bool,
 
 	if err != nil {
 
-		log.Println(err)
+		fmt.Println(err)
 
-		return false,err
+		return false, err
 
 	}
 
 	if err1 != nil {
 
-		log.Println(err)
+		fmt.Println(err)
 
 		return false, err1
 	}

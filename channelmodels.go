@@ -184,7 +184,7 @@ type TblChannelEntryField struct {
 	Id             int       `gorm:"primaryKey;auto_increment;type:serial"`
 	FieldName      string    `gorm:"type:character varying"`
 	FieldValue     string    `gorm:"type:character varying"`
-	FieldTypeId    int       `gorm:"-:migration;<-false"`
+	FieldTypeId    int       `gorm:"-:migration;<-:false"`
 	ChannelEntryId int       `gorm:"type:integer"`
 	FieldId        int       `gorm:"type:integer"`
 	CreatedOn      time.Time `gorm:"type:timestamp without time zone"`
@@ -258,7 +258,6 @@ type TblFieldType struct {
 	ModifiedOn time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
 }
 
-
 type ChannelUpdate struct {
 	Sections           []Section
 	FieldValues        []Fiedlvalue
@@ -272,8 +271,8 @@ type ChannelUpdate struct {
 type ChannelCreate struct {
 	ChannelName        string
 	ChannelDescription string
-	CategoryIds []string
-	CreatedBy   int
+	CategoryIds        []string
+	CreatedBy          int
 }
 
 type ChannelAddtionalField struct {
@@ -303,7 +302,7 @@ func (Ch ChannelModel) Channellist(limit, offset int, filter Filter, activestatu
 
 	if filter.Keyword != "" {
 
-		query = query.Where("LOWER(TRIM(channel_name)) ILIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%")
+		query = query.Where("LOWER(TRIM(channel_name)) LIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%")
 	}
 
 	if activestatus {
