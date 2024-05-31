@@ -27,8 +27,8 @@ type Tblchannel struct {
 	DateString         string              `gorm:"-"`
 	EntriesCount       int                 `gorm:"-"`
 	ChannelEntries     []Tblchannelentries `gorm:"-"`
-	ProfileImagePath   string              `gorm:"<-:false"`
-	Username           string              `gorm:"<-:false"`
+	ProfileImagePath   string              `gorm:"-;<-:false"`
+	Username           string              `gorm:"-;<-:false"`
 }
 
 type tblchannelcategory struct {
@@ -71,7 +71,7 @@ type OptionValues struct {
 	NewFieldId int    `json:"NewFieldId"`
 	Value      string `json:"Value"`
 }
-type tblfieldoption struct {
+type TblFieldOption struct {
 	Id          int       `gorm:"column:id"`
 	OptionName  string    `gorm:"column:option_name"`
 	OptionValue string    `gorm:"column:option_value"`
@@ -83,7 +83,7 @@ type tblfieldoption struct {
 	IsDeleted   int       `gorm:"column:is_deleted;DEFAULT:0"`
 	DeletedOn   time.Time `gorm:"column:deleted_on;DEFAULT:NULL"`
 	DeletedBy   int       `gorm:"column:deleted_by;DEFAULT:NULL"`
-	Idstring    string    `gorm:"-"`
+	Idstring    string    `gorm:"-:migration"`
 }
 
 type tblfield struct {
@@ -104,7 +104,7 @@ type tblfield struct {
 	DeletedBy        int                  `gorm:"column:deleted_by;DEFAULT:NULL"`
 	OrderIndex       int                  `gorm:"column:order_index"`
 	ImagePath        string               `gorm:"column:image_path"`
-	TblFieldOption   []tblfieldoption     `gorm:"<-:false; foreignKey:FieldId"`
+	TblFieldOption   []TblFieldOption     `gorm:"<-:false; foreignKey:FieldId"`
 	DatetimeFormat   string               `gorm:"column:datetime_format"`
 	TimeFormat       string               `gorm:"column:time_format"`
 	Url              string               `gorm:"column:url"`
@@ -113,7 +113,7 @@ type tblfield struct {
 	SectionParentId  int                  `gorm:"column:section_parent_id"`
 	FieldTypeName    string               `gorm:"-;column:type_name"`
 	CharacterAllowed int                  `gorm:"column:character_allowed"`
-	FieldOptions     []tblfieldoption     `gorm:"-"`
+	FieldOptions     []TblFieldOption     `gorm:"-"`
 	FieldValue       TblChannelEntryField `gorm:"-"`
 }
 
@@ -232,19 +232,19 @@ type TblFieldGroup struct {
 	DeletedBy  int       `gorm:"DEFAULT:NULL"`
 }
 
-type TblFieldOption struct {
-	Id          int       `gorm:"primaryKey;auto_increment;type:serial"`
-	OptionName  string    `gorm:"type:character varying"`
-	OptionValue string    `gorm:"type:character varying"`
-	FieldId     int       `gorm:"type:integer"`
-	CreatedOn   time.Time `gorm:"type:timestamp without time zone"`
-	CreatedBy   int       `gorm:"type:integer"`
-	ModifiedOn  time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
-	ModifiedBy  int       `gorm:"DEFAULT:NULL"`
-	IsDeleted   int       `gorm:"DEFAULT:0"`
-	DeletedOn   time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
-	DeletedBy   int       `gorm:"DEFAULT:NULL"`
-}
+// type TblFieldOption struct {
+// 	Id          int       `gorm:"primaryKey;auto_increment;type:serial"`
+// 	OptionName  string    `gorm:"type:character varying"`
+// 	OptionValue string    `gorm:"type:character varying"`
+// 	FieldId     int       `gorm:"type:integer"`
+// 	CreatedOn   time.Time `gorm:"type:timestamp without time zone"`
+// 	CreatedBy   int       `gorm:"type:integer"`
+// 	ModifiedOn  time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+// 	ModifiedBy  int       `gorm:"DEFAULT:NULL"`
+// 	IsDeleted   int       `gorm:"DEFAULT:0"`
+// 	DeletedOn   time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+// 	DeletedBy   int       `gorm:"DEFAULT:NULL"`
+// }
 
 type TblFieldType struct {
 	Id         int       `gorm:"primaryKey;auto_increment;type:serial"`

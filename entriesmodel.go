@@ -34,8 +34,8 @@ type Tblchannelentries struct {
 	Keyword              string                       `gorm:"column:keyword"`
 	CategoriesId         string                       `gorm:"column:categories_id"`
 	RelatedArticles      string                       `gorm:"column:related_articles"`
-	CreatedDate          string                       `gorm:"-;<-false"`
-	ModifiedDate         string                       `gorm:"-;<-false"`
+	CreatedDate          string                       `gorm:"-:migration;<-:false"`
+	ModifiedDate         string                       `gorm:"-:migration;<-:false"`
 	Username             string                       `gorm:"<-:false"`
 	CategoryGroup        string                       `gorm:"-:migration;<-:false"`
 	ChannelName          string                       `gorm:"-:migration;<-:false"`
@@ -403,11 +403,11 @@ func (Ch EntriesModel) GetFieldValue(DB *gorm.DB, fieldId, entryId int) (fieldva
 	return fieldvalue, nil
 }
 
-func (ch EntriesModel) GetFieldOptions(DB *gorm.DB, fieldId int) (fieldOptions []tblfieldoption, err error) {
+func (ch EntriesModel) GetFieldOptions(DB *gorm.DB, fieldId int) (fieldOptions []TblFieldOption, err error) {
 
 	if err = DB.Model(TblFieldOption{}).Where("tbl_field_options.is_deleted = 0 and tbl_field_options.field_id = ?", fieldId).Find(&fieldOptions).Error; err != nil {
 
-		return []tblfieldoption{}, err
+		return []TblFieldOption{}, err
 	}
 
 	return fieldOptions, nil
