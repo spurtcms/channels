@@ -28,7 +28,7 @@ type Tblchannel struct {
 	EntriesCount       int                 `gorm:"-"`
 	ChannelEntries     []Tblchannelentries `gorm:"-"`
 	ProfileImagePath   string              `gorm:"-;<-:false"`
-	Username           string              `gorm:"-;<-:false"`
+	Username           string              `gorm:"<-:false"`
 }
 
 type tblchannelcategory struct {
@@ -298,7 +298,9 @@ func IsDeleted(db *gorm.DB) *gorm.DB {
 /*channel list*/
 func (Ch ChannelModel) Channellist(limit, offset int, filter Filter, activestatus bool, DB *gorm.DB) (chn []Tblchannel, chcount int64, err error) {
 
-	query := DB.Model(TblChannel{}).Scopes(IsDeleted).Order("id desc")
+	query := DB.Model(TblChannel{}).Select("tbl_channels.*,tbl_users.username").Where("tbl_channels.is_deleted=0").Order("id desc")
+
+	query.Joins("inner join tbl_users on tbl_users.id = tbl_channels.created_by")
 
 	if filter.Keyword != "" {
 
