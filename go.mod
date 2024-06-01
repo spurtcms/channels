@@ -8,7 +8,7 @@ require (
 	github.com/spurtcms/member v0.0.0-20240404121904-b393756a414f
 	github.com/spurtcms/member-access v0.0.0-20240417065557-5d9d2a136a58
 	github.com/spurtcms/team v0.0.1
-	github.com/spurtcms/team-roles v0.0.3
+	github.com/spurtcms/team-roles v0.0.4
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gorm v1.25.9
 )

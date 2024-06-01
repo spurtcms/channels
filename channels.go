@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spurtcms/auth"
 	"github.com/spurtcms/categories"
 	"github.com/spurtcms/channels/migration"
 	permission "github.com/spurtcms/team-roles"
@@ -97,7 +96,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate) (TblChannel, 
 	}
 
 	/*This is for module permission creation*/
-	var modperms auth.TblModulePermission
+	var modperms permission.TblModulePermission
 
 	modperms.DisplayName = ch.ChannelName
 
@@ -117,7 +116,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate) (TblChannel, 
 
 	modperms.FullAccessPermission = 1
 
-	// modid, _ := permission.AS.CreateModulePermission(&modperms, channel.DB)
+	permission.AS.CreateModulePermission(&modperms, channel.DB)
 
 	for _, categoriesid := range channelcreate.CategoryIds {
 
