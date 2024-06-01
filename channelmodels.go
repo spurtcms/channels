@@ -309,7 +309,7 @@ func (Ch ChannelModel) Channellist(limit, offset int, filter Filter, activestatu
 
 	if activestatus {
 
-		query = query.Where("is_active=1")
+		query = query.Where("tbl_channels.is_active=1")
 
 	}
 
