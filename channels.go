@@ -912,3 +912,60 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 	}
 	return nil
 }
+
+// Get channel count
+func (channel *Channel) GetChannelCount() (count int, err error) {
+
+	var chcount int64
+
+	err = CH.GetChannelCount(&chcount, channel.DB)
+
+	if err != nil {
+
+		return 0, err
+	}
+
+	return int(chcount), nil
+
+}
+
+func (channel *Channel) GetChannelsWithEntries() ([]Tblchannel, error) {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return []Tblchannel{}, autherr
+	}
+
+	var channel_contents []Tblchannel
+
+	err := CH.GetChannels(&channel_contents, channel.DB)
+
+	if err != nil {
+
+		fmt.Println(err)
+
+		return []Tblchannel{}, err
+	}
+
+	var FinalChannellist []Tblchannel
+
+	for _, chn := range channel_contents {
+
+		var channel_entries []TblChannelEntries
+
+		CH.GetChannelEntriesByChannelId(&channel_entries, chn.Id, channel.DB)
+
+		if len(channel_entries) > 0 {
+
+			chn.ChannelEntries = channel_entries
+
+			FinalChannellist = append(FinalChannellist, chn)
+
+		}
+	}
+
+	return FinalChannellist, nil
+
+}

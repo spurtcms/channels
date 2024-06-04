@@ -26,7 +26,7 @@ type Tblchannel struct {
 	ModifiedBy         int                 `gorm:"column:modified_by;DEFAULT:NULL"`
 	DateString         string              `gorm:"-"`
 	EntriesCount       int                 `gorm:"-"`
-	ChannelEntries     []Tblchannelentries `gorm:"-"`
+	ChannelEntries     []TblChannelEntries `gorm:"-"`
 	ProfileImagePath   string              `gorm:"-;<-:false"`
 	Username           string              `gorm:"<-:false"`
 }
@@ -635,6 +635,38 @@ func (Ch ChannelModel) UpdateFieldOption(fdoption *TblFieldOption, id int, DB *g
 func (Ch ChannelModel) CreateFieldOption(optval *TblFieldOption, DB *gorm.DB) error {
 
 	if err := DB.Table("tbl_field_options").Create(&optval).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+}
+
+func (ch ChannelModel) GetChannelCount(count *int64, DB *gorm.DB) error {
+
+	if err := DB.Debug().Table("tbl_channels").Distinct("tbl_channels.id").Joins("inner join tbl_channel_entries on tbl_channel_entries.channel_id = tbl_channels.id").
+		Joins("inner join tbl_channel_categories on tbl_channel_categories.channel_id = tbl_channels.id").
+		Where("tbl_channels.is_deleted = 0 and tbl_channels.is_active = 1 and tbl_channel_entries.status = 1").Count(count).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+}
+
+func (ch ChannelModel) GetChannels(channels *[]Tblchannel, DB *gorm.DB) error {
+
+	if err := DB.Table("tbl_channels").Where("is_deleted = 0 and is_active = 1").Find(&channels).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+}
+
+func (ch ChannelModel) GetChannelEntriesByChannelId(channel_entries *[]TblChannelEntries, channel_id int, DB *gorm.DB) error {
+
+	if err := DB.Table("tbl_channel_entries").Where("tbl_channel_entries.is_deleted = 0 and tbl_channel_entries.status = 1 and tbl_channel_entries.channel_id = ?", channel_id).Find(&channel_entries).Error; err != nil {
 
 		return err
 	}
