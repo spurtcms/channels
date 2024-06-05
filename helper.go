@@ -224,3 +224,23 @@ func (channel *Channel) RemoveEntriesCoverImage(ImagePath string) error {
 	return nil
 
 }
+
+func (channel *Channel) GetPermissionChannel() (channels []Tblchannel, errr error) {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return []Tblchannel{}, autherr
+	}
+
+	channelss, err := CH.GetPermissionChannel(channel, channel.DB)
+
+	if err != nil {
+
+		return []Tblchannel{}, err
+	}
+
+	return channelss, nil
+
+}

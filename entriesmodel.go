@@ -160,12 +160,15 @@ type RecentActivities struct {
 	Channelname string
 }
 
-type EntriesModel struct{}
+type EntriesModel struct {
+	Userid     int
+	Dataaccess int
+}
 
 var EntryModel EntriesModel
 
 /*List Channel Entry*/
-func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, categoryid string, DB *gorm.DB) (chentry []Tblchannelentries, chentcount int64, err error) {
+func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, categoryid string, createonly bool, DB *gorm.DB) (chentry []Tblchannelentries, chentcount int64, err error) {
 
 	query := DB.Model(TblChannelEntries{}).Select("tbl_channel_entries.*,tbl_users.username,tbl_channels.channel_name").Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Joins("inner join tbl_channels on tbl_channels.id = tbl_channel_entries.channel_id").Where("tbl_channel_entries.is_deleted=0").Order("id desc")
 
@@ -608,6 +611,16 @@ func (Ch EntriesModel) DeleteSelectedChannelEntryId(chentry *TblChannelEntries, 
 func (Ch EntriesModel) DeleteSelectedChannelEntryFieldId(chentry *TblChannelEntryField, id []int, DB *gorm.DB) error {
 
 	if err := DB.Debug().Table("tbl_channel_entry_fields").Where("channel_entry_id IN (?)", id).UpdateColumns(map[string]interface{}{"deleted_by": chentry.DeletedBy, "deleted_on": chentry.DeletedOn}).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+}
+
+func (ch ChannelModel) GetChannelEntriesByChannelId(channel_entries *[]TblChannelEntries, channel_id int, DB *gorm.DB) error {
+
+	if err := DB.Table("tbl_channel_entries").Where("tbl_channel_entries.is_deleted = 0 and tbl_channel_entries.status = 1 and tbl_channel_entries.channel_id = ?", channel_id).Find(&channel_entries).Error; err != nil {
 
 		return err
 	}

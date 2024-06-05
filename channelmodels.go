@@ -286,7 +286,10 @@ type FieldValueId struct {
 	CValue int
 }
 
-type ChannelModel struct{}
+type ChannelModel struct {
+	Userid     int
+	Dataaccess int
+}
 
 var CH ChannelModel
 
@@ -296,9 +299,13 @@ func IsDeleted(db *gorm.DB) *gorm.DB {
 }
 
 /*channel list*/
-func (Ch ChannelModel) Channellist(limit, offset int, filter Filter, activestatus bool, DB *gorm.DB) (chn []Tblchannel, chcount int64, err error) {
+func (Ch ChannelModel) Channellist(limit, offset int, filter Filter, activestatus bool, createonly bool, DB *gorm.DB) (chn []Tblchannel, chcount int64, err error) {
 
 	query := DB.Model(TblChannel{}).Select("tbl_channels.*,tbl_users.username").Where("tbl_channels.is_deleted=0").Order("id desc")
+
+	if createonly && Ch.Dataaccess == 1 {
+		query = query.Where("tbl_channels.created_by = ?", Ch.Userid)
+	}
 
 	query.Joins("inner join tbl_users on tbl_users.id = tbl_channels.created_by")
 
@@ -664,12 +671,20 @@ func (ch ChannelModel) GetChannels(channels *[]Tblchannel, DB *gorm.DB) error {
 	return nil
 }
 
-func (ch ChannelModel) GetChannelEntriesByChannelId(channel_entries *[]TblChannelEntries, channel_id int, DB *gorm.DB) error {
+func (ch ChannelModel) GetPermissionChannel(channels *Channel, DB *gorm.DB) (channel []Tblchannel, err error) {
 
-	if err := DB.Table("tbl_channel_entries").Where("tbl_channel_entries.is_deleted = 0 and tbl_channel_entries.status = 1 and tbl_channel_entries.channel_id = ?", channel_id).Find(&channel_entries).Error; err != nil {
+	query := DB.Table("tbl_channels").Where("is_deleted=0 and is_active=1")
 
-		return err
+	if channels.PermissionEnable && channels.Auth.RoleId != 1 {
+
+		query = query.Where("channel_name in (select display_name from tbl_module_permissions inner join tbl_modules on tbl_modules.id = tbl_module_permissions.module_id inner join tbl_role_permissions on tbl_role_permissions.permission_id = tbl_module_permissions.id where role_id =(?) and tbl_modules.module_name='Entries') ", channels.Auth.RoleId)
+
 	}
 
-	return nil
+	if err := query.Find(&channel).Error; err != nil {
+
+		return channel, err
+	}
+
+	return channel, nil
 }

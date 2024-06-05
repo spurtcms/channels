@@ -46,11 +46,11 @@ func (channel *Channel) ChannelEntriesList(entry Entries) (entries []Tblchannele
 		categoryid = CategoriesByUsingName(entry.CategoryName, channel.DB)
 	}
 
-	chnentry, _, _ := EntryModel.ChannelEntryList(entry, channel, categoryid, channel.DB)
+	chnentry, _, _ := EntryModel.ChannelEntryList(entry, channel, categoryid, true, channel.DB)
 
-	_, filtercount, _ := EntryModel.ChannelEntryList(Entries{Limit: 0, Offset: 0, Keyword: entry.Keyword, ChannelName: entry.ChannelName, Status: entry.Status, Title: entry.Title, UserName: entry.UserName, Publishedonly: entry.Publishedonly, ActiveChannelEntriesonly: entry.ActiveChannelEntriesonly, CategoryId: entry.CategoryId, MemberAccessControl: entry.MemberAccessControl, ChannelId: entry.ChannelId}, channel, categoryid, channel.DB)
+	_, filtercount, _ := EntryModel.ChannelEntryList(Entries{Limit: 0, Offset: 0, Keyword: entry.Keyword, ChannelName: entry.ChannelName, Status: entry.Status, Title: entry.Title, UserName: entry.UserName, Publishedonly: entry.Publishedonly, ActiveChannelEntriesonly: entry.ActiveChannelEntriesonly, CategoryId: entry.CategoryId, MemberAccessControl: entry.MemberAccessControl, ChannelId: entry.ChannelId}, channel, categoryid, true, channel.DB)
 
-	_, entrcount, _ := EntryModel.ChannelEntryList(Entries{Limit: 0, Offset: 0, Keyword: entry.Keyword, ChannelName: entry.ChannelName, Status: entry.Status, Title: entry.Title, UserName: entry.UserName, Publishedonly: entry.Publishedonly, ActiveChannelEntriesonly: entry.ActiveChannelEntriesonly, CategoryId: entry.CategoryId, MemberAccessControl: entry.MemberAccessControl, ChannelId: entry.ChannelId}, channel, categoryid, channel.DB)
+	_, entrcount, _ := EntryModel.ChannelEntryList(Entries{Limit: 0, Offset: 0, Keyword: entry.Keyword, ChannelName: entry.ChannelName, Status: entry.Status, Title: entry.Title, UserName: entry.UserName, Publishedonly: entry.Publishedonly, ActiveChannelEntriesonly: entry.ActiveChannelEntriesonly, CategoryId: entry.CategoryId, MemberAccessControl: entry.MemberAccessControl, ChannelId: entry.ChannelId}, channel, categoryid, true, channel.DB)
 
 	var final_entries_list []Tblchannelentries
 

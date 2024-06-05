@@ -37,7 +37,11 @@ func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestat
 		return []Tblchannel{}, 0, autherr
 	}
 
-	channellist, _, _ := CH.Channellist(limit, offset, filter, activestatus, channel.DB)
+	CH.Userid = channel.Userid
+
+	CH.Dataaccess = channel.DataAccess
+
+	channellist, _, _ := CH.Channellist(limit, offset, filter, activestatus, true, channel.DB)
 
 	var chnallist []Tblchannel
 
@@ -49,7 +53,7 @@ func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestat
 
 		if entriescount {
 
-			_, entrcount, _ := EntryModel.ChannelEntryList(Entries{}, channel, Empty, channel.DB)
+			_, entrcount, _ := EntryModel.ChannelEntryList(Entries{}, channel, Empty, true, channel.DB)
 
 			val.EntriesCount = int(entrcount)
 		}
@@ -58,7 +62,7 @@ func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestat
 
 	}
 
-	_, chcount, _ := CH.Channellist(0, 0, filter, activestatus, channel.DB)
+	_, chcount, _ := CH.Channellist(0, 0, filter, activestatus, true, channel.DB)
 
 	return chnallist, int(chcount), nil
 }

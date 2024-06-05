@@ -25,4 +25,6 @@ type Channel struct {
 	AuthEnable       bool
 	PermissionEnable bool
 	Auth             *auth.Auth
+	Userid           int
+	DataAccess       int
 }
