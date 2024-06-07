@@ -23,26 +23,21 @@ func (channel *Channel) ChannelEntriesList(entry Entries) (entries []Tblchannele
 	if entry.Status == "Draft" {
 
 		entry.Status = "0"
-
 	} else if entry.Status == "Published" {
 
 		entry.Status = "1"
-
 	} else if entry.Status == "Unpublished" {
 
 		entry.Status = "2"
 	}
 
 	var categoryid string
-
 	if entry.CategoryId != 0 && entry.CategoryId > 0 {
 
 		categoryid = Categories(entry.CategoryId, channel.DB)
-
 	}
 
 	if entry.CategoryName != "" {
-
 		categoryid = CategoriesByUsingName(entry.CategoryName, channel.DB)
 	}
 
@@ -59,66 +54,52 @@ func (channel *Channel) ChannelEntriesList(entry Entries) (entries []Tblchannele
 		if entry.AuthorDetails {
 
 			authorDetails, _ := EntryModel.GetAuthorDetails(channel.DB, entries.CreatedBy)
-
 			if authorDetails.AuthorID != 0 {
 
 				var modified_profileImage string
-
 				if authorDetails.ProfileImagePath != nil {
-
 					modified_profileImage = entry.ImageUrlPath + *authorDetails.ProfileImagePath
 				}
 
 				authorDetails.ProfileImagePath = &modified_profileImage
-
 				entries.AuthorDetail = authorDetails
 			}
 
 		}
 
-		var memberId string
-
-		var final_fieldsList []tblfield
+		var (
+			memberId         string
+			final_fieldsList []tblfield
+		)
 
 		if entry.AdditionalFields {
 
 			sections, _ := EntryModel.GetSectionsUnderEntries(channel.DB, entries.ChannelId, entry.FieldTypeId)
-
 			entries.Sections = sections
-
 			fields, _ := EntryModel.GetFieldsInEntries(channel.DB, entries.ChannelId, entry.FieldTypeId)
 
 			for _, field := range fields {
 
 				var modified_field_path string
-
 				if field.ImagePath != "" {
-
 					modified_field_path = entry.ImageUrlPath + strings.TrimPrefix(field.ImagePath, "/")
 				}
 
 				field.ImagePath = modified_field_path
-
 				fieldValue, _ := EntryModel.GetFieldValue(channel.DB, field.Id, entries.Id)
 
 				if fieldValue.Id != 0 {
-
 					field.FieldValue = fieldValue
-
 					if field.FieldTypeId == entry.MemberFieldTypeId {
-
 						memberId = fieldValue.FieldValue
 					}
 				}
 
 				fieldOptions, _ := EntryModel.GetFieldOptions(channel.DB, field.Id)
-
 				if len(fieldOptions) > 0 {
-
 					field.FieldOptions = fieldOptions
 
 				}
-
 				final_fieldsList = append(final_fieldsList, field)
 			}
 		}
@@ -126,56 +107,48 @@ func (channel *Channel) ChannelEntriesList(entry Entries) (entries []Tblchannele
 		if entry.MemberProfile {
 
 			entries.Fields = final_fieldsList
-
 			conv_memid, _ := strconv.Atoi(memberId)
-
 			memberProfile, _ := EntryModel.GetMemberProfile(channel.DB, conv_memid)
-
 			var modified_profile_path string
-
 			if memberProfile.CompanyLogo != "" {
-
 				modified_profile_path = entry.ImageUrlPath + strings.TrimPrefix(memberProfile.CompanyLogo, "/")
 			}
 
 			memberProfile.CompanyLogo = modified_profile_path
-
 			entries.MemberProfiles = memberProfile
-
 		}
 
 		splittedArr := strings.Split(entries.CategoriesId, ",")
 
-		var parentCatId int
-
-		var indivCategories [][]categories.TblCategories
+		var (
+			parentCatId     int
+			indivCategories [][]categories.TblCategories
+		)
 
 		for _, catId := range splittedArr {
 
 			conv_id, _ := strconv.Atoi(catId)
 
-			var indivCategory []categories.TblCategories
+			var (
+				indivCategory          []categories.TblCategories
+				modified_category_path string
+			)
 
 			category, _ := EntryModel.GetGraphqlEntriesCategoryByParentId(channel.DB, conv_id)
 
-			var modified_category_path string
-
 			if category.ImagePath != "" {
-
 				modified_category_path = entry.ImageUrlPath + strings.TrimPrefix(category.ImagePath, "/")
 			}
 
 			category.ImagePath = modified_category_path
 
 			if category.Id != 0 {
-
 				indivCategory = append(indivCategory, category)
 			}
 
 			parentCatId = category.ParentId
 
 			if parentCatId != 0 {
-
 				var count int
 
 			LOOP:
@@ -183,35 +156,24 @@ func (channel *Channel) ChannelEntriesList(entry Entries) (entries []Tblchannele
 				for {
 
 					count = count + 1 //count increment used to check how many times the loop gets executed
-
 					parentCategory, _ := EntryModel.GetGraphqlEntriesCategoryByParentId(channel.DB, parentCatId)
-
 					var modified_category_path string
-
 					if parentCategory.ImagePath != "" {
-
 						modified_category_path = entry.ImageUrlPath + strings.TrimPrefix(parentCategory.ImagePath, "/")
 					}
 
 					parentCategory.ImagePath = modified_category_path
-
 					if parentCategory.Id != 0 {
-
 						indivCategory = append(indivCategory, parentCategory)
 					}
 
 					parentCatId = parentCategory.ParentId
 
 					if parentCatId != 0 { //mannuall condition to break the loop in overlooping situations
-
 						goto LOOP
-
 					} else if count > 49 {
-
 						break //use to break the loop if infinite loop doesn't break ,So forcing the loop to break at overlooping conditions
-
 					} else {
-
 						break
 					}
 
@@ -220,20 +182,17 @@ func (channel *Channel) ChannelEntriesList(entry Entries) (entries []Tblchannele
 			}
 
 			if len(indivCategory) > 0 {
-
 				sort.SliceStable(indivCategory, func(i, j int) bool {
 
 					return indivCategory[i].Id < indivCategory[j].Id
 
 				})
-
 				indivCategories = append(indivCategories, indivCategory)
 			}
 
 		}
 
 		entries.Categories = indivCategories
-
 		final_entries_list = append(final_entries_list, entries)
 	}
 
@@ -252,7 +211,6 @@ func (channel *Channel) EntryDetailsById(Ent IndivEntriesReq) (Tblchannelentries
 	}
 
 	Entry, err := EntryModel.GetChannelEntryById(Ent, channel.DB)
-
 	if err != nil {
 
 		return Tblchannelentries{}, nil
@@ -265,12 +223,9 @@ func (channel *Channel) EntryDetailsById(Ent IndivEntriesReq) (Tblchannelentries
 		if authorDetails.AuthorID != 0 {
 
 			var modified_profileImage string
-
 			if authorDetails.ProfileImagePath != nil {
-
 				modified_profileImage = Ent.ImageUrlPath + *authorDetails.ProfileImagePath
 			}
-
 			authorDetails.ProfileImagePath = &modified_profileImage
 
 			Entry.AuthorDetail = authorDetails
@@ -818,6 +773,28 @@ func (channel *Channel) DeleteSelectedEntry(Entryid []int, modifiedby int) (bool
 		fmt.Println(err)
 
 		return false, err1
+	}
+
+	return true, nil
+
+}
+
+// MULTI SELECTE ENTRY UNPUBLISHED FUNCTION//
+func (channel *Channel) UnpublishSelectedEntry(entryid []int, status int, modifiedby int) (bool, error) {
+
+	autherr := AuthandPermission(channel)
+	if autherr != nil {
+		return false, autherr
+	}
+
+	var entries TblChannelEntries
+	entries.Status = status
+	entries.ModifiedBy = modifiedby
+	entries.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	err := EntryModel.UnpublishSelectedChannelEntryId(&entries, entryid, channel.DB)
+
+	if err != nil {
+		return false, err
 	}
 
 	return true, nil

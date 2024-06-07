@@ -627,3 +627,15 @@ func (ch ChannelModel) GetChannelEntriesByChannelId(channel_entries *[]TblChanne
 
 	return nil
 }
+
+// UNPUBLISH MULTI SELECT ENTRY//
+func (Ch EntriesModel) UnpublishSelectedChannelEntryId(chentry *TblChannelEntries, id []int, DB *gorm.DB) error {
+
+	if err := DB.Debug().Table("tbl_channel_entries").Where("id IN (?)", id).UpdateColumns(map[string]interface{}{"status": chentry.Status, "modified_by": chentry.ModifiedBy, "modified_on": chentry.ModifiedOn}).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+
+}

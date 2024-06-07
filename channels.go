@@ -38,7 +38,6 @@ func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestat
 	}
 
 	CH.Userid = channel.Userid
-
 	CH.Dataaccess = channel.DataAccess
 
 	channellist, _, _ := CH.Channellist(limit, offset, filter, activestatus, true, channel.DB)
@@ -48,20 +47,16 @@ func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestat
 	for _, val := range channellist {
 
 		val.SlugName = val.ChannelDescription
-
 		val.ChannelDescription = TruncateDescription(val.ChannelDescription, 130)
 
 		if entriescount {
-
 			_, entrcount, _ := EntryModel.ChannelEntryList(Entries{}, channel, Empty, true, channel.DB)
-
 			val.EntriesCount = int(entrcount)
 		}
 
 		chnallist = append(chnallist, val)
 
 	}
-
 	_, chcount, _ := CH.Channellist(0, 0, filter, activestatus, true, channel.DB)
 
 	return chnallist, int(chcount), nil
@@ -79,19 +74,12 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate) (TblChannel, 
 
 	/*create channel*/
 	var cchannel TblChannel
-
 	cchannel.ChannelName = channelcreate.ChannelName
-
 	cchannel.ChannelDescription = channelcreate.ChannelDescription
-
 	cchannel.SlugName = strings.ToLower(strings.ReplaceAll(channelcreate.ChannelName, " ", " "))
-
 	cchannel.IsActive = 1
-
 	cchannel.CreatedBy = channelcreate.CreatedBy
-
 	cchannel.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-
 	ch, chanerr := CH.CreateChannel(&cchannel, channel.DB)
 
 	if chanerr != nil {
@@ -101,39 +89,24 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate) (TblChannel, 
 
 	/*This is for module permission creation*/
 	var modperms permission.TblModulePermission
-
 	modperms.DisplayName = ch.ChannelName
-
 	modperms.RouteName = "/channel/entrylist/" + strconv.Itoa(ch.Id)
-
 	modperms.SlugName = strings.ReplaceAll(strings.ToLower(ch.ChannelName), " ", "_")
-
 	modperms.CreatedBy = channelcreate.CreatedBy
-
 	modperms.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-
 	modperms.ModuleId = 8
-
 	modperms.AssignPermission = 1
-
 	modperms.OrderIndex = 2
-
 	modperms.FullAccessPermission = 1
 
 	permission.AS.CreateModulePermission(&modperms, channel.DB)
 
 	for _, categoriesid := range channelcreate.CategoryIds {
-
 		var channelcategory TblChannelCategorie
-
 		channelcategory.ChannelId = ch.Id
-
 		channelcategory.CategoryId = categoriesid
-
 		channelcategory.CreatedAt = channelcreate.CreatedBy
-
 		channelcategory.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-
 		err := CH.CreateChannelCategory(&channelcategory, channel.DB)
 
 		if err != nil {
@@ -166,22 +139,15 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 	}
 
 	var TempSections []tempsection
-
 	/*create Section*/
 	for _, sectionvalue := range channelcreate.Sections {
-
 		var cfld TblField
-
 		cfld.FieldName = strings.TrimSpace(sectionvalue.SectionName)
-
 		cfld.FieldTypeId = sectionvalue.MasterFieldId
-
 		cfld.CreatedBy = channelcreate.CreatedBy
-
 		cfld.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
 		cfid, fiderr := CH.CreateFields(&cfld, channel.DB)
-
 		if fiderr != nil {
 
 			fmt.Println(fiderr)
@@ -189,13 +155,9 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 
 		/*create group field*/
 		var grpfield TblGroupField
-
 		grpfield.ChannelId = channelid
-
 		grpfield.FieldId = cfid.Id
-
 		grpfielderr := CH.CreateGroupField(&grpfield, channel.DB)
-
 		if grpfielderr != nil {
 
 			fmt.Println(grpfielderr)
@@ -203,13 +165,9 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 		}
 
 		var TempSection tempsection
-
 		TempSection.Id = cfid.Id
-
 		TempSection.SectionId = sectionvalue.SectionId
-
 		TempSection.NewSectionId = sectionvalue.SectionNewId
-
 		TempSections = append(TempSections, TempSection)
 
 	}
@@ -218,21 +176,13 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 	for _, val := range channelcreate.FieldValues {
 
 		var cfld TblField
-
 		cfld.FieldName = strings.TrimSpace(val.FieldName)
-
 		cfld.FieldTypeId = val.MasterFieldId
-
 		cfld.CreatedBy = channelcreate.CreatedBy
-
 		cfld.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-
 		cfld.OrderIndex = val.OrderIndex
-
 		cfld.ImagePath = val.IconPath
-
 		cfld.CharacterAllowed = val.CharacterAllowed
-
 		cfld.Url = val.Url
 
 		if val.MasterFieldId == 4 {
