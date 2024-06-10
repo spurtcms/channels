@@ -50,7 +50,7 @@ func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestat
 		val.ChannelDescription = TruncateDescription(val.ChannelDescription, 130)
 
 		if entriescount {
-			_, entrcount, _ := EntryModel.ChannelEntryList(Entries{}, channel, Empty, true, channel.DB)
+			_, entrcount, _ := EntryModel.ChannelEntryList(Entries{ChannelId: val.Id}, channel, Empty, true, channel.DB)
 			val.EntriesCount = int(entrcount)
 		}
 

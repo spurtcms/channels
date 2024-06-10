@@ -86,12 +86,12 @@ type Entries struct {
 	CategoryId               int    //filter
 	CategoryName             string //filter
 	SelectedCategoryFilter   bool   //selected category filter or selected category child filter also
-	Publishedonly            bool   //if this will be enable published entries only show
-	ActiveChannelEntriesonly bool   //if this will be enable active channel entries only show
-	MemberProfile            bool   //if you want member profile pls enable memberprofile true
-	AdditionalFields         bool   //if you want additionalfields pls enable additionalfields true
-	AuthorDetails            bool   //if you want authordetails pls enable authordetails true
-	ContentHide              bool   //if you want hide content only for memberaccesscontrol enable true otherwise it doesn't fetch the entry
+	Publishedonly            bool   //if you want published entries only set true
+	ActiveChannelEntriesonly bool   //if you want active channel entries only set true
+	MemberProfile            bool   //if you want member profile set true
+	AdditionalFields         bool   //if you want additionalfields set true
+	AuthorDetails            bool   //if you want authordetails set true
+	ContentHide              bool   //if you want hide content only for memberaccesscontrol set true otherwise it doesn't fetch the entry
 	MemberAccessControl      bool
 	MemberId                 int
 	ImageUrlPath             string
@@ -102,9 +102,9 @@ type Entries struct {
 type IndivEntriesReq struct {
 	ChannelName       string
 	EntryId           int
-	MemberProfile     bool //if you want member profile pls enable memberprofile true
-	AdditionalFields  bool //if you want additionalfields pls enable additionalfields true
-	AuthorDetails     bool //if you want authordetails pls enable authordetails true
+	MemberProfile     bool //if you want member profile set true
+	AdditionalFields  bool //if you want additionalfields set true
+	AuthorDetails     bool //if you want authordetails set true
 	ContentHide       bool //if you want show entries name without content enable true, ensure want hide content only must be restricted in memberaccess
 	CategoriesEnable  bool //
 	MemberId          int
