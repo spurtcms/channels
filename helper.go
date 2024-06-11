@@ -236,11 +236,29 @@ func (channel *Channel) GetPermissionChannel() (channels []Tblchannel, errr erro
 
 	channelss, err := CH.GetPermissionChannel(channel, channel.DB)
 
+	var chnallist []Tblchannel
+
+	for _, val := range channelss {
+
+		val.SlugName = val.ChannelDescription
+		val.ChannelDescription = TruncateDescription(val.ChannelDescription, 130)
+
+		entriescount := true
+
+		if entriescount {
+			_, entrcount,_  := EntryModel.ChannelEntryList(Entries{ChannelId: val.Id}, channel, Empty, true, channel.DB)
+			val.EntriesCount = int(entrcount)
+		}
+
+		chnallist = append(chnallist, val)
+
+	}
+
 	if err != nil {
 
 		return []Tblchannel{}, err
 	}
 
-	return channelss, nil
+	return chnallist, nil
 
 }
