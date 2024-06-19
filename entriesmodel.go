@@ -178,6 +178,12 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 
 	}
 
+	if Ch.Dataaccess == 1 {
+
+		query = query.Where("tbl_channel_entries.created_by=?", Ch.Userid)
+
+	}
+
 	if filter.ActiveChannelEntriesonly {
 
 		query = query.Where("tbl_channels.is_active =1")

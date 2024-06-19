@@ -1,6 +1,6 @@
 module github.com/spurtcms/channels
 
-go 1.19
+go 1.20
 
 require (
 	github.com/spurtcms/auth v0.0.6

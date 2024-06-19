@@ -83,7 +83,7 @@ type TblFieldOption struct {
 	IsDeleted   int       `gorm:"column:is_deleted;DEFAULT:0"`
 	DeletedOn   time.Time `gorm:"column:deleted_on;DEFAULT:NULL"`
 	DeletedBy   int       `gorm:"column:deleted_by;DEFAULT:NULL"`
-	Idstring    string    `gorm:"-:migration"`
+	Idstring    string    `gorm:"-:migration;<-:false"`
 }
 
 type tblfield struct {
