@@ -76,7 +76,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate) (TblChannel, 
 	var cchannel TblChannel
 	cchannel.ChannelName = channelcreate.ChannelName
 	cchannel.ChannelDescription = channelcreate.ChannelDescription
-	cchannel.SlugName = strings.ToLower(strings.ReplaceAll(channelcreate.ChannelName, " ", " "))
+	cchannel.SlugName = strings.ToLower(strings.ReplaceAll(channelcreate.ChannelName, " ", "-"))
 	cchannel.IsActive = 1
 	cchannel.CreatedBy = channelcreate.CreatedBy
 	cchannel.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
@@ -564,7 +564,7 @@ func (channel *Channel) EditChannel(ChannelName string, ChannelDescription strin
 
 	var modpermissionupdate permission.TblModulePermission
 
-	modpermissionupdate.SlugName = ChannelName
+	modpermissionupdate.SlugName = strings.ReplaceAll(strings.ToLower(ChannelName), " ", "-")
 
 	modpermissionupdate.RouteName = "/channel/entrylist/" + strconv.Itoa(channelid)
 
