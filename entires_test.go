@@ -28,7 +28,7 @@ func TestChannelEntriesList(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -39,7 +39,7 @@ func TestChannelEntriesList(t *testing.T) {
 
 	if permisison {
 
-		entries, fitlercount, totolcount, err := channel.ChannelEntriesList(Entries{Limit: 10, Offset: 0, Publishedonly: false})
+		entries, fitlercount, totolcount, err := channel.ChannelEntriesList(Entries{Limit: 10, Offset: 0, Publishedonly: false}, TenantId)
 
 		if err != nil {
 
@@ -75,7 +75,7 @@ func TestEntryDetailsById(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -86,7 +86,7 @@ func TestEntryDetailsById(t *testing.T) {
 
 	if permisison {
 
-		entries, err := channel.EntryDetailsById(IndivEntriesReq{EntryId: 1, MemberProfile: true})
+		entries, err := channel.EntryDetailsById(IndivEntriesReq{EntryId: 1, MemberProfile: true}, TenantId)
 
 		if err != nil {
 
@@ -120,7 +120,7 @@ func TestCreateEntry(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -131,7 +131,7 @@ func TestCreateEntry(t *testing.T) {
 
 	if permisison {
 
-		entries, flg, err := channel.CreateEntry(EntriesRequired{Title: "java", Content: "about java", ChannelId: 3})
+		entries, flg, err := channel.CreateEntry(EntriesRequired{Title: "java", Content: "about java", ChannelId: 3}, TenantId)
 
 		if err != nil {
 
@@ -166,7 +166,7 @@ func TestCreateChannelEntryFields(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -179,7 +179,7 @@ func TestCreateChannelEntryFields(t *testing.T) {
 
 		err := channel.CreateChannelEntryFields(1, 2, []AdditionalFields{
 			{Id: 1, FieldName: "title", FieldValue: "demouser"},
-		})
+		}, 1)
 
 		if err != nil {
 
@@ -215,7 +215,7 @@ func TestUpdateEntry(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -226,7 +226,7 @@ func TestUpdateEntry(t *testing.T) {
 
 	if permisison {
 
-		flg, err := channel.UpdateEntry(EntriesRequired{Title: "default2", Content: "default2"}, "default", 1)
+		flg, err := channel.UpdateEntry(EntriesRequired{Title: "default2", Content: "default2"}, "default", 1, TenantId)
 
 		if err != nil {
 
@@ -260,7 +260,7 @@ func TestUpdateAdditionalField(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -271,7 +271,7 @@ func TestUpdateAdditionalField(t *testing.T) {
 
 	if permisison {
 
-		flg, err := channel.UpdateAdditionalField([]AdditionalFields{{Id: 1, FieldName: "title", FieldValue: "sam"}}, 1)
+		flg, err := channel.UpdateAdditionalField([]AdditionalFields{{Id: 1, FieldName: "title", FieldValue: "sam"}}, 1, TenantId)
 
 		if err != nil {
 
@@ -306,7 +306,7 @@ func TestDeleteEntry(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -317,7 +317,7 @@ func TestDeleteEntry(t *testing.T) {
 
 	if permisison {
 
-		flg,err := channel.DeleteEntry("Default_Channel",1, 1)
+		flg, err := channel.DeleteEntry("Default_Channel", 1, 1, TenantId)
 
 		if err != nil {
 
@@ -352,7 +352,7 @@ func TestMakeFeatureEntry(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -363,7 +363,7 @@ func TestMakeFeatureEntry(t *testing.T) {
 
 	if permisison {
 
-		flg, err := channel.MakeFeatureEntry(1, 1, 1)
+		flg, err := channel.MakeFeatureEntry(1, 1, 1, TenantId)
 
 		if err != nil {
 
@@ -399,7 +399,7 @@ func TestEntryStatus(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -410,7 +410,7 @@ func TestEntryStatus(t *testing.T) {
 
 	if permisison {
 
-		flg, err := channel.EntryStatus("default",1, 1, 1)
+		flg, err := channel.EntryStatus("default", 1, 1, 1, TenantId)
 
 		if err != nil {
 

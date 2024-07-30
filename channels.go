@@ -28,7 +28,7 @@ func ChannelSetup(config Config) *Channel {
 }
 
 // get all channel list
-func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestatus bool, entriescount bool) (channelList []Tblchannel, channelcount int, err error) {
+func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestatus bool, entriescount bool, tenantid int) (channelList []Tblchannel, channelcount int, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -40,7 +40,7 @@ func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestat
 	CH.Userid = channel.Userid
 	CH.Dataaccess = channel.DataAccess
 
-	channellist, _, _ := CH.Channellist(limit, offset, filter, activestatus, true, channel.DB)
+	channellist, _, _ := CH.Channellist(limit, offset, filter, activestatus, true, channel.DB, tenantid)
 
 	var chnallist []Tblchannel
 
@@ -50,20 +50,20 @@ func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestat
 		val.ChannelDescription = TruncateDescription(val.ChannelDescription, 130)
 
 		if entriescount {
-			_, entrcount, _ := EntryModel.ChannelEntryList(Entries{ChannelId: val.Id}, channel, Empty, true, channel.DB)
+			_, entrcount, _ := EntryModel.ChannelEntryList(Entries{ChannelId: val.Id}, channel, Empty, true, channel.DB, tenantid)
 			val.EntriesCount = int(entrcount)
 		}
 
 		chnallist = append(chnallist, val)
 
 	}
-	_, chcount, _ := CH.Channellist(0, 0, filter, activestatus, true, channel.DB)
+	_, chcount, _ := CH.Channellist(0, 0, filter, activestatus, true, channel.DB, tenantid)
 
 	return chnallist, int(chcount), nil
 }
 
 /*create channel*/
-func (channel *Channel) CreateChannel(channelcreate ChannelCreate) (TblChannel, error) {
+func (channel *Channel) CreateChannel(channelcreate ChannelCreate, tenantid int) (TblChannel, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -79,6 +79,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate) (TblChannel, 
 	cchannel.SlugName = strings.ToLower(strings.ReplaceAll(channelcreate.ChannelName, " ", "-"))
 	cchannel.IsActive = 1
 	cchannel.CreatedBy = channelcreate.CreatedBy
+	cchannel.TenantId = tenantid
 	cchannel.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 	ch, chanerr := CH.CreateChannel(&cchannel, channel.DB)
 
@@ -98,6 +99,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate) (TblChannel, 
 	modperms.AssignPermission = 1
 	modperms.OrderIndex = 2
 	modperms.FullAccessPermission = 1
+	modperms.TenantId = tenantid
 
 	permission.AS.CreateModulePermission(&modperms, channel.DB)
 
@@ -106,6 +108,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate) (TblChannel, 
 		channelcategory.ChannelId = ch.Id
 		channelcategory.CategoryId = categoriesid
 		channelcategory.CreatedAt = channelcreate.CreatedBy
+		channelcategory.TenantId = tenantid
 		channelcategory.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 		err := CH.CreateChannelCategory(&channelcategory, channel.DB)
 
@@ -116,13 +119,11 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate) (TblChannel, 
 		}
 
 	}
-
 	return ch, nil
-
 }
 
 /*create additional fields*/
-func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalField, channelid int) error {
+func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalField, channelid int, tenantid int) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -145,6 +146,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 		cfld.FieldName = strings.TrimSpace(sectionvalue.SectionName)
 		cfld.FieldTypeId = sectionvalue.MasterFieldId
 		cfld.CreatedBy = channelcreate.CreatedBy
+		cfld.TenantId = tenantid
 		cfld.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
 		cfid, fiderr := CH.CreateFields(&cfld, channel.DB)
@@ -157,6 +159,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 		var grpfield TblGroupField
 		grpfield.ChannelId = channelid
 		grpfield.FieldId = cfid.Id
+		grpfield.TenantId = tenantid
 		grpfielderr := CH.CreateGroupField(&grpfield, channel.DB)
 		if grpfielderr != nil {
 
@@ -232,6 +235,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 			fldopt.FieldId = cfid.Id
 
 			fldopt.CreatedBy = channelcreate.CreatedBy
+			fldopt.TenantId = tenantid
 
 			fldopt.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
@@ -251,6 +255,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 		grpfield.ChannelId = channelid
 
 		grpfield.FieldId = cfid.Id
+		grpfield.TenantId = tenantid
 
 		grpfielderr := CH.CreateGroupField(&grpfield, channel.DB)
 
@@ -266,7 +271,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 }
 
 /*Get channel by name*/
-func (channel *Channel) GetchannelByName(channelname string) (channels Tblchannel, err error) {
+func (channel *Channel) GetchannelByName(channelname string, tenantid int) (channels Tblchannel, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -275,7 +280,7 @@ func (channel *Channel) GetchannelByName(channelname string) (channels Tblchanne
 		return Tblchannel{}, autherr
 	}
 
-	channellist, err1 := CH.GetChannelByChannelName(channelname, channel.DB)
+	channellist, err1 := CH.GetChannelByChannelName(channelname, channel.DB, tenantid)
 
 	if err1 != nil {
 
@@ -287,7 +292,7 @@ func (channel *Channel) GetchannelByName(channelname string) (channels Tblchanne
 }
 
 /*Get Channels By Id*/
-func (channel *Channel) GetChannelsById(channelid int) (channelList Tblchannel, SelectedCategories []categories.Arrangecategories, err error) {
+func (channel *Channel) GetChannelsById(channelid int, tenantid int) (channelList Tblchannel, SelectedCategories []categories.Arrangecategories, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -296,7 +301,7 @@ func (channel *Channel) GetChannelsById(channelid int) (channelList Tblchannel, 
 		return Tblchannel{}, []categories.Arrangecategories{}, autherr
 	}
 
-	channellist, err := CH.GetChannelById(channelid, channel.DB)
+	channellist, err := CH.GetChannelById(channelid, channel.DB, tenantid)
 
 	if err != nil {
 
@@ -304,7 +309,7 @@ func (channel *Channel) GetChannelsById(channelid int) (channelList Tblchannel, 
 
 	}
 
-	GetSelectedChannelCateogry, err1 := CH.GetSelectedCategoryChannelById(channelid, channel.DB)
+	GetSelectedChannelCateogry, err1 := CH.GetSelectedCategoryChannelById(channelid, channel.DB, tenantid)
 
 	if err1 != nil {
 
@@ -326,7 +331,7 @@ func (channel *Channel) GetChannelsById(channelid int) (channelList Tblchannel, 
 			id = append(id, convid)
 		}
 
-		GetSelectedCategory, _ := CH.GetCategoriseById(id, channel.DB)
+		GetSelectedCategory, _ := CH.GetCategoriseById(id, channel.DB, tenantid)
 
 		var addcat categories.Arrangecategories
 
@@ -354,7 +359,7 @@ func (channel *Channel) GetChannelsById(channelid int) (channelList Tblchannel, 
 }
 
 /*get channel fields by channel id*/
-func (channel *Channel) GetChannelsFieldsById(channelid int) (section []Section, fields []Fiedlvalue, err error) {
+func (channel *Channel) GetChannelsFieldsById(channelid int, tenantid int) (section []Section, fields []Fiedlvalue, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -363,7 +368,7 @@ func (channel *Channel) GetChannelsFieldsById(channelid int) (section []Section,
 		return []Section{}, []Fiedlvalue{}, autherr
 	}
 
-	groupfield, _ := CH.GetFieldIdByGroupId(channelid, channel.DB)
+	groupfield, _ := CH.GetFieldIdByGroupId(channelid, channel.DB, tenantid)
 
 	var ids []int
 
@@ -372,7 +377,7 @@ func (channel *Channel) GetChannelsFieldsById(channelid int) (section []Section,
 		ids = append(ids, val.FieldId)
 	}
 
-	fieldValue, _ := CH.GetFieldAndOptionValue(ids, channel.DB)
+	fieldValue, _ := CH.GetFieldAndOptionValue(ids, channel.DB, tenantid)
 
 	var sections []Section
 
@@ -445,7 +450,7 @@ func (channel *Channel) GetChannelsFieldsById(channelid int) (section []Section,
 }
 
 /*Delete Channel*/
-func (channel *Channel) DeleteChannel(channelid, modifiedby int) error {
+func (channel *Channel) DeleteChannel(channelid, modifiedby int, tenantid int) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -459,11 +464,11 @@ func (channel *Channel) DeleteChannel(channelid, modifiedby int) error {
 		return ErrorChannelId
 	}
 
-	CH.DeleteEntryByChannelId(channelid, channel.DB)
+	CH.DeleteEntryByChannelId(channelid, channel.DB, tenantid)
 
-	CH.DeleteChannelById(channelid, channel.DB)
+	CH.DeleteChannelById(channelid, channel.DB, tenantid)
 
-	chdel, _ := CH.GetChannelById(channelid, channel.DB)
+	chdel, _ := CH.GetChannelById(channelid, channel.DB, tenantid)
 
 	var delfidgrp TblFieldGroup
 
@@ -473,7 +478,7 @@ func (channel *Channel) DeleteChannel(channelid, modifiedby int) error {
 
 	delfidgrp.DeletedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
-	CH.DeleteFieldGroupById(&delfidgrp, chdel.FieldGroupId, channel.DB)
+	CH.DeleteFieldGroupById(&delfidgrp, chdel.FieldGroupId, channel.DB, tenantid)
 
 	return nil
 
@@ -481,9 +486,9 @@ func (channel *Channel) DeleteChannel(channelid, modifiedby int) error {
 
 func (channel *Channel) DeleteChannelPermissions(channelid int) error {
 
-	checkid, _ := permission.AS.GetIdByRouteName(strconv.Itoa(channelid), channel.DB)
+	checkid, _ := permission.AS.GetIdByRouteName(strconv.Itoa(channelid), channel.DB,TenantId)
 
-	permission.AS.Deleterolepermission(checkid.Id, channel.DB)
+	permission.AS.Deleterolepermission(checkid.Id, channel.DB,TenantId)
 
 	// permission.AS.DeleteModulePermissioninEntries(channelid, channel.DB)
 
@@ -493,7 +498,7 @@ func (channel *Channel) DeleteChannelPermissions(channelid int) error {
 /*Change Channel status*/
 // status 0 = inactive
 // status 1 = active
-func (channel *Channel) ChangeChannelStatus(channelid int, status, modifiedby int) (bool, error) {
+func (channel *Channel) ChangeChannelStatus(channelid int, status, modifiedby int, tenantid int) (bool, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -513,14 +518,14 @@ func (channel *Channel) ChangeChannelStatus(channelid int, status, modifiedby in
 
 	channelstatus.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
-	CH.ChannelIsActive(&channelstatus, channelid, status, channel.DB)
+	CH.ChannelIsActive(&channelstatus, channelid, status, channel.DB, tenantid)
 
 	return true, nil
 
 }
 
 /*Get All Master Field type */
-func (channel *Channel) GetAllMasterFieldType() (field []TblFieldType, err error) {
+func (channel *Channel) GetAllMasterFieldType(tenantid int) (field []TblFieldType, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -529,7 +534,7 @@ func (channel *Channel) GetAllMasterFieldType() (field []TblFieldType, err error
 		return []TblFieldType{}, autherr
 	}
 
-	fid, err := CH.GetAllField(channel.DB)
+	fid, err := CH.GetAllField(channel.DB, tenantid)
 
 	if err != nil {
 
@@ -541,7 +546,7 @@ func (channel *Channel) GetAllMasterFieldType() (field []TblFieldType, err error
 }
 
 /*Edit channel*/
-func (channel *Channel) EditChannel(ChannelName string, ChannelDescription string, modifiedby int, channelid int, CategoryIds []string) error {
+func (channel *Channel) EditChannel(ChannelName string, ChannelDescription string, modifiedby int, channelid int, CategoryIds []string, tenantid int) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -560,7 +565,7 @@ func (channel *Channel) EditChannel(ChannelName string, ChannelDescription strin
 
 	chn.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
-	CH.UpdateChannelDetails(&chn, channelid, channel.DB)
+	CH.UpdateChannelDetails(&chn, channelid, channel.DB, tenantid)
 
 	var modpermissionupdate permission.TblModulePermission
 
@@ -570,12 +575,12 @@ func (channel *Channel) EditChannel(ChannelName string, ChannelDescription strin
 
 	modpermissionupdate.DisplayName = ChannelName
 
-	CH.UpdateChannelNameInEntries(&modpermissionupdate, channel.DB)
+	CH.UpdateChannelNameInEntries(&modpermissionupdate, channel.DB, tenantid)
 
 	/*channel category create if not exist*/
 	for _, val := range CategoryIds {
 
-		err := CH.CheckChannelCategoryAlreadyExitst(channelid, val, channel.DB)
+		err := CH.CheckChannelCategoryAlreadyExitst(channelid, val, channel.DB, tenantid)
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
@@ -586,6 +591,7 @@ func (channel *Channel) EditChannel(ChannelName string, ChannelDescription strin
 			createCateogry.CategoryId = val
 
 			createCateogry.CreatedAt = modifiedby
+			createCateogry.TenantId = tenantid
 
 			createCateogry.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
@@ -597,20 +603,20 @@ func (channel *Channel) EditChannel(ChannelName string, ChannelDescription strin
 	/*delete categoryid if not exist in array*/
 	var notexistcategory []tblchannelcategory
 
-	CH.GetChannelCategoryNotExist(&notexistcategory, channelid, CategoryIds, channel.DB)
+	CH.GetChannelCategoryNotExist(&notexistcategory, channelid, CategoryIds, channel.DB, tenantid)
 
 	for _, val := range notexistcategory {
 
 		var deletechannelcategory tblchannelcategory
 
-		CH.DeleteChannelCategoryByValue(&deletechannelcategory, val.Id, channel.DB)
+		CH.DeleteChannelCategoryByValue(&deletechannelcategory, val.Id, channel.DB, tenantid)
 
 	}
 
 	return nil
 }
 
-func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid int) error {
+func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid int, tenantid int) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -649,7 +655,7 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 
 		delsection.IsDeleted = 1
 
-		CH.DeleteFieldById(&delsection, delid, channel.DB)
+		CH.DeleteFieldById(&delsection, delid, channel.DB, tenantid)
 
 		var deloption TblFieldOption
 
@@ -659,7 +665,7 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 
 		deloption.IsDeleted = 1
 
-		CH.DeleteOptionById(&deloption, optiondelid, delid, channel.DB)
+		CH.DeleteOptionById(&deloption, optiondelid, delid, channel.DB, tenantid)
 
 	}
 
@@ -681,12 +687,13 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 		cfld.FieldTypeId = val.MasterFieldId
 
 		cfld.CreatedBy = channelupt.ModifiedBy
+		cfld.TenantId = tenantid
 
 		cfld.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
 		if val.SectionId != 0 {
 
-			CH.UpdateFieldDetails(&cfld, val.SectionId, channel.DB)
+			CH.UpdateFieldDetails(&cfld, val.SectionId, channel.DB, tenantid)
 
 			var TempSection tempsection
 
@@ -713,6 +720,7 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 			grpfield.ChannelId = channelid
 
 			grpfield.FieldId = cfid.Id
+			grpfield.TenantId = tenantid
 
 			grpfielderr := CH.CreateGroupField(&grpfield, channel.DB)
 
@@ -793,12 +801,12 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 
 			cfld.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
-			CH.UpdateFieldDetails(&cfld, val.FieldId, channel.DB)
+			CH.UpdateFieldDetails(&cfld, val.FieldId, channel.DB, tenantid)
 
 			createdchannelid = val.FieldId
 
 		} else {
-
+			cfld.TenantId = tenantid
 			cfid, fiderr := CH.CreateFields(&cfld, channel.DB)
 
 			if fiderr != nil {
@@ -813,6 +821,7 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 			grpfield.ChannelId = channelid
 
 			grpfield.FieldId = cfid.Id
+			grpfield.TenantId = tenantid
 
 			grpfielderr := CH.CreateGroupField(&grpfield, channel.DB)
 
@@ -845,11 +854,12 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 
 				fldopt.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
-				CH.UpdateFieldOption(&fldopt, optv.Id, channel.DB)
+				CH.UpdateFieldOption(&fldopt, optv.Id, channel.DB, tenantid)
 
 			} else {
 
 				fldopt.FieldId = createdchannelid
+				fldopt.TenantId = tenantid
 
 				fopterr := CH.CreateFieldOption(&fldopt, channel.DB)
 
@@ -868,11 +878,11 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 }
 
 // Get channel count
-func (channel *Channel) GetChannelCount() (count int, err error) {
+func (channel *Channel) GetChannelCount(tenantid int) (count int, err error) {
 
 	var chcount int64
 
-	err = CH.GetChannelCount(&chcount, channel.DB)
+	err = CH.GetChannelCount(&chcount, channel.DB, tenantid)
 
 	if err != nil {
 
@@ -883,7 +893,7 @@ func (channel *Channel) GetChannelCount() (count int, err error) {
 
 }
 
-func (channel *Channel) GetChannelsWithEntries() ([]Tblchannel, error) {
+func (channel *Channel) GetChannelsWithEntries(tenantid int) ([]Tblchannel, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -894,7 +904,7 @@ func (channel *Channel) GetChannelsWithEntries() ([]Tblchannel, error) {
 
 	var channel_contents []Tblchannel
 
-	err := CH.GetChannels(&channel_contents, channel.DB)
+	err := CH.GetChannels(&channel_contents, channel.DB, tenantid)
 
 	if err != nil {
 
@@ -909,7 +919,7 @@ func (channel *Channel) GetChannelsWithEntries() ([]Tblchannel, error) {
 
 		var channel_entries []TblChannelEntries
 
-		CH.GetChannelEntriesByChannelId(&channel_entries, chn.Id, channel.DB)
+		CH.GetChannelEntriesByChannelId(&channel_entries, chn.Id, channel.DB, tenantid)
 
 		if len(channel_entries) > 0 {
 

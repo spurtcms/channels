@@ -18,27 +18,30 @@ type TblChannel struct {
 	CreatedBy          int       `gorm:"type:int"`
 	ModifiedOn         time.Time `gorm:"type:datetime;DEFAULT:NULL"`
 	ModifiedBy         int       `gorm:"DEFAULT:NULL;type:int"`
+	TenantId           int       `gorm:"type:int"`
 }
 
-type TblChannelCategorie struct {
+type TblChannelCategory struct {
 	Id         int       `gorm:"primaryKey;auto_increment"`
 	ChannelId  int       `gorm:"type:int"`
 	CategoryId string    `gorm:"type:varchar(255)"`
 	CreatedAt  int       `gorm:"type:int"`
 	CreatedOn  time.Time `gorm:"type:datetime"`
+	TenantId   int       `gorm:"type:int"`
 }
 
 type TblGroupField struct {
 	Id        int `gorm:"primaryKey;auto_increment"`
 	ChannelId int `gorm:"type:int"`
 	FieldId   int `gorm:"type:int"`
+	TenantId  int `gorm:"type:int"`
 }
 
-type TblChannelEntrie struct {
+type TblChannelEntry struct {
 	Id              int       `gorm:"primaryKey;auto_increment"`
 	Title           string    `gorm:"type:varchar(255)"`
 	Slug            string    `gorm:"type:varchar(255)"`
-	Description     string    `gorm:"type:varchar(255)"`
+	Description     string    `gorm:"type:text"`
 	UserId          int       `gorm:"type:int"`
 	ChannelId       int       `gorm:"type:int"`
 	Status          int       `gorm:"type:int"` //0-draft 1-publish 2-unpublish
@@ -67,6 +70,7 @@ type TblChannelEntrie struct {
 	IsDeleted       int       `gorm:"DEFAULT:0"`
 	DeletedOn       time.Time `gorm:"type:datetime;DEFAULT:NULL"`
 	DeletedBy       int       `gorm:"DEFAULT:NULL;type:int"`
+	TenantId        int       `gorm:"type:int"`
 }
 
 type TblChannelEntryField struct {
@@ -81,6 +85,7 @@ type TblChannelEntryField struct {
 	ModifiedBy     int       `gorm:"DEFAULT:NULL;type:int"`
 	DeletedBy      int       `gorm:"DEFAULT:NULL;type:int"`
 	DeletedOn      time.Time `gorm:"type:datetime;DEFAULT:NULL"`
+	TenantId       int       `gorm:"type:int"`
 }
 
 type TblField struct {
@@ -106,6 +111,7 @@ type TblField struct {
 	IsDeleted        int       `gorm:"DEFAULT:0"`
 	DeletedOn        time.Time `gorm:"type:datetime;DEFAULT:NULL"`
 	DeletedBy        int       `gorm:"DEFAULT:NULL;type:int"`
+	TenantId         int       `gorm:"type:int"`
 }
 
 type TblFieldGroup struct {
@@ -118,6 +124,7 @@ type TblFieldGroup struct {
 	IsDeleted  int       `gorm:"DEFAULT:0"`
 	DeletedOn  time.Time `gorm:"type:datetime;DEFAULT:NULL"`
 	DeletedBy  int       `gorm:"DEFAULT:NULL;type:int"`
+	TenantId   int       `gorm:"type:int"`
 }
 
 type TblFieldOption struct {
@@ -132,6 +139,7 @@ type TblFieldOption struct {
 	IsDeleted   int       `gorm:"DEFAULT:0"`
 	DeletedOn   time.Time `gorm:"type:datetime;DEFAULT:NULL"`
 	DeletedBy   int       `gorm:"DEFAULT:NULL;type:int"`
+	TenantId    int       `gorm:"type:int"`
 }
 
 type TblFieldType struct {
@@ -144,14 +152,15 @@ type TblFieldType struct {
 	CreatedOn  time.Time `gorm:"type:datetime"`
 	ModifiedBy int       `gorm:"type:int"`
 	ModifiedOn time.Time `gorm:"type:datetime;DEFAULT:NULL"`
+	TenantId   int       `gorm:"type:int"`
 }
 
 // MigrateTable creates this package related tables in your database
 func MigrationTables(db *gorm.DB) {
 
 	if err := db.AutoMigrate(
-		&TblChannelCategorie{},
-		&TblChannelEntrie{},
+		&TblChannelCategory{},
+		&TblChannelEntry{},
 		&TblChannelEntryField{},
 		&TblChannel{},
 		&TblFieldGroup{},

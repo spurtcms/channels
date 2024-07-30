@@ -59,6 +59,7 @@ type Tblchannelentries struct {
 	Tags                 string                       `gorm:"column:tags"`
 	Excerpt              string                       `gorm:"column:excerpt"`
 	ImageAltTag          string                       `gorm:"column:image_alt_tag"`
+	TenantId             int                          `gorm:"type:integer"`
 }
 
 type Author struct {
@@ -168,9 +169,9 @@ type EntriesModel struct {
 var EntryModel EntriesModel
 
 /*List Channel Entry*/
-func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, categoryid string, createonly bool, DB *gorm.DB) (chentry []Tblchannelentries, chentcount int64, err error) {
+func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, categoryid string, createonly bool, DB *gorm.DB, tenantid int) (chentry []Tblchannelentries, chentcount int64, err error) {
 
-	query := DB.Model(TblChannelEntries{}).Select("tbl_channel_entries.*,tbl_users.username,tbl_channels.channel_name").Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Joins("left join tbl_channels on tbl_channels.id = tbl_channel_entries.channel_id").Where("tbl_channel_entries.is_deleted=0").Order("id desc")
+	query := DB.Model(TblChannelEntries{}).Select("tbl_channel_entries.*,tbl_users.username,tbl_channels.channel_name").Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Joins("left join tbl_channels on tbl_channels.id = tbl_channel_entries.channel_id").Where("tbl_channel_entries.is_deleted=0 and tbl_channel_entries.tenant_id=?", tenantid).Order("id desc")
 
 	if channel.PermissionEnable && channel.Auth.RoleId != 1 {
 
@@ -237,7 +238,7 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 
 	if filter.MemberAccessControl {
 
-		_, entryid := EntryModel.MemberAccessCheck(filter.MemberId, DB)
+		_, entryid := EntryModel.MemberAccessCheck(filter.MemberId, DB, tenantid)
 
 		if !filter.ContentHide {
 
@@ -261,20 +262,20 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 	return chentry, 0, nil
 }
 
-func (ch EntriesModel) MemberAccessCheck(memberid int, DB *gorm.DB) ([]int, []int) {
+func (ch EntriesModel) MemberAccessCheck(memberid int, DB *gorm.DB, tenantid int) ([]int, []int) {
 
 	var channelid, entryid []int
 
 	var mem member.TblMember
 
 	//get membergroup id
-	DB.Table("tbl_members").Select("member_group_id").Where("is_deleted=0 and id=?", memberid).First(&mem)
+	DB.Table("tbl_members").Select("member_group_id").Where("is_deleted=0 and id=? and tenant_id", memberid, tenantid).First(&mem)
 
 	SUB := `select id from tbl_access_control_user_groups where is_deleted=0 and member_group_id=` + strconv.Itoa(mem.Id)
 
 	var accessgroup []access.TblAccessControlPages
 
-	DB.Table("tbl_access_control_pages").Where("access_control_user_group_id in (?)", SUB).Find(&accessgroup)
+	DB.Table("tbl_access_control_pages").Where("access_control_user_group_id in (?) and tenant_id=?", SUB, tenantid).Find(&accessgroup)
 
 	for _, val := range accessgroup {
 
@@ -313,9 +314,9 @@ func (Ch EntriesModel) CreateEntrychannelFields(entryfield *[]TblChannelEntryFie
 }
 
 /*Delete Channel Entry Field*/
-func (Ch EntriesModel) DeleteChannelEntryId(chentry *Tblchannelentries, id int, DB *gorm.DB) error {
+func (Ch EntriesModel) DeleteChannelEntryId(chentry *Tblchannelentries, id int, DB *gorm.DB, tenantid int) error {
 
-	if err := DB.Table("tbl_channel_entries").Where("id=?", chentry.Id).UpdateColumns(map[string]interface{}{"is_deleted": chentry.IsDeleted, "deleted_by": chentry.DeletedBy, "deleted_on": chentry.DeletedOn}).Error; err != nil {
+	if err := DB.Table("tbl_channel_entries").Where("id=? and tenant_id=?", chentry.Id, tenantid).UpdateColumns(map[string]interface{}{"is_deleted": chentry.IsDeleted, "deleted_by": chentry.DeletedBy, "deleted_on": chentry.DeletedOn}).Error; err != nil {
 
 		return err
 	}
@@ -324,9 +325,9 @@ func (Ch EntriesModel) DeleteChannelEntryId(chentry *Tblchannelentries, id int, 
 }
 
 /*Delete Channel Entry Field*/
-func (Ch EntriesModel) DeleteChannelEntryFieldId(chentry *TblChannelEntryField, id int, DB *gorm.DB) error {
+func (Ch EntriesModel) DeleteChannelEntryFieldId(chentry *TblChannelEntryField, id int, DB *gorm.DB, tenantid int) error {
 
-	if err := DB.Table("tbl_channel_entry_fields").Where("channel_entry_id=?", id).UpdateColumns(map[string]interface{}{"deleted_by": chentry.DeletedBy, "deleted_on": chentry.DeletedOn}).Error; err != nil {
+	if err := DB.Table("tbl_channel_entry_fields").Where("channel_entry_id=? and tenant_id=?", id, tenantid).UpdateColumns(map[string]interface{}{"deleted_by": chentry.DeletedBy, "deleted_on": chentry.DeletedOn}).Error; err != nil {
 
 		return err
 	}
@@ -335,13 +336,13 @@ func (Ch EntriesModel) DeleteChannelEntryFieldId(chentry *TblChannelEntryField, 
 }
 
 /*Edit Channel Entry*/
-func (Ch EntriesModel) GetChannelEntryById(ent IndivEntriesReq, DB *gorm.DB) (tblchanentry Tblchannelentries, err error) {
+func (Ch EntriesModel) GetChannelEntryById(ent IndivEntriesReq, DB *gorm.DB, tenantid int) (tblchanentry Tblchannelentries, err error) {
 
-	query := DB.Table("tbl_channel_entries").Where("is_deleted=0 and id=?", ent.EntryId)
+	query := DB.Table("tbl_channel_entries").Where("is_deleted=0 and id=? and tenant_id=?", ent.EntryId, tenantid)
 
 	if ent.ContentHide {
 
-		_, entryid := EntryModel.MemberAccessCheck(ent.MemberId, DB)
+		_, entryid := EntryModel.MemberAccessCheck(ent.MemberId, DB, tenantid)
 
 		for _, val := range entryid {
 
@@ -370,9 +371,9 @@ func (Ch EntriesModel) GetChannelEntryById(ent IndivEntriesReq, DB *gorm.DB) (tb
 	return tblchanentry, nil
 }
 
-func (Ch EntriesModel) GetAuthorDetails(DB *gorm.DB, authorId int) (authorDetail Author, err error) {
+func (Ch EntriesModel) GetAuthorDetails(DB *gorm.DB, authorId int, tenantid int) (authorDetail Author, err error) {
 
-	if err := DB.Model(team.TblUser{}).Where("tbl_users.is_deleted = 0 and tbl_users.id = ?", authorId).First(&authorDetail).Error; err != nil {
+	if err := DB.Model(team.TblUser{}).Where("tbl_users.is_deleted = 0 and tbl_users.id = ? and tbl_users.tenant_id=?", authorId, tenantid).First(&authorDetail).Error; err != nil {
 
 		return Author{}, err
 	}
@@ -380,10 +381,10 @@ func (Ch EntriesModel) GetAuthorDetails(DB *gorm.DB, authorId int) (authorDetail
 	return authorDetail, nil
 }
 
-func (Ch EntriesModel) GetSectionsUnderEntries(DB *gorm.DB, channelId, sectionTypeId int) (sections []tblfield, err error) {
+func (Ch EntriesModel) GetSectionsUnderEntries(DB *gorm.DB, channelId, sectionTypeId int, tenantid int) (sections []tblfield, err error) {
 
 	if err = DB.Table("tbl_group_fields").Select("tbl_fields.*,tbl_field_types.type_name").Joins("inner join tbl_fields on tbl_fields.id = tbl_group_fields.field_id").Joins("inner join tbl_field_types on tbl_field_types.id = tbl_fields.field_type_id").
-		Where("tbl_fields.is_deleted = 0 and tbl_field_types.is_deleted = 0 and tbl_fields.field_type_id = ? and tbl_group_fields.channel_id = ?", sectionTypeId, channelId).Find(&sections).Error; err != nil {
+		Where("tbl_fields.is_deleted = 0 and tbl_field_types.is_deleted = 0 and tbl_fields.field_type_id = ? and tbl_group_fields.channel_id = ? and tbl_group_fields.tenant_id=?", sectionTypeId, channelId, tenantid).Find(&sections).Error; err != nil {
 
 		return []tblfield{}, err
 	}
@@ -391,10 +392,10 @@ func (Ch EntriesModel) GetSectionsUnderEntries(DB *gorm.DB, channelId, sectionTy
 	return sections, nil
 }
 
-func (Ch EntriesModel) GetFieldsInEntries(DB *gorm.DB, channelId, sectionTypeId int) (fields []tblfield, err error) {
+func (Ch EntriesModel) GetFieldsInEntries(DB *gorm.DB, channelId, sectionTypeId int, tenantid int) (fields []tblfield, err error) {
 
 	if err = DB.Table("tbl_group_fields").Select("tbl_fields.*,tbl_field_types.type_name").Joins("inner join tbl_fields on tbl_fields.id = tbl_group_fields.field_id").Joins("inner join tbl_field_types on tbl_field_types.id = tbl_fields.field_type_id").
-		Where("tbl_fields.is_deleted = 0 and tbl_field_types.is_deleted = 0 and tbl_fields.field_type_id != ? and tbl_group_fields.channel_id = ?", sectionTypeId, channelId).Find(&fields).Error; err != nil {
+		Where("tbl_fields.is_deleted = 0 and tbl_field_types.is_deleted = 0 and tbl_fields.field_type_id != ? and tbl_group_fields.channel_id = ? and tbl_group_fields.tenant_id=?", sectionTypeId, channelId, tenantid).Find(&fields).Error; err != nil {
 
 		return []tblfield{}, err
 	}
@@ -402,9 +403,9 @@ func (Ch EntriesModel) GetFieldsInEntries(DB *gorm.DB, channelId, sectionTypeId 
 	return fields, nil
 }
 
-func (Ch EntriesModel) GetFieldValue(DB *gorm.DB, fieldId, entryId int) (fieldvalue TblChannelEntryField, err error) {
+func (Ch EntriesModel) GetFieldValue(DB *gorm.DB, fieldId, entryId int, tenantid int) (fieldvalue TblChannelEntryField, err error) {
 
-	if err = DB.Model(TblChannelEntryField{}).Where("tbl_channel_entry_fields.field_id = ? and tbl_channel_entry_fields.channel_entry_id = ?", fieldId, entryId).First(&fieldvalue).Error; err != nil {
+	if err = DB.Model(TblChannelEntryField{}).Where("tbl_channel_entry_fields.field_id = ? and tbl_channel_entry_fields.channel_entry_id = ? and tbl_channel_entry_fields.tenant_id=?", fieldId, entryId, tenantid).First(&fieldvalue).Error; err != nil {
 
 		return TblChannelEntryField{}, err
 	}
@@ -412,9 +413,9 @@ func (Ch EntriesModel) GetFieldValue(DB *gorm.DB, fieldId, entryId int) (fieldva
 	return fieldvalue, nil
 }
 
-func (ch EntriesModel) GetFieldOptions(DB *gorm.DB, fieldId int) (fieldOptions []TblFieldOption, err error) {
+func (ch EntriesModel) GetFieldOptions(DB *gorm.DB, fieldId int, tenantid int) (fieldOptions []TblFieldOption, err error) {
 
-	if err = DB.Model(TblFieldOption{}).Where("tbl_field_options.is_deleted = 0 and tbl_field_options.field_id = ?", fieldId).Find(&fieldOptions).Error; err != nil {
+	if err = DB.Model(TblFieldOption{}).Where("tbl_field_options.is_deleted = 0 and tbl_field_options.field_id = ? and tbl_field_options.tenant_id=?", fieldId, tenantid).Find(&fieldOptions).Error; err != nil {
 
 		return []TblFieldOption{}, err
 	}
@@ -422,9 +423,9 @@ func (ch EntriesModel) GetFieldOptions(DB *gorm.DB, fieldId int) (fieldOptions [
 	return fieldOptions, nil
 }
 
-func (ch EntriesModel) GetMemberProfile(DB *gorm.DB, memberid int) (memberProfile member.TblMemberProfile, err error) {
+func (ch EntriesModel) GetMemberProfile(DB *gorm.DB, memberid int, tenantid int) (memberProfile member.TblMemberProfile, err error) {
 
-	if err = DB.Model(member.TblMemberProfile{}).Select("tbl_member_profiles.*").Joins("inner join tbl_members on tbl_members.id = tbl_member_profiles.member_id").Where("tbl_members.is_deleted = 0 and tbl_members.id = ?", memberid).First(&memberProfile).Error; err != nil {
+	if err = DB.Model(member.TblMemberProfile{}).Select("tbl_member_profiles.*").Joins("inner join tbl_members on tbl_members.id = tbl_member_profiles.member_id").Where("tbl_members.is_deleted = 0 and tbl_members.id = ? and tbl_members.tenant_id=?", memberid, tenantid).First(&memberProfile).Error; err != nil {
 
 		return member.TblMemberProfile{}, err
 	}
@@ -433,9 +434,9 @@ func (ch EntriesModel) GetMemberProfile(DB *gorm.DB, memberid int) (memberProfil
 
 }
 
-func (ch EntriesModel) GetGraphqlEntriesCategoryByParentId(DB *gorm.DB, categoryId int) (category categories.TblCategories, err error) {
+func (ch EntriesModel) GetGraphqlEntriesCategoryByParentId(DB *gorm.DB, categoryId int, tenantid int) (category categories.TblCategories, err error) {
 
-	if err = DB.Model(categories.TblCategories{}).Where("is_deleted = 0 and id = ?", categoryId).First(&category).Error; err != nil {
+	if err = DB.Model(categories.TblCategories{}).Where("is_deleted = 0 and id = ? and tenant_id=?", categoryId, tenantid).First(&category).Error; err != nil {
 
 		return categories.TblCategories{}, err
 	}
@@ -443,9 +444,9 @@ func (ch EntriesModel) GetGraphqlEntriesCategoryByParentId(DB *gorm.DB, category
 	return category, nil
 }
 
-func (ch EntriesModel) GetCategoryIdByName(name string, DB *gorm.DB) (category categories.TblCategories, er error) {
+func (ch EntriesModel) GetCategoryIdByName(name string, DB *gorm.DB, tenantid int) (category categories.TblCategories, er error) {
 
-	if err := DB.Model(categories.TblCategories{}).Where("category_name= ?", name).First(&category).Error; err != nil {
+	if err := DB.Model(categories.TblCategories{}).Where("category_name= ? and tenant_id=?", name, tenantid).First(&category).Error; err != nil {
 
 		return category, err
 	}
@@ -453,7 +454,7 @@ func (ch EntriesModel) GetCategoryIdByName(name string, DB *gorm.DB) (category c
 	return category, nil
 }
 
-func (ch EntriesModel) GetChildCategories(categoryid int, DB *gorm.DB) (categories []categories.TblCategories, er error) {
+func (ch EntriesModel) GetChildCategories(categoryid int, DB *gorm.DB, tenantid int) (categories []categories.TblCategories, er error) {
 
 	if err := DB.Raw(`WITH RECURSIVE cat_tree AS (SELECT id, category_name, category_slug,image_path, parent_id,created_on,modified_on,is_deleted
 		FROM tbl_categories
@@ -463,7 +464,7 @@ func (ch EntriesModel) GetChildCategories(categoryid int, DB *gorm.DB) (categori
 		cat.is_deleted
 		FROM tbl_categories AS cat
 		JOIN cat_tree ON cat.parent_id = cat_tree.id )
-		SELECT * FROM cat_tree where is_deleted = 0`, categoryid).Find(&categories).Error; err != nil {
+		SELECT * FROM cat_tree where is_deleted = 0 and tenant_id=?`, tenantid, categoryid).Find(&categories).Error; err != nil {
 
 		return categories, err
 	}
@@ -471,11 +472,11 @@ func (ch EntriesModel) GetChildCategories(categoryid int, DB *gorm.DB) (categori
 	return categories, nil
 }
 
-func (ch EntriesModel) MakeFeature(channelid, entryid, status int, DB *gorm.DB) (err error) {
+func (ch EntriesModel) MakeFeature(channelid, entryid, status int, DB *gorm.DB, tenantid int) (err error) {
 
 	DB.Model(TblChannelEntries{}).Where("channel_id=?", channelid).UpdateColumns(map[string]interface{}{"feature": 0})
 
-	if err := DB.Model(TblChannelEntries{}).Where("id=? and channel_id=?", entryid, channelid).UpdateColumns(map[string]interface{}{"feature": status}).Error; err != nil {
+	if err := DB.Model(TblChannelEntries{}).Where("id=? and channel_id=? and tenant_id=?", entryid, channelid, tenantid).UpdateColumns(map[string]interface{}{"feature": status}).Error; err != nil {
 
 		return err
 	}
@@ -483,9 +484,9 @@ func (ch EntriesModel) MakeFeature(channelid, entryid, status int, DB *gorm.DB) 
 	return nil
 }
 
-func (ch EntriesModel) PublishQuery(chl *TblChannelEntries, id int, DB *gorm.DB) error {
+func (ch EntriesModel) PublishQuery(chl *TblChannelEntries, id int, DB *gorm.DB, tenantid int) error {
 
-	if err := DB.Table("tbl_channel_entries").Where("id =?", id).UpdateColumns(map[string]interface{}{"status": chl.Status, "modified_on": chl.ModifiedOn, "modified_by": chl.ModifiedBy}).Error; err != nil {
+	if err := DB.Table("tbl_channel_entries").Where("id =? and tenant_id=?", id, tenantid).UpdateColumns(map[string]interface{}{"status": chl.Status, "modified_on": chl.ModifiedOn, "modified_by": chl.ModifiedBy}).Error; err != nil {
 
 		return err
 
@@ -495,9 +496,9 @@ func (ch EntriesModel) PublishQuery(chl *TblChannelEntries, id int, DB *gorm.DB)
 }
 
 /*Update Channel Entry Details*/
-func (Ch EntriesModel) UpdateChannelEntryDetails(entry *TblChannelEntries, entryid int, DB *gorm.DB) error {
+func (Ch EntriesModel) UpdateChannelEntryDetails(entry *TblChannelEntries, entryid int, DB *gorm.DB, tenantid int) error {
 
-	if err := DB.Debug().Table("tbl_channel_entries").Where("id=?", entryid).UpdateColumns(map[string]interface{}{"title": entry.Title, "description": entry.Description, "slug": entry.Slug, "cover_image": entry.CoverImage, "thumbnail_image": entry.ThumbnailImage, "meta_title": entry.MetaTitle, "meta_description": entry.MetaDescription, "keyword": entry.Keyword, "categories_id": entry.CategoriesId, "related_articles": entry.RelatedArticles, "status": entry.Status, "modified_on": entry.ModifiedOn, "modified_by": entry.ModifiedBy, "user_id": entry.UserId, "channel_id": entry.ChannelId, "author": entry.Author, "create_time": entry.CreateTime, "published_time": entry.PublishedTime, "reading_time": entry.ReadingTime, "sort_order": entry.SortOrder, "tags": entry.Tags, "excerpt": entry.Excerpt, "image_alt_tag": entry.ImageAltTag}).Error; err != nil {
+	if err := DB.Debug().Table("tbl_channel_entries").Where("id=? and tenant_id=?", entryid, tenantid).UpdateColumns(map[string]interface{}{"title": entry.Title, "description": entry.Description, "slug": entry.Slug, "cover_image": entry.CoverImage, "thumbnail_image": entry.ThumbnailImage, "meta_title": entry.MetaTitle, "meta_description": entry.MetaDescription, "keyword": entry.Keyword, "categories_id": entry.CategoriesId, "related_articles": entry.RelatedArticles, "status": entry.Status, "modified_on": entry.ModifiedOn, "modified_by": entry.ModifiedBy, "user_id": entry.UserId, "channel_id": entry.ChannelId, "author": entry.Author, "create_time": entry.CreateTime, "published_time": entry.PublishedTime, "reading_time": entry.ReadingTime, "sort_order": entry.SortOrder, "tags": entry.Tags, "excerpt": entry.Excerpt, "image_alt_tag": entry.ImageAltTag}).Error; err != nil {
 
 		return err
 	}
@@ -519,9 +520,9 @@ func (Ch EntriesModel) CreateSingleEntrychannelFields(entryfield *TblChannelEntr
 }
 
 /*Update Channel Entry Details*/
-func (Ch EntriesModel) UpdateChannelEntryAdditionalDetails(entry TblChannelEntryField, DB *gorm.DB) error {
+func (Ch EntriesModel) UpdateChannelEntryAdditionalDetails(entry TblChannelEntryField, DB *gorm.DB, tenantid int) error {
 
-	if err := DB.Table("tbl_channel_entry_fields").Where("id=?", entry.Id).UpdateColumns(map[string]interface{}{"field_name": entry.FieldName, "field_value": entry.FieldValue, "modified_by": entry.ModifiedBy, "modified_on": entry.ModifiedOn}).Error; err != nil {
+	if err := DB.Table("tbl_channel_entry_fields").Where("id=? and tenant_id=?", entry.Id, tenantid).UpdateColumns(map[string]interface{}{"field_name": entry.FieldName, "field_value": entry.FieldValue, "modified_by": entry.ModifiedBy, "modified_on": entry.ModifiedOn}).Error; err != nil {
 
 		return err
 	}
@@ -529,19 +530,9 @@ func (Ch EntriesModel) UpdateChannelEntryAdditionalDetails(entry TblChannelEntry
 	return nil
 }
 
-func (Ch EntriesModel) AllentryCount(DB *gorm.DB) (count int64, err error) {
+func (Ch EntriesModel) AllentryCount(DB *gorm.DB, tenantid int) (count int64, err error) {
 
-	if err := DB.Table("tbl_channel_entries").Where("is_deleted = 0 ").Count(&count).Error; err != nil {
-
-		return 0, err
-	}
-
-	return count, nil
-}
-
-func (Ch EntriesModel) NewentryCount(DB *gorm.DB) (count int64, err error) {
-
-	if err := DB.Table("tbl_channel_entries").Where("is_deleted = 0 AND created_on >=?", time.Now().AddDate(0, 0, -10)).Count(&count).Error; err != nil {
+	if err := DB.Table("tbl_channel_entries").Where("is_deleted = 0 and tenant_id=?", tenantid).Count(&count).Error; err != nil {
 
 		return 0, err
 	}
@@ -549,11 +540,21 @@ func (Ch EntriesModel) NewentryCount(DB *gorm.DB) (count int64, err error) {
 	return count, nil
 }
 
-func (Ch EntriesModel) Newchannels(DB *gorm.DB) (chn []Tblchannel, err error) {
+func (Ch EntriesModel) NewentryCount(DB *gorm.DB, tenantid int) (count int64, err error) {
+
+	if err := DB.Table("tbl_channel_entries").Where("is_deleted = 0 AND created_on >=? and tenant_id=?", time.Now().AddDate(0, 0, -10), tenantid).Count(&count).Error; err != nil {
+
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (Ch EntriesModel) Newchannels(DB *gorm.DB, tenantid int) (chn []Tblchannel, err error) {
 
 	if err := DB.Table("tbl_channels").Select("tbl_channels.*,tbl_users.username,tbl_users.profile_image_path").
 		Joins("inner join tbl_users on tbl_users.id = tbl_channels.created_by").
-		Where("tbl_channels.is_deleted=0 and tbl_channels.is_active=1 and tbl_channels.created_on >= ?", time.Now().Add(-24*time.Hour).Format("2006-01-02 15:04:05")).
+		Where("tbl_channels.is_deleted=0 and tbl_channels.is_active=1 and tbl_channels.created_on >= ? and tbl_channels.tenant_id=?", time.Now().Add(-24*time.Hour).Format("2006-01-02 15:04:05"), tenantid).
 		Order("created_on desc").Limit(6).Find(&chn).Error; err != nil {
 
 		return []Tblchannel{}, err
@@ -563,10 +564,10 @@ func (Ch EntriesModel) Newchannels(DB *gorm.DB) (chn []Tblchannel, err error) {
 
 }
 
-func (Ch EntriesModel) Newentries(DB *gorm.DB) (entries []Tblchannelentries, err error) {
+func (Ch EntriesModel) Newentries(DB *gorm.DB, tenantid int) (entries []Tblchannelentries, err error) {
 
 	if err := DB.Table("tbl_channel_entries").Select("tbl_channel_entries.*,tbl_users.username,tbl_users.profile_image_path").
-		Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Where("tbl_channel_entries.is_deleted=0 and tbl_channel_entries.created_on >=?", time.Now().Add(-24*time.Hour).Format("2006-01-02 15:04:05")).
+		Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Where("tbl_channel_entries.is_deleted=0 and tbl_channel_entries.created_on >=? and tbl_channel_entries.tenant_id=?", time.Now().Add(-24*time.Hour).Format("2006-01-02 15:04:05"), tenantid).
 		Order("created_on desc").Limit(6).Find(&entries).Error; err != nil {
 
 		return []Tblchannelentries{}, err
@@ -577,9 +578,9 @@ func (Ch EntriesModel) Newentries(DB *gorm.DB) (entries []Tblchannelentries, err
 }
 
 // update imagepath
-func (Ch EntriesModel) UpdateImagePath(Imagepath string, DB *gorm.DB) error {
+func (Ch EntriesModel) UpdateImagePath(Imagepath string, DB *gorm.DB, tenantid int) error {
 
-	if err := DB.Model(TblChannelEntries{}).Where("cover_image=?", Imagepath).UpdateColumns(map[string]interface{}{
+	if err := DB.Model(TblChannelEntries{}).Where("cover_image=? and tenant_id=?", Imagepath, tenantid).UpdateColumns(map[string]interface{}{
 		"cover_image": ""}).Error; err != nil {
 
 		return err
@@ -590,22 +591,11 @@ func (Ch EntriesModel) UpdateImagePath(Imagepath string, DB *gorm.DB) error {
 }
 
 // make feature function
-func (ch ChannelModel) MakeFeature(channelid, entryid, status int, DB *gorm.DB) (err error) {
+func (ch ChannelModel) MakeFeature(channelid, entryid, status int, DB *gorm.DB, tenantid int) (err error) {
 
-	DB.Model(TblChannelEntries{}).Where("channel_id=?", channelid).UpdateColumns(map[string]interface{}{"feature": 0})
+	DB.Model(TblChannelEntries{}).Where("channel_id=? and tenant_id=?", channelid, tenantid).UpdateColumns(map[string]interface{}{"feature": 0})
 
-	if err := DB.Model(TblChannelEntries{}).Where("id=? and channel_id=?", entryid, channelid).UpdateColumns(map[string]interface{}{"feature": status}).Error; err != nil {
-
-		return err
-	}
-
-	return nil
-}
-
-/*Delete MULTI Channel Entry Field*/
-func (Ch EntriesModel) DeleteSelectedChannelEntryId(chentry *TblChannelEntries, id []int, DB *gorm.DB) error {
-
-	if err := DB.Debug().Table("tbl_channel_entries").Where("id in (?)", id).UpdateColumns(map[string]interface{}{"is_deleted": chentry.IsDeleted, "deleted_by": chentry.DeletedBy, "deleted_on": chentry.DeletedOn}).Error; err != nil {
+	if err := DB.Model(TblChannelEntries{}).Where("id=? and channel_id=? and tenant_id=?", entryid, channelid, tenantid).UpdateColumns(map[string]interface{}{"feature": status}).Error; err != nil {
 
 		return err
 	}
@@ -614,9 +604,9 @@ func (Ch EntriesModel) DeleteSelectedChannelEntryId(chentry *TblChannelEntries, 
 }
 
 /*Delete MULTI Channel Entry Field*/
-func (Ch EntriesModel) DeleteSelectedChannelEntryFieldId(chentry *TblChannelEntryField, id []int, DB *gorm.DB) error {
+func (Ch EntriesModel) DeleteSelectedChannelEntryId(chentry *TblChannelEntries, id []int, DB *gorm.DB, tenantid int) error {
 
-	if err := DB.Debug().Table("tbl_channel_entry_fields").Where("channel_entry_id IN (?)", id).UpdateColumns(map[string]interface{}{"deleted_by": chentry.DeletedBy, "deleted_on": chentry.DeletedOn}).Error; err != nil {
+	if err := DB.Debug().Table("tbl_channel_entries").Where("id in (?) and tenant_id=?", id, tenantid).UpdateColumns(map[string]interface{}{"is_deleted": chentry.IsDeleted, "deleted_by": chentry.DeletedBy, "deleted_on": chentry.DeletedOn}).Error; err != nil {
 
 		return err
 	}
@@ -624,9 +614,20 @@ func (Ch EntriesModel) DeleteSelectedChannelEntryFieldId(chentry *TblChannelEntr
 	return nil
 }
 
-func (ch ChannelModel) GetChannelEntriesByChannelId(channel_entries *[]TblChannelEntries, channel_id int, DB *gorm.DB) error {
+/*Delete MULTI Channel Entry Field*/
+func (Ch EntriesModel) DeleteSelectedChannelEntryFieldId(chentry *TblChannelEntryField, id []int, DB *gorm.DB, tenantid int) error {
 
-	if err := DB.Table("tbl_channel_entries").Where("tbl_channel_entries.is_deleted = 0 and tbl_channel_entries.status = 1 and tbl_channel_entries.channel_id = ?", channel_id).Find(&channel_entries).Error; err != nil {
+	if err := DB.Debug().Table("tbl_channel_entry_fields").Where("channel_entry_id IN (?) and tenant_id=?", id, tenantid).UpdateColumns(map[string]interface{}{"deleted_by": chentry.DeletedBy, "deleted_on": chentry.DeletedOn}).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+}
+
+func (ch ChannelModel) GetChannelEntriesByChannelId(channel_entries *[]TblChannelEntries, channel_id int, DB *gorm.DB, tenantid int) error {
+
+	if err := DB.Table("tbl_channel_entries").Where("tbl_channel_entries.is_deleted = 0 and tbl_channel_entries.status = 1 and tbl_channel_entries.channel_id = ? and tbl_channel_entries.tenant_id=?", channel_id, tenantid).Find(&channel_entries).Error; err != nil {
 
 		return err
 	}
@@ -635,9 +636,9 @@ func (ch ChannelModel) GetChannelEntriesByChannelId(channel_entries *[]TblChanne
 }
 
 // UNPUBLISH MULTI SELECT ENTRY//
-func (Ch EntriesModel) UnpublishSelectedChannelEntryId(chentry *TblChannelEntries, id []int, DB *gorm.DB) error {
+func (Ch EntriesModel) UnpublishSelectedChannelEntryId(chentry *TblChannelEntries, id []int, DB *gorm.DB, tenantid int) error {
 
-	if err := DB.Debug().Table("tbl_channel_entries").Where("id IN (?)", id).UpdateColumns(map[string]interface{}{"status": chentry.Status, "modified_by": chentry.ModifiedBy, "modified_on": chentry.ModifiedOn}).Error; err != nil {
+	if err := DB.Debug().Table("tbl_channel_entries").Where("id IN (?) and tenant_id=?", id, tenantid).UpdateColumns(map[string]interface{}{"status": chentry.Status, "modified_by": chentry.ModifiedBy, "modified_on": chentry.ModifiedOn}).Error; err != nil {
 
 		return err
 	}

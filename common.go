@@ -1,12 +1,17 @@
 package channels
 
-import "errors"
+import (
+	"errors"
+	"os"
+	"strconv"
+)
 
 var (
 	ErrorAuth       = errors.New("auth enabled not initialised")
 	ErrorPermission = errors.New("permissions enabled not initialised")
 	ErrorChannelId  = errors.New("invalid channelid")
 	Empty           string
+	TenantId, _     = strconv.Atoi(os.Getenv("Tenant_ID"))
 )
 
 func TruncateDescription(description string, limit int) string {

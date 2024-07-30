@@ -58,7 +58,7 @@ func TestChannelList(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -69,7 +69,7 @@ func TestChannelList(t *testing.T) {
 
 	if permisison {
 
-		chanlist, count, err := channel.ListChannel(10, 0, Filter{}, true, true)
+		chanlist, count, err := channel.ListChannel(10, 0, Filter{}, true, true, TenantId)
 
 		if err != nil {
 
@@ -104,7 +104,7 @@ func TestCreateChennal(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -115,7 +115,7 @@ func TestCreateChennal(t *testing.T) {
 
 	if permisison {
 
-		chanlist, err := channel.CreateChannel(ChannelCreate{ChannelName: "life style", ChannelDescription: "collections", CategoryIds: []string{"1", "2"}})
+		chanlist, err := channel.CreateChannel(ChannelCreate{ChannelName: "life style", ChannelDescription: "collections", CategoryIds: []string{"1", "2"}}, 1)
 
 		if err != nil {
 
@@ -150,7 +150,7 @@ func TestCreateAdditionalFields(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -170,7 +170,7 @@ func TestCreateAdditionalFields(t *testing.T) {
 		field1value := Fiedlvalue{Url: "/defaultchannel", OrderIndex: 1, OptionValue: []OptionValues{optval1, optval2}}
 		field2value := Fiedlvalue{Url: "/defaultchannel", OrderIndex: 2}
 
-		err := channel.CreateAdditionalFields(ChannelAddtionalField{Sections: []Section{field1, field2}, FieldValues: []Fiedlvalue{field1value, field2value}}, 5)
+		err := channel.CreateAdditionalFields(ChannelAddtionalField{Sections: []Section{field1, field2}, FieldValues: []Fiedlvalue{field1value, field2value}}, 5, 1)
 
 		if err != nil {
 
@@ -205,7 +205,7 @@ func TestGetchannelByName(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -216,7 +216,7 @@ func TestGetchannelByName(t *testing.T) {
 
 	if permisison {
 
-		channel, err := channel.GetchannelByName("life style")
+		channel, err := channel.GetchannelByName("life style", TenantId)
 
 		if err != nil {
 
@@ -251,7 +251,7 @@ func TestGetChannelsById(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -262,7 +262,7 @@ func TestGetChannelsById(t *testing.T) {
 
 	if permisison {
 
-		channel, chn_categories, err := channel.GetChannelsById(3)
+		channel, chn_categories, err := channel.GetChannelsById(3, TenantId)
 
 		if err != nil {
 
@@ -297,7 +297,7 @@ func TestGetChannelsFieldsById(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -308,7 +308,7 @@ func TestGetChannelsFieldsById(t *testing.T) {
 
 	if permisison {
 
-		section, fields, err := channel.GetChannelsFieldsById(3)
+		section, fields, err := channel.GetChannelsFieldsById(3, TenantId)
 
 		if err != nil {
 
@@ -343,7 +343,7 @@ func TestDeleteChannel(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -354,7 +354,7 @@ func TestDeleteChannel(t *testing.T) {
 
 	if permisison {
 
-		err := channel.DeleteChannel(3, 1)
+		err := channel.DeleteChannel(3, 1, TenantId)
 
 		if err != nil {
 
@@ -389,7 +389,7 @@ func TestDeleteChannelPermissions(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -435,7 +435,7 @@ func TestChangeChannelStatus(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -446,7 +446,7 @@ func TestChangeChannelStatus(t *testing.T) {
 
 	if permisison {
 
-		flg, err := channel.ChangeChannelStatus(3, 0, 1)
+		flg, err := channel.ChangeChannelStatus(3, 0, 1, TenantId)
 
 		if err != nil {
 
@@ -481,7 +481,7 @@ func TestGetAllMasterFieldType(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -492,7 +492,7 @@ func TestGetAllMasterFieldType(t *testing.T) {
 
 	if permisison {
 
-		fields, err := channel.GetAllMasterFieldType()
+		fields, err := channel.GetAllMasterFieldType(TenantId)
 
 		if err != nil {
 
@@ -527,7 +527,7 @@ func TestEditChannel(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -538,7 +538,7 @@ func TestEditChannel(t *testing.T) {
 
 	if permisison {
 
-		err := channel.EditChannel("go", "about golang", 1, 3, []string{"1", "2"})
+		err := channel.EditChannel("go", "about golang", 1, 3, []string{"1", "2"}, TenantId)
 
 		if err != nil {
 
@@ -573,7 +573,7 @@ func TestUpdateChannelField(t *testing.T) {
 
 	Auth.VerifyToken(token, SecretKey)
 
-	permisison, _ := Auth.IsGranted("Channels", auth.CRUD)
+	permisison, _ := Auth.IsGranted("Channels", auth.CRUD, TenantId)
 
 	channel := ChannelSetup(Config{
 		DB:               db,
@@ -593,7 +593,7 @@ func TestUpdateChannelField(t *testing.T) {
 		field1value := Fiedlvalue{Url: "/defaultchannel", OrderIndex: 1, OptionValue: []OptionValues{optval1, optval2}, FieldId: 7}
 		field2value := Fiedlvalue{Url: "/defaultchannel", OrderIndex: 2, FieldId: 8}
 
-		err := channel.UpdateChannelField(ChannelUpdate{Sections: []Section{field1}, FieldValues: []Fiedlvalue{field1value, field2value}, Deletesections: []Section{field2}, DeleteFields: []Fiedlvalue{field2value}, DeleteOptionsvalue: []OptionValues{optval2}, CategoryIds: []string{"1", "2"}, ModifiedBy: 1}, 3)
+		err := channel.UpdateChannelField(ChannelUpdate{Sections: []Section{field1}, FieldValues: []Fiedlvalue{field1value, field2value}, Deletesections: []Section{field2}, DeleteFields: []Fiedlvalue{field2value}, DeleteOptionsvalue: []OptionValues{optval2}, CategoryIds: []string{"1", "2"}, ModifiedBy: 1}, 3, 1)
 
 		if err != nil {
 

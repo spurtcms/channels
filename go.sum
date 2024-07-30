@@ -29,6 +29,8 @@ github.com/spurtcms/auth v0.0.2 h1:Vli4zCEOsTwRt5RdVjVpm+IN0llsfVzDFZad5BhL3Qs=
 github.com/spurtcms/auth v0.0.2/go.mod h1:1u46UkHWHcsN99jNGCaei0/75rslezIpOGITEhVkvAM=
 github.com/spurtcms/auth v0.0.6 h1:mQ4Dk3ghv/zIkjHtEAEl8yF/rrbVeZRIdmnLEmBw/lU=
 github.com/spurtcms/auth v0.0.6/go.mod h1:1u46UkHWHcsN99jNGCaei0/75rslezIpOGITEhVkvAM=
+github.com/spurtcms/auth v0.0.12 h1:tJIhH/YOdHYEnzMK1HsnmttgZpXZfcLi36Pnbi/QMXk=
+github.com/spurtcms/auth v0.0.12/go.mod h1:1u46UkHWHcsN99jNGCaei0/75rslezIpOGITEhVkvAM=
 github.com/spurtcms/categories v0.0.3 h1:0ekvcZWd0vOlpavJp7PmE8wCU00VXXVFlg4XSVp839c=
 github.com/spurtcms/categories v0.0.3/go.mod h1:NGvMIZDbYNEHl0NJHyiIhloKiqaZXqceywm0B7oqNMA=
 github.com/spurtcms/categories v0.0.4 h1:F8i5/8nD4mBEUrzOA/FlNi48dFslEoqR9m+i0mIo3sI=
@@ -53,6 +55,8 @@ github.com/spurtcms/team-roles v0.0.5 h1:cdakl6Hh5Gkl2+YC5h8IpTl5Dcn+mt7cSFMQfHc
 github.com/spurtcms/team-roles v0.0.5/go.mod h1:WFP36zjRo6gkKTFrWy6DT/B+Nh/V/1xHTYS7kJcNPGA=
 github.com/spurtcms/team-roles v0.0.6 h1:CNrs6KYSLE2pDEHefx3s+Iq43x01HVRkGINDFvb9fU4=
 github.com/spurtcms/team-roles v0.0.6/go.mod h1:WFP36zjRo6gkKTFrWy6DT/B+Nh/V/1xHTYS7kJcNPGA=
+github.com/spurtcms/team-roles v0.0.8 h1:fLs9RV6JKUbks81W68//CrEQRhJhmcZPldvZWNy/JjY=
+github.com/spurtcms/team-roles v0.0.8/go.mod h1:VsXWRXwFMnJCzrC4f08XA5+XMpj7nBnFlklMYXClWHw=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
