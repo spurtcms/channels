@@ -69,7 +69,7 @@ func TestChannelList(t *testing.T) {
 
 	if permisison {
 
-		chanlist, count, err := channel.ListChannel(10, 0, Filter{}, true, true, TenantId)
+		chanlist, count, err := channel.ListChannel(10, 0, Filter{}, TenantId)
 
 		if err != nil {
 

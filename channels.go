@@ -28,39 +28,30 @@ func ChannelSetup(config Config) *Channel {
 }
 
 // get all channel list
-func (channel *Channel) ListChannel(limit, offset int, filter Filter, activestatus bool, entriescount bool, tenantid int) (channelList []Tblchannel, channelcount int, err error) {
+func (channel *Channel) ListChannel(limit, offset int, filter Filter, tenantid int) (channelList []Tblchannel, channelcount int, err error) {
 
 	autherr := AuthandPermission(channel)
 
 	if autherr != nil {
-
 		return []Tblchannel{}, 0, autherr
 	}
 
 	CH.Userid = channel.Userid
 	CH.Dataaccess = channel.DataAccess
 
-	channellist, _, _ := CH.Channellist(limit, offset, filter, activestatus, true, channel.DB, tenantid)
-
-	var chnallist []Tblchannel
-
-	for _, val := range channellist {
-
-		val.SlugName = val.ChannelDescription
-		val.ChannelDescription = TruncateDescription(val.ChannelDescription, 130)
-
-		if entriescount {
-			_, entrcount, _ := EntryModel.ChannelEntryList(Entries{ChannelId: val.Id}, channel, Empty, true, channel.DB, tenantid)
-			val.EntriesCount = int(entrcount)
-		}
-
-		chnallist = append(chnallist, val)
-
+	channellist, _, err := CH.Channellist(limit, offset, filter,channel.DB, tenantid)
+	if err != nil{
+		return []Tblchannel{}, 0, autherr
 	}
-	_, chcount, _ := CH.Channellist(0, 0, filter, activestatus, true, channel.DB, tenantid)
+	
+	_, chcount,err := CH.Channellist(0, 0, filter, channel.DB, tenantid)
+	if err != nil{
+		return []Tblchannel{}, 0, autherr
+	}
 
-	return chnallist, int(chcount), nil
+	return channellist, int(chcount), nil
 }
+
 
 /*create channel*/
 func (channel *Channel) CreateChannel(channelcreate ChannelCreate, tenantid int) (TblChannel, error) {

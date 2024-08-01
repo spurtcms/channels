@@ -9,7 +9,9 @@ import (
 )
 
 type Filter struct {
-	Keyword string
+	Keyword      string
+	Status       bool
+	CreateOnly   bool
 }
 
 type Tblchannel struct {
@@ -305,11 +307,11 @@ func IsDeleted(db *gorm.DB) *gorm.DB {
 }
 
 /*channel list*/
-func (Ch ChannelModel) Channellist(limit, offset int, filter Filter, activestatus bool, createonly bool, DB *gorm.DB, tenantid int) (chn []Tblchannel, chcount int64, err error) {
+func (Ch ChannelModel) Channellist(limit, offset int, filter Filter, DB *gorm.DB, tenantid int) (chn []Tblchannel, chcount int64, err error) {
 
 	query := DB.Model(TblChannel{}).Select("tbl_channels.*,tbl_users.username").Where("tbl_channels.is_deleted=0 and tbl_channels.tenant_id=?", tenantid).Order("id desc")
 
-	if createonly && Ch.Dataaccess == 1 {
+	if filter.CreateOnly && Ch.Dataaccess == 1 {
 		query = query.Where("tbl_channels.created_by = ?", Ch.Userid)
 	}
 
@@ -320,7 +322,7 @@ func (Ch ChannelModel) Channellist(limit, offset int, filter Filter, activestatu
 		query = query.Where("LOWER(TRIM(channel_name)) LIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%")
 	}
 
-	if activestatus {
+	if filter.Status {
 
 		query = query.Where("tbl_channels.is_active=1")
 
@@ -328,11 +330,21 @@ func (Ch ChannelModel) Channellist(limit, offset int, filter Filter, activestatu
 
 	if limit != 0 {
 
-		query.Limit(limit).Offset(offset).Order("id asc").Find(&chn)
+		err = query.Limit(limit).Offset(offset).Order("id asc").Find(&chn).Error
+
+		if err != nil{
+
+			return []Tblchannel{},0,err
+		}
 
 	} else {
 
-		query.Find(&chn).Count(&chcount)
+		err = query.Find(&chn).Count(&chcount).Error
+
+		if err != nil{
+
+			return []Tblchannel{},0,err
+		}
 
 		return chn, chcount, nil
 	}
