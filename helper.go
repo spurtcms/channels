@@ -135,7 +135,7 @@ func (channel *Channel) DashboardRecentActivites(tenantid int) (entries []Recent
 
 	for _, val := range Newchannel {
 
-		newrecord := RecentActivities{Contenttype: "channel", Title: val.ChannelName, User: val.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, Channelname: val.ChannelName}
+		newrecord := RecentActivities{Contenttype: "channel", Title: val.ChannelName, User: val.AuthorDetails.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, Channelname: val.ChannelName}
 
 		Newrecords = append(Newrecords, newrecord)
 	}

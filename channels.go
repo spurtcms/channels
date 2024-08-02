@@ -28,7 +28,7 @@ func ChannelSetup(config Config) *Channel {
 }
 
 // get all channel list
-func (channel *Channel) ListChannel(limit, offset int, filter Filter, tenantid int) (channelList []Tblchannel, channelcount int, err error) {
+func (channel *Channel) ListChannel(inputs Channels) (channelList []Tblchannel, channelcount int, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -39,17 +39,22 @@ func (channel *Channel) ListChannel(limit, offset int, filter Filter, tenantid i
 	CH.Userid = channel.Userid
 	CH.Dataaccess = channel.DataAccess
 
-	channellist, _, err := CH.Channellist(limit, offset, filter,channel.DB, tenantid)
-	if err != nil{
-		return []Tblchannel{}, 0, autherr
-	}
-	
-	_, chcount,err := CH.Channellist(0, 0, filter, channel.DB, tenantid)
-	if err != nil{
-		return []Tblchannel{}, 0, autherr
+	var (
+		channellist  []Tblchannel
+		count        int64
+	)
+
+	err = CH.Channellist(channel.DB,inputs,&channellist,&count)
+
+	if err != nil {
+		return []Tblchannel{}, 0, err
 	}
 
-	return channellist, int(chcount), nil
+	if err != nil {
+		return []Tblchannel{}, 0, err
+	}
+
+	return channellist, int(count), nil
 }
 
 

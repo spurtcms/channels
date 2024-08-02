@@ -4,14 +4,30 @@ import (
 	"time"
 
 	"github.com/spurtcms/categories"
+	"github.com/spurtcms/team"
 	permission "github.com/spurtcms/team-roles"
 	"gorm.io/gorm"
 )
 
 type Filter struct {
-	Keyword      string
-	Status       bool
-	CreateOnly   bool
+	Keyword    string
+	Status     bool
+	CreateOnly bool
+}
+
+type Channels struct {
+	Limit          int
+	Offset         int
+	Keyword        string
+	IsActive       bool
+	SortBy         string
+	SortingOrder   int
+	TenantId       int
+	EntriesCount   bool
+	ChannelEntries bool
+	AuthorDetail   bool
+	CreateOnly     bool
+	Count          bool
 }
 
 type Tblchannel struct {
@@ -28,9 +44,9 @@ type Tblchannel struct {
 	ModifiedBy         int                 `gorm:"column:modified_by;DEFAULT:NULL"`
 	DateString         string              `gorm:"-"`
 	EntriesCount       int                 `gorm:"-"`
-	ChannelEntries     []TblChannelEntries `gorm:"-"`
+	ChannelEntries     []TblChannelEntries `gorm:"foreignKey:ChannelId"`
 	ProfileImagePath   string              `gorm:"-;<-:false"`
-	Username           string              `gorm:"<-:false"`
+	AuthorDetails      team.TblUser        `gorm:"foreignKey:Id;references:CreatedBy"`
 }
 
 type tblchannelcategory struct {
@@ -307,49 +323,87 @@ func IsDeleted(db *gorm.DB) *gorm.DB {
 }
 
 /*channel list*/
-func (Ch ChannelModel) Channellist(limit, offset int, filter Filter, DB *gorm.DB, tenantid int) (chn []Tblchannel, chcount int64, err error) {
+func (Ch ChannelModel) Channellist(DB *gorm.DB,inputs Channels,channels *[]Tblchannel,count *int64) (err error) {
 
-	query := DB.Model(TblChannel{}).Select("tbl_channels.*,tbl_users.username").Where("tbl_channels.is_deleted=0 and tbl_channels.tenant_id=?", tenantid).Order("id desc")
+	query := DB.Debug().Model(TblChannel{}).Where("tbl_channels.is_deleted = 0")
 
-	if filter.CreateOnly && Ch.Dataaccess == 1 {
+	if inputs.TenantId != 0{
+
+		query = query.Where("tbl_channels.tenant_id=?", inputs.TenantId)
+
+	}
+
+	if inputs.CreateOnly && Ch.Dataaccess == 1 {
+
 		query = query.Where("tbl_channels.created_by = ?", Ch.Userid)
 	}
 
-	query.Joins("inner join tbl_users on tbl_users.id = tbl_channels.created_by")
+	if inputs.Keyword != "" {
 
-	if filter.Keyword != "" {
-
-		query = query.Where("LOWER(TRIM(channel_name)) LIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%")
+		query = query.Where("LOWER(TRIM(channel_name)) LIKE LOWER(TRIM(?))", "%"+inputs.Keyword+"%")
 	}
 
-	if filter.Status {
+	if inputs.IsActive {
 
 		query = query.Where("tbl_channels.is_active=1")
 
 	}
 
-	if limit != 0 {
+	if inputs.Count{
 
-		err = query.Limit(limit).Offset(offset).Order("id asc").Find(&chn).Error
+		err = query.Count(count).Error
 
-		if err != nil{
+	    if err != nil {
 
-			return []Tblchannel{},0,err
+		    return err
+	    }
+	}
+
+	if inputs.AuthorDetail{
+
+		query = query.Preload("AuthorDetails","is_deleted = ?",0)
+	}
+
+	if inputs.ChannelEntries{
+
+		query = query.Preload("ChannelEntries","is_deleted = ?",0)
+	}
+
+	if inputs.SortBy != "" {
+
+		if inputs.SortingOrder == 0 {
+
+			query = query.Order(inputs.SortingOrder)
+
+		} else if inputs.SortingOrder == 1 {
+
+			query = query.Order(inputs.SortBy + " desc")
+
 		}
 
 	} else {
 
-		err = query.Find(&chn).Count(&chcount).Error
-
-		if err != nil{
-
-			return []Tblchannel{},0,err
-		}
-
-		return chn, chcount, nil
+		query = query.Order("id desc")
 	}
 
-	return chn, 0, nil
+	if inputs.Limit != 0 {
+		
+		query = query.Limit(inputs.Limit)
+	}
+	
+	if inputs.Offset != -1{
+
+		query = query.Offset(inputs.Offset)
+	}
+
+	err = query.Find(&channels).Error
+
+	if err != nil {
+
+		return err
+	}
+
+	return nil
 }
 
 /*Craete channel */
