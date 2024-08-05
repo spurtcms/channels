@@ -50,11 +50,26 @@ func (channel *Channel) ListChannel(inputs Channels) (channelList []Tblchannel, 
 		return []Tblchannel{}, 0, err
 	}
 
-	if err != nil {
-		return []Tblchannel{}, 0, err
+	return channellist, int(count), nil
+}
+
+func (channel *Channel) ChannelDetail(inputs Channels)(channelDetails Tblchannel,err error){
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+		return  Tblchannel{}, autherr
 	}
 
-	return channellist, int(count), nil
+	CH.Userid = channel.Userid
+	CH.Dataaccess = channel.DataAccess
+
+	if err = CH.ChannelDetail(channel.DB,inputs,&channelDetails);err!=nil{
+
+		return Tblchannel{},err
+	}
+
+	return channelDetails, nil
 }
 
 

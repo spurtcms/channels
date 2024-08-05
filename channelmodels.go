@@ -16,6 +16,8 @@ type Filter struct {
 }
 
 type Channels struct {
+	Id             int
+	Slug           string
 	Limit          int
 	Offset         int
 	Keyword        string
@@ -417,6 +419,60 @@ func (Ch ChannelModel) CreateChannel(chn *TblChannel, DB *gorm.DB) (TblChannel, 
 
 	return *chn, nil
 
+}
+
+func (Ch ChannelModel) ChannelDetail (DB *gorm.DB,inputs Channels,channelDetail *Tblchannel)error{
+
+	query := DB.Debug().Model(TblChannel{}).Where("tbl_channels.is_deleted = 0")
+
+	if inputs.Id != 0{
+
+		query = query.Where("id=?",inputs.Id)
+	}
+
+	if inputs.Slug != ""{
+
+		query = query.Where("slug_name=?",inputs.Slug)
+	}
+
+	if inputs.TenantId != 0{
+
+		query = query.Where("tbl_channels.tenant_id=?", inputs.TenantId)
+	}
+
+	if inputs.CreateOnly && Ch.Dataaccess == 1 {
+
+		query = query.Where("tbl_channels.created_by = ?", Ch.Userid)
+	}
+
+	if inputs.Keyword != "" {
+
+		query = query.Where("LOWER(TRIM(channel_name)) LIKE LOWER(TRIM(?))", "%"+inputs.Keyword+"%")
+	}
+
+	if inputs.IsActive {
+
+		query = query.Where("tbl_channels.is_active=?",1)
+	}
+
+	if inputs.AuthorDetail{
+
+		query = query.Preload("AuthorDetails","is_deleted = ?",0)
+	}
+
+	if inputs.ChannelEntries{
+
+		query = query.Preload("ChannelEntries","is_deleted = ?",0)
+	}
+
+	err := query.First(&channelDetail).Error
+
+	if err != nil {
+
+		return err
+	}
+
+	return nil
 }
 
 func (Ch ChannelModel) GetChannelByChannelName(name string, DB *gorm.DB, tenantid int) (ch Tblchannel, err error) {
