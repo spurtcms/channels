@@ -443,7 +443,7 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 		}
 	}
 
-	if input.GetMemberProfile{
+	if input.GetMemberProfile {
 
 		if db.Config.Dialector.Name() == "mysql" {
 
@@ -526,7 +526,7 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 
 	} else {
 
-	    query = query.Order("en.id desc")
+		query = query.Order("en.id desc")
 	}
 
 	if input.Limit > 0 {
@@ -556,13 +556,13 @@ func (ch EntriesModel) MemberAccessCheck(memberid int, DB *gorm.DB, tenantid int
 	var mem member.TblMember
 
 	//get membergroup id
-	DB.Table("tbl_members").Select("member_group_id").Where("is_deleted=0 and id=? and (tenant_id is NULL or tenant_id)", memberid, tenantid).First(&mem)
+	DB.Table("tbl_members").Select("member_group_id").Where("is_deleted=0 and id=? and (tenant_id is NULL or tenant_id=?)", memberid, tenantid).First(&mem)
 
 	SUB := `select id from tbl_access_control_user_groups where is_deleted=0 and member_group_id=` + strconv.Itoa(mem.Id)
 
 	var accessgroup []access.TblAccessControlPages
 
-	DB.Table("tbl_access_control_pages").Where("access_control_user_group_id in (?) and (tenant_id is NULL or tenant_id)", SUB, tenantid).Find(&accessgroup)
+	DB.Table("tbl_access_control_pages").Where("access_control_user_group_id in (?) and (tenant_id is NULL or tenant_id=?)", SUB, tenantid).Find(&accessgroup)
 
 	for _, val := range accessgroup {
 
@@ -603,7 +603,7 @@ func (Ch EntriesModel) CreateEntrychannelFields(entryfield *[]TblChannelEntryFie
 /*Delete Channel Entry Field*/
 func (Ch EntriesModel) DeleteChannelEntryId(chentry *Tblchannelentries, id int, DB *gorm.DB, tenantid int) error {
 
-	if err := DB.Table("tbl_channel_entries").Where("id=? and (tenant_id is NULL or tenant_id)", chentry.Id, tenantid).UpdateColumns(map[string]interface{}{"is_deleted": chentry.IsDeleted, "deleted_by": chentry.DeletedBy, "deleted_on": chentry.DeletedOn}).Error; err != nil {
+	if err := DB.Table("tbl_channel_entries").Where("id=? and (tenant_id is NULL or tenant_id=?)", chentry.Id, tenantid).UpdateColumns(map[string]interface{}{"is_deleted": chentry.IsDeleted, "deleted_by": chentry.DeletedBy, "deleted_on": chentry.DeletedOn}).Error; err != nil {
 
 		return err
 	}
@@ -614,7 +614,7 @@ func (Ch EntriesModel) DeleteChannelEntryId(chentry *Tblchannelentries, id int, 
 /*Delete Channel Entry Field*/
 func (Ch EntriesModel) DeleteChannelEntryFieldId(chentry *TblChannelEntryField, id int, DB *gorm.DB, tenantid int) error {
 
-	if err := DB.Table("tbl_channel_entry_fields").Where("channel_entry_id=? and (tenant_id is NULL or tenant_id)", id, tenantid).UpdateColumns(map[string]interface{}{"deleted_by": chentry.DeletedBy, "deleted_on": chentry.DeletedOn}).Error; err != nil {
+	if err := DB.Table("tbl_channel_entry_fields").Where("channel_entry_id=? and (tenant_id is NULL or tenant_id=?)", id, tenantid).UpdateColumns(map[string]interface{}{"deleted_by": chentry.DeletedBy, "deleted_on": chentry.DeletedOn}).Error; err != nil {
 
 		return err
 	}

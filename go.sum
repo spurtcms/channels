@@ -35,6 +35,8 @@ github.com/spurtcms/categories v0.0.3 h1:0ekvcZWd0vOlpavJp7PmE8wCU00VXXVFlg4XSVp
 github.com/spurtcms/categories v0.0.3/go.mod h1:NGvMIZDbYNEHl0NJHyiIhloKiqaZXqceywm0B7oqNMA=
 github.com/spurtcms/categories v0.0.4 h1:F8i5/8nD4mBEUrzOA/FlNi48dFslEoqR9m+i0mIo3sI=
 github.com/spurtcms/categories v0.0.4/go.mod h1:Am2g6yC0zCETXop33UbWCjPheIyyQLZ4pSeCOM7vMyI=
+github.com/spurtcms/categories v0.0.12 h1:DdrHZzFYV5M3OyTvW9ROM3nvF9z4WouOQetSCOKf990=
+github.com/spurtcms/categories v0.0.12/go.mod h1:jFVS8/EoFV4NvdGHp0v8mxD5uPSjaeXFWGvWrMdUyNY=
 github.com/spurtcms/member v0.0.0-20240404121904-b393756a414f h1:z1hJ2TpZv0ClMqfy46aTIWMVnP1lDgLaTR5QzMt5aWA=
 github.com/spurtcms/member v0.0.0-20240404121904-b393756a414f/go.mod h1:nAZ7M+buGaygvEuBNS5kx+NKe718Qqi7qWLOmrt47cE=
 github.com/spurtcms/member v0.0.7 h1:gZvbWqY0SmRVatBZFCMY9fmA2OPJfozdIWs/NjO5JXs=
