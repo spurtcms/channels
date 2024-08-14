@@ -106,7 +106,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate, tenantid int)
 	modperms.SlugName = strings.ReplaceAll(strings.ToLower(ch.ChannelName), " ", "_")
 	modperms.CreatedBy = channelcreate.CreatedBy
 	modperms.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-	modperms.ModuleId = 8
+	modperms.ModuleId = 9
 	modperms.AssignPermission = 1
 	modperms.OrderIndex = 2
 	modperms.FullAccessPermission = 1
