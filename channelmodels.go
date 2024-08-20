@@ -803,7 +803,7 @@ func (ch ChannelModel) GetPermissionChannel(channels *Channel, DB *gorm.DB, tena
 
 	query := DB.Debug().Table("tbl_channels").Where("is_deleted=0 and is_active=1 and (tenant_id is NULL or tenant_id=?)", tenantid)
 
-	if channels.PermissionEnable && channels.Auth.RoleId != 1 {
+	if channels.PermissionEnable && (channels.Auth.RoleId != 1 && channels.Auth.RoleId != 2) {
 
 		query = query.Where("channel_name in (select display_name from tbl_module_permissions inner join tbl_modules on tbl_modules.id = tbl_module_permissions.module_id inner join tbl_role_permissions on tbl_role_permissions.permission_id = tbl_module_permissions.id where role_id =(?) and tbl_modules.module_name='Entries') ", channels.Auth.RoleId)
 
