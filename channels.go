@@ -198,6 +198,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 		cfld.ImagePath = val.IconPath
 		cfld.CharacterAllowed = val.CharacterAllowed
 		cfld.Url = val.Url
+		cfld.TenantId = tenantid
 
 		if val.MasterFieldId == 4 {
 
