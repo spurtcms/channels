@@ -49,6 +49,7 @@ type Tblchannel struct {
 	ChannelEntries     []TblChannelEntries `gorm:"foreignKey:ChannelId"`
 	ProfileImagePath   string              `gorm:"-;<-:false"`
 	AuthorDetails      team.TblUser        `gorm:"foreignKey:Id;references:CreatedBy"`
+	ChannelType        string              `gorm:"type:character varying"`
 }
 
 type tblchannelcategory struct {
@@ -151,6 +152,7 @@ type TblChannel struct {
 	ModifiedOn         time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
 	ModifiedBy         int       `gorm:"DEFAULT:NULL"`
 	TenantId           int       `gorm:"type:integer"`
+	ChannelType        string    `gorm:"type:character varying"`
 }
 
 type TblChannelCategorie struct {
@@ -325,11 +327,11 @@ func IsDeleted(db *gorm.DB) *gorm.DB {
 }
 
 /*channel list*/
-func (Ch ChannelModel) Channellist(DB *gorm.DB,inputs Channels,channels *[]Tblchannel,count *int64) (err error) {
+func (Ch ChannelModel) Channellist(DB *gorm.DB, inputs Channels, channels *[]Tblchannel, count *int64) (err error) {
 
 	query := DB.Debug().Model(TblChannel{}).Where("tbl_channels.is_deleted = 0")
 
-	if inputs.TenantId != -1{
+	if inputs.TenantId != -1 {
 
 		query = query.Where("tbl_channels.tenant_id=? or tbl_channels.tenant_id is NULL", inputs.TenantId)
 
@@ -351,24 +353,24 @@ func (Ch ChannelModel) Channellist(DB *gorm.DB,inputs Channels,channels *[]Tblch
 
 	}
 
-	if inputs.Count{
+	if inputs.Count {
 
 		err = query.Count(count).Error
 
-	    if err != nil {
+		if err != nil {
 
-		    return err
-	    }
+			return err
+		}
 	}
 
-	if inputs.AuthorDetail{
+	if inputs.AuthorDetail {
 
-		query = query.Preload("AuthorDetails","is_deleted = ?",0)
+		query = query.Preload("AuthorDetails", "is_deleted = ?", 0)
 	}
 
-	if inputs.ChannelEntries{
+	if inputs.ChannelEntries {
 
-		query = query.Preload("ChannelEntries","is_deleted = ?",0)
+		query = query.Preload("ChannelEntries", "is_deleted = ?", 0)
 	}
 
 	if inputs.SortBy != "" {
@@ -389,11 +391,11 @@ func (Ch ChannelModel) Channellist(DB *gorm.DB,inputs Channels,channels *[]Tblch
 	}
 
 	if inputs.Limit != 0 {
-		
+
 		query = query.Limit(inputs.Limit)
 	}
-	
-	if inputs.Offset != -1{
+
+	if inputs.Offset != -1 {
 
 		query = query.Offset(inputs.Offset)
 	}
@@ -421,21 +423,21 @@ func (Ch ChannelModel) CreateChannel(chn *TblChannel, DB *gorm.DB) (TblChannel, 
 
 }
 
-func (Ch ChannelModel) ChannelDetail (DB *gorm.DB,inputs Channels,channelDetail *Tblchannel)error{
+func (Ch ChannelModel) ChannelDetail(DB *gorm.DB, inputs Channels, channelDetail *Tblchannel) error {
 
 	query := DB.Debug().Model(TblChannel{}).Where("tbl_channels.is_deleted = 0")
 
-	if inputs.Id != 0{
+	if inputs.Id != 0 {
 
-		query = query.Where("id=?",inputs.Id)
+		query = query.Where("id=?", inputs.Id)
 	}
 
-	if inputs.Slug != ""{
+	if inputs.Slug != "" {
 
-		query = query.Where("slug_name=?",inputs.Slug)
+		query = query.Where("slug_name=?", inputs.Slug)
 	}
 
-	if inputs.TenantId != -1{
+	if inputs.TenantId != -1 {
 
 		query = query.Where("tbl_channels.tenant_id=? or tbl_channels.tenant_id is NULL", inputs.TenantId)
 	}
@@ -452,17 +454,17 @@ func (Ch ChannelModel) ChannelDetail (DB *gorm.DB,inputs Channels,channelDetail 
 
 	if inputs.IsActive {
 
-		query = query.Where("tbl_channels.is_active=?",1)
+		query = query.Where("tbl_channels.is_active=?", 1)
 	}
 
-	if inputs.AuthorDetail{
+	if inputs.AuthorDetail {
 
-		query = query.Preload("AuthorDetails","is_deleted = ?",0)
+		query = query.Preload("AuthorDetails", "is_deleted = ?", 0)
 	}
 
-	if inputs.ChannelEntries{
+	if inputs.ChannelEntries {
 
-		query = query.Preload("ChannelEntries","is_deleted = ?",0)
+		query = query.Preload("ChannelEntries", "is_deleted = ?", 0)
 	}
 
 	err := query.First(&channelDetail).Error
@@ -815,4 +817,15 @@ func (ch ChannelModel) GetPermissionChannel(channels *Channel, DB *gorm.DB, tena
 	}
 
 	return channel, nil
+}
+// Channel type change
+func (ch ChannelModel) ChangeChanelType(Channels Tblchannel, DB *gorm.DB) (Error error) {
+	
+	if err := DB.Debug().Table("tbl_channels").Where("id=?", Channels.Id).Updates(map[string]interface{}{"channel_type": Channels.ChannelType,}).Error; err != nil {
+	
+		return err
+
+	}
+
+	return nil
 }

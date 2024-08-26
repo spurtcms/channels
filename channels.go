@@ -945,3 +945,33 @@ func (channel *Channel) GetChannelsWithEntries(tenantid int) ([]Tblchannel, erro
 	return FinalChannellist, nil
 
 }
+// Channel type change
+func (channel *Channel) ChannelType(Channels Tblchannel) error {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return autherr
+	}
+
+	var channeltype Tblchannel
+
+	channeltype.Id = Channels.Id
+
+	channeltype.ChannelType = Channels.ChannelType
+
+	channeltype.ModifiedBy = Channels.ModifiedBy
+
+	channeltype.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	err := CH.ChangeChanelType(channeltype, channel.DB)
+
+	if err != nil {
+
+		return err
+	}
+
+	return nil
+
+}
