@@ -204,6 +204,7 @@ type TblChannelEntries struct {
 	IsDeleted       int       `gorm:"DEFAULT:0"`
 	DeletedOn       time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
 	DeletedBy       int       `gorm:"DEFAULT:NULL"`
+	Uuid            string    `gorm:"character varying"`
 }
 
 type TblChannelEntryField struct {
@@ -820,9 +821,9 @@ func (ch ChannelModel) GetPermissionChannel(channels *Channel, DB *gorm.DB, tena
 }
 // Channel type change
 func (ch ChannelModel) ChangeChanelType(Channels Tblchannel, DB *gorm.DB) (Error error) {
-	
+
 	if err := DB.Debug().Table("tbl_channels").Where("id=?", Channels.Id).Updates(map[string]interface{}{"channel_type": Channels.ChannelType,}).Error; err != nil {
-	
+
 		return err
 
 	}
