@@ -1065,3 +1065,22 @@ func (channel *Channel) EntryPreview(uuid string) (Entry TblChannelEntries, flg 
 	return entry, true, nil
 
 }
+// Entry is_active
+func (channel *Channel) EntryIsActive(entryid int, status int, modifiedby int, tenantid int) (bool, error) {
+
+	if AuthErr := AuthandPermission(channel); AuthErr != nil {
+		return false, AuthErr
+	}
+
+	var entryisactive Tblchannelentries
+	entryisactive.ModifiedBy = modifiedby
+	entryisactive.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	err := EntryModel.EntryIsActive(entryisactive, entryid, status, channel.DB, tenantid)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+
+}

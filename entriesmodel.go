@@ -954,3 +954,13 @@ func (Ch EntriesModel) GetPreview(chentry *TblChannelEntries, DB *gorm.DB, uuid 
 
 	return nil
 }
+// Entry  IsActive Function
+func (Ch EntriesModel) EntryIsActive(entryisactive Tblchannelentries, entryid int, status int, DB *gorm.DB, tenantid int) error {
+
+	if err := DB.Table("tbl_channel_entries").Where("id=? and (tenant_id is NULL or tenant_id=?)", entryid, tenantid).UpdateColumns(map[string]interface{}{"is_active": status, "modified_by": entryisactive.ModifiedBy, "modified_on": entryisactive.ModifiedOn}).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+}
