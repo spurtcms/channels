@@ -2,6 +2,7 @@ package channels
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -651,8 +652,10 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid in
 
 	uuid := (uuid.New()).String()
 
-	Entries.Uuid = uuid
-	
+	arr := strings.Split(uuid, "-")
+
+	Entries.Uuid = arr[len(arr)-1]
+
 	Entries.Title = entriesrequired.Title
 
 	Entries.Description = entriesrequired.Content
@@ -661,19 +664,21 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid in
 
 	Entries.MetaTitle = entriesrequired.SEODetails.MetaTitle
 
+	Entries.IsActive = entriesrequired.IsActive
+	
 	Entries.MetaDescription = entriesrequired.SEODetails.MetaDescription
 
 	Entries.Keyword = entriesrequired.SEODetails.MetaKeywords
 
-	if entriesrequired.SEODetails.MetaSlug == "" {
+	Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.Title), " ", "-")
 
-		Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.Title), " ", "_")
+	re := regexp.MustCompile(`[^a-z0-9\-]`)
 
-	} else {
+	Entries.Slug = re.ReplaceAllString(Entries.Slug, "-")
 
-		Entries.Slug = entriesrequired.SEODetails.MetaSlug
+	Entries.Slug = regexp.MustCompile(`-+`).ReplaceAllString(Entries.Slug, "-")
 
-	}
+	Entries.Slug = strings.Trim(Entries.Slug, "-")
 
 	Entries.Status = entriesrequired.Status
 
@@ -684,6 +689,8 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid in
 	Entries.CreatedBy = entriesrequired.CreatedBy
 
 	Entries.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	Entries.ModifiedOn = Entries.CreatedOn
 
 	Entries.Author = entriesrequired.Author
 
@@ -700,6 +707,7 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid in
 	Entries.Excerpt = entriesrequired.Excerpt
 
 	Entries.ImageAltTag = entriesrequired.SEODetails.ImageAltTag
+
 	Entries.TenantId = tenantid
 
 	Entriess, err := EntryModel.CreateChannelEntry(Entries, channel.DB)
@@ -781,15 +789,15 @@ func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName
 
 	Entries.ImageAltTag = entriesrequired.SEODetails.ImageAltTag
 
-	if entriesrequired.SEODetails.MetaSlug == "" {
+	Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.Title), " ", "-")
 
-		Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.Title), " ", "_")
+	re := regexp.MustCompile(`[^a-z0-9\-]`)
 
-	} else {
+	Entries.Slug = re.ReplaceAllString(Entries.Slug, "-")
 
-		Entries.Slug = entriesrequired.SEODetails.MetaSlug
+	Entries.Slug = regexp.MustCompile(`-+`).ReplaceAllString(Entries.Slug, "-")
 
-	}
+	Entries.Slug = strings.Trim(Entries.Slug, "-")
 
 	Entries.Status = entriesrequired.Status
 

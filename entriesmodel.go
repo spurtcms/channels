@@ -150,6 +150,7 @@ type EntriesRequired struct {
 	Excerpt     string
 	CreatedBy   int
 	ModifiedBy  int
+	IsActive    int
 }
 
 type RecentActivities struct {
@@ -281,7 +282,7 @@ var EntryModel EntriesModel
 /*List Channel Entry*/
 func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, categoryid string, createonly bool, DB *gorm.DB, tenantid int) (chentry []Tblchannelentries, chentcount int64, err error) {
 
-	query := DB.Model(TblChannelEntries{}).Select("tbl_channel_entries.*,tbl_users.username,tbl_users.profile_image_path,tbl_channels.channel_name").Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Joins("left join tbl_channels on tbl_channels.id = tbl_channel_entries.channel_id").Where("tbl_channel_entries.is_deleted=0 and (tbl_channel_entries.tenant_id is NULL or tbl_channel_entries.tenant_id=?)", tenantid).Order("id desc")
+	query := DB.Model(TblChannelEntries{}).Select("tbl_channel_entries.*,tbl_users.username,tbl_users.profile_image_path,tbl_channels.channel_name").Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Joins("left join tbl_channels on tbl_channels.id = tbl_channel_entries.channel_id").Where("tbl_channel_entries.is_deleted=0 and (tbl_channel_entries.tenant_id is NULL or tbl_channel_entries.tenant_id=?)", tenantid).Order("modified_on desc")
 
 	if channel.PermissionEnable && (channel.Auth.RoleId != 1 && channel.Auth.RoleId != 2) {
 
