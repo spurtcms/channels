@@ -5,9 +5,9 @@ go 1.20
 require (
 	github.com/spurtcms/auth v0.0.12
 	github.com/spurtcms/categories v0.0.12
-	github.com/spurtcms/member v0.0.7
+	github.com/spurtcms/member v0.0.17
 	github.com/spurtcms/member-access v0.0.1
-	github.com/spurtcms/team v0.0.4
+	github.com/spurtcms/team v0.0.20
 	github.com/spurtcms/team-roles v0.0.8
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gorm v1.25.9

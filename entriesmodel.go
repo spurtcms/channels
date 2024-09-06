@@ -8,6 +8,7 @@ import (
 	"github.com/spurtcms/member"
 	access "github.com/spurtcms/member-access"
 	"github.com/spurtcms/team"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -195,45 +196,45 @@ type EntriesInputs struct {
 }
 
 type JoinEntries struct {
-	Id              int `gorm:"column:entry_id"`
-	Title           string
-	Slug            string
-	Description     string
-	UserID          int
-	ChannelID       int
-	Status          int
-	IsActive        int
-	CreatedOn       time.Time
-	CreatedBy       int
-	ModifiedBy      int
-	ModifiedOn      time.Time
-	IsDeleted       int
-	DeletedOn       time.Time
-	DeletedBy       int
-	CoverImage      string
-	ThumbnailImage  string
-	MetaTitle       string
-	MetaDescription string
-	Keyword         string
-	CategoriesID    string
-	RelatedArticles string
-	TenantId        int
-	Feature         int
-	Author          string
-	SortOrder       int
-	CreateTime      time.Time
-	PublishedTime   time.Time
-	ReadingTime     int
-	Tags            string
-	Excerpt         string
-	ViewCount       int
-	ImageAltTag     string
-	ProfileId       int `gorm:"column:prof_id"`
-	MemberID        int
-	ProfileName     string
-	ProfileSlug     string
-	ProfilePage     string
-	// MemberDetails    datatypes.JSONMap
+	Id                int `gorm:"column:entry_id"`
+	Title             string
+	Slug              string
+	Description       string
+	UserID            int
+	ChannelID         int
+	Status            int
+	IsActive          int
+	CreatedOn         time.Time
+	CreatedBy         int
+	ModifiedBy        int
+	ModifiedOn        time.Time
+	IsDeleted         int
+	DeletedOn         time.Time
+	DeletedBy         int
+	CoverImage        string
+	ThumbnailImage    string
+	MetaTitle         string
+	MetaDescription   string
+	Keyword           string
+	CategoriesID      string
+	RelatedArticles   string
+	TenantId          int
+	Feature           int
+	Author            string
+	SortOrder         int
+	CreateTime        time.Time
+	PublishedTime     time.Time
+	ReadingTime       int
+	Tags              string
+	Excerpt           string
+	ViewCount         int
+	ImageAltTag       string
+	ProfileId         int `gorm:"column:prof_id"`
+	MemberID          int
+	ProfileName       string
+	ProfileSlug       string
+	ProfilePage       string
+	MemberDetails     datatypes.JSONMap
 	CompanyName       string
 	CompanyLocation   string
 	CompanyLogo       string
@@ -253,6 +254,7 @@ type JoinEntries struct {
 	ProfDeletedOn     time.Time `gorm:"column:prof_deleted_on"`
 	ProfDeletedBy     int       `gorm:"column:prof_deleted_by"`
 	ClaimDate         time.Time
+	ProfTenantId      int    `gorm:"column:prof_tenant_id"`
 	ProfStorageType   string `gorm:"column:prof_storage_type"`
 	AuthorId          int    `gorm:"column:author_id"`
 	FirstName         string
@@ -275,8 +277,8 @@ type JoinEntries struct {
 	AuthorDeletedOn   time.Time `gorm:"column:author_deleted_on"`
 	AuthorDeletedBy   int       `gorm:"column:author_deleted_by"`
 	DefaultLanguageId int
+	UserTenantId      int `gorm:"column:user_tenant_id"`
 }
-
 var EntryModel EntriesModel
 
 /*List Channel Entry*/
@@ -430,7 +432,7 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 		query = query.Where("en.title = ?", input.Title)
 	}
 
-	var joinCondition, memIdCast string
+	var joinCondition, profileCondition string
 
 	if input.CategoryId != 0 || input.CategorySlug != "" {
 
@@ -449,63 +451,70 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 
 		if db.Config.Dialector.Name() == "mysql" {
 
-			memIdCast = "signed"
+			profileCondition = `find_in_set(tmp.member_id,cef.field_value) > 0`
 
 		} else if db.Config.Dialector.Name() == "postgres" {
 
-			memIdCast = "integer"
+			profileCondition = `tmp.member_id = any(string_to_array(cef.field_value,',')::Integer[])`
+
 		}
 	}
 
 	if input.CategoryId != 0 {
 
-		if input.SelectedCategoryFilter {
+		switch {
+
+		case input.SelectedCategoryFilter:
+
+			query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.id = ?", input.CategoryId)
+
+		default:
 
 			subQuery := db.Table("tbl_categories as cat").Select("cat.id").Where("cat.is_deleted = 0 and cat.id = (?) or cat.parent_id in (?)", input.CategoryId, input.CategoryId)
 
 			query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.id in (?)", subQuery)
-
-		} else {
-
-			query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.id = ?", input.CategoryId)
 		}
 
 	}
 
 	if input.CategorySlug != "" {
 
-		if input.SelectedCategoryFilter {
+		switch {
+
+		case input.SelectedCategoryFilter:
+
+			query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.category_slug = ?", input.CategorySlug)
+
+		default:
 
 			innerSubQuery := db.Table("tbl_categories as cat").Select("cat.id").Where("cat.is_deleted = 0 and cat.category_slug = ?", input.CategorySlug)
 
 			subQuery := db.Table("tbl_categories as cat").Select("cat.id").Where("cat.is_deleted = 0 and cat.id = (?) or cat.parent_id in (?)", innerSubQuery, innerSubQuery)
 
 			query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.id in (?)", subQuery)
-
-		} else {
-
-			query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.category_slug = ?", input.CategorySlug)
 		}
 
 	}
 
 	if input.GetMemberProfile {
 
-		selectData += ",tmp.*,tmp.created_by as prof_created_by,tmp.created_on as prof_created_on,tmp.modified_on as prof_modified_on,tmp.modified_by as prof_modified_by,tmp.id as prof_id,tmp.is_deleted as prof_is_deleted,tmp.deleted_on as prof_deleted_on,tmp.deleted_by as prof_deleted_by,tmp.storage_type as prof_storage_type"
+		selectData += ",mj.*,mj.created_by as prof_created_by,mj.created_on as prof_created_on,mj.modified_on as prof_modified_on,mj.modified_by as prof_modified_by,mj.id as prof_id,mj.is_deleted as prof_is_deleted,mj.deleted_on as prof_deleted_on,mj.deleted_by as prof_deleted_by,mj.storage_type as prof_storage_type,mj.tenant_id as prof_tenant_id"
 
-		query = query.Joins("left join tbl_channel_entry_fields as cef on cef.channel_entry_id = en.id").Joins("inner join tbl_fields as tf on tf.id = cef.field_id").Joins("inner join tbl_member_profiles as tmp on tmp.member_id = CAST(NULLIF(cef.field_value, '') AS "+memIdCast+")").Where("tmp.is_deleted =0 and tf.is_deleted = 0 and tf.field_type_id = ?", input.MemberFieldTypeId)
+		joinSubQuery := db.Select("tmp.*,cef.channel_entry_id,cef.field_value").Table("tbl_channel_entry_fields as cef").Joins("inner join tbl_fields tf on tf.id = cef.field_id").Joins("inner join tbl_member_profiles tmp on " + profileCondition).Where("tmp.is_deleted=0 and tf.is_deleted=0")
+
+		query = query.Joins("left join (?) mj on mj.channel_entry_id = en.id", joinSubQuery)
 	}
 
 	if input.GetAuthorDetails {
 
-		selectData += ",tu.*,tu.id as author_id,tu.is_active as author_active,tu.created_on as author_created_on,tu.created_by as author_created_by,tu.modified_on as author_modified_on,tu.modified_by as author_modified_by,tu.deleted_on as author_deleted_on,tu.deleted_by as author_deleted_by, tu.is_deleted as author_is_deleted,tu.storage_type as author_storage_type"
+		selectData += ",tu.*,tu.id as author_id,tu.is_active as author_active,tu.created_on as author_created_on,tu.created_by as author_created_by,tu.modified_on as author_modified_on,tu.modified_by as author_modified_by,tu.deleted_on as author_deleted_on,tu.deleted_by as author_deleted_by, tu.is_deleted as author_is_deleted,tu.storage_type as author_storage_type,tu.tenant_id as user_tenant_id"
 
-		query = query.Joins("inner join tbl_users as tu on tu.id = en.created_by").Where("tu.is_deleted = 0")
+		query = query.Joins("left join tbl_users as tu on tu.id = en.created_by").Where("tu.is_deleted = 0")
 	}
 
 	if input.MemberAccessControl && input.MemberId != 0 && input.ContentHide {
 
-		restrictQuery := db.Select("acp.entry_id").Table("tbl_access_control_pages as acp").Joins("inner join tbl_access_control_user_groups as acu on acu.id = acp.eccess_control_user_group_id").Joins("inner join tbl_members as tm on tm.member_group_id = acu.member_group_id").Where("tm.is_deleted = 0 and tm.id = ? and acu.is_deleted= 0 and acp.is_deleted = 0", input.MemberId)
+		restrictQuery := db.Select("acp.entry_id").Table("tbl_access_control_pages as acp").Joins("inner join tbl_access_control_user_groups as acu on acu.id = acp.access_control_user_group_id").Joins("inner join tbl_members as tm on tm.member_group_id = acu.member_group_id").Where("tm.is_deleted = 0 and tm.id = ? and acu.is_deleted= 0 and acp.is_deleted = 0", input.MemberId)
 
 		query = query.Where("en.id not in (?)", restrictQuery)
 	}

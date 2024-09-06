@@ -12,7 +12,6 @@ import (
 	"github.com/spurtcms/categories"
 	"github.com/spurtcms/member"
 	"github.com/spurtcms/team"
-	"gorm.io/datatypes"
 )
 
 // get channel Entries List
@@ -61,7 +60,7 @@ func (channel *Channel) ChannelEntriesList(entry Entries, tenantid int) (entries
 
 		if entry.AuthorDetails {
 
-			authorDetails, _ := EntryModel.GetAuthorDetails(channel.DB, entries.CreatedBy,tenantid)
+			authorDetails, _ := EntryModel.GetAuthorDetails(channel.DB, entries.CreatedBy, tenantid)
 			if authorDetails.Id != 0 {
 
 				var modified_profileImage string
@@ -82,9 +81,9 @@ func (channel *Channel) ChannelEntriesList(entry Entries, tenantid int) (entries
 
 		if entry.AdditionalFields {
 
-			sections, _ := EntryModel.GetSectionsUnderEntries(channel.DB, entries.ChannelId, entry.FieldTypeId,tenantid)
+			sections, _ := EntryModel.GetSectionsUnderEntries(channel.DB, entries.ChannelId, entry.FieldTypeId, tenantid)
 			entries.Sections = sections
-			fields, _ := EntryModel.GetFieldsInEntries(channel.DB, entries.ChannelId, entry.FieldTypeId,tenantid)
+			fields, _ := EntryModel.GetFieldsInEntries(channel.DB, entries.ChannelId, entry.FieldTypeId, tenantid)
 
 			for _, field := range fields {
 
@@ -256,13 +255,13 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 		if input.GetMemberProfile {
 
 			memberProfile = member.TblMemberProfile{
-				Id:          data.ProfileId,
-				MemberId:    data.MemberID,
-				ProfilePage: data.ProfilePage,
-				ProfileName: data.ProfileName,
-				ProfileSlug: data.ProfileSlug,
-				CompanyLogo: data.CompanyLogo,
-				// StorageType:     data.ProfStorageType,
+				Id:              data.ProfileId,
+				MemberId:        data.MemberID,
+				ProfilePage:     data.ProfilePage,
+				ProfileName:     data.ProfileName,
+				ProfileSlug:     data.ProfileSlug,
+				CompanyLogo:     data.CompanyLogo,
+				StorageType:     data.ProfStorageType,
 				CompanyName:     data.CompanyName,
 				CompanyLocation: data.CompanyLocation,
 				About:           data.About,
@@ -272,7 +271,7 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 				SeoTitle:        data.SeoTitle,
 				SeoDescription:  data.SeoDescription,
 				SeoKeyword:      data.SeoKeyword,
-				MemberDetails:   datatypes.JSONMap{},
+				MemberDetails:   data.MemberDetails,
 				ClaimStatus:     data.ClaimStatus,
 				CreatedBy:       data.ProfCreatedBy,
 				CreatedOn:       data.ProfCreatedOn,
@@ -281,7 +280,8 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 				IsDeleted:       data.ProfIsDeleted,
 				DeletedOn:       data.ProfDeletedOn,
 				DeletedBy:       data.ProfDeletedBy,
-				// ClaimDate:   data.ClaimDate,
+				ClaimDate:       data.ClaimDate,
+				TenantId:        data.TenantId,
 			}
 		}
 
@@ -290,17 +290,17 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 		if input.GetAuthorDetails {
 
 			authorDetails = team.TblUser{
-				Id:               data.AuthorId,
-				FirstName:        data.FirstName,
-				LastName:         data.LastName,
-				RoleId:           data.RoleId,
-				Email:            data.Email,
-				Username:         data.Username,
-				MobileNo:         data.MobileNo,
-				IsActive:         data.AuthorActive,
-				ProfileImage:     data.ProfileImage,
-				ProfileImagePath: data.ProfileImagePath,
-				// StorageType:       data.AuthorStorageType,
+				Id:                data.AuthorId,
+				FirstName:         data.FirstName,
+				LastName:          data.LastName,
+				RoleId:            data.RoleId,
+				Email:             data.Email,
+				Username:          data.Username,
+				MobileNo:          data.MobileNo,
+				IsActive:          data.AuthorActive,
+				ProfileImage:      data.ProfileImage,
+				ProfileImagePath:  data.ProfileImagePath,
+				StorageType:       data.AuthorStorageType,
 				DataAccess:        data.DataAccess,
 				CreatedOn:         data.AuthorCreatedOn,
 				CreatedBy:         data.AuthorCreatedBy,
@@ -311,6 +311,8 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 				DeletedOn:         data.AuthorDeletedOn,
 				DeletedBy:         data.AuthorDeletedBy,
 				DefaultLanguageId: data.DefaultLanguageId,
+				TenantId:          data.UserTenantId,
+				
 			}
 
 		}
@@ -665,7 +667,7 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid in
 	Entries.MetaTitle = entriesrequired.SEODetails.MetaTitle
 
 	Entries.IsActive = entriesrequired.IsActive
-	
+
 	Entries.MetaDescription = entriesrequired.SEODetails.MetaDescription
 
 	Entries.Keyword = entriesrequired.SEODetails.MetaKeywords
@@ -1068,11 +1070,12 @@ func (channel *Channel) EntryPreview(uuid string) (Entry TblChannelEntries, flg 
 
 	var entry TblChannelEntries
 
-	EntryModel.GetPreview(&entry,channel.DB, uuid)
+	EntryModel.GetPreview(&entry, channel.DB, uuid)
 
 	return entry, true, nil
 
 }
+
 // Entry is_active
 func (channel *Channel) EntryIsActive(entryid int, status int, modifiedby int, tenantid int) (bool, error) {
 
