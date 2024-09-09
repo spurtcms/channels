@@ -137,6 +137,7 @@ type tblfield struct {
 	CharacterAllowed int                  `gorm:"column:character_allowed"`
 	FieldOptions     []TblFieldOption     `gorm:"-"`
 	FieldValue       TblChannelEntryField `gorm:"-"`
+	tenantId         int
 }
 
 type TblChannel struct {

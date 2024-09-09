@@ -221,11 +221,11 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 
 		input.Status = "0"
 
-	} else if input.Status == "Published" {
+	} else if input.Status == "Publish" {
 
 		input.Status = "1"
 
-	} else if input.Status == "Unpublished" {
+	} else if input.Status == "Unpublish" {
 
 		input.Status = "2"
 
@@ -312,7 +312,6 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 				DeletedBy:         data.AuthorDeletedBy,
 				DefaultLanguageId: data.DefaultLanguageId,
 				TenantId:          data.UserTenantId,
-				
 			}
 
 		}

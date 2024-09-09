@@ -279,6 +279,7 @@ type JoinEntries struct {
 	DefaultLanguageId int
 	UserTenantId      int `gorm:"column:user_tenant_id"`
 }
+
 var EntryModel EntriesModel
 
 /*List Channel Entry*/
@@ -414,7 +415,9 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 
 	if input.Status != "" {
 
-		query = query.Where("en.status = ?", input.Status)
+		status, _ := strconv.Atoi(input.Status)
+
+		query = query.Where("en.status = ?", status)
 	}
 
 	if input.ActiveEntriesonly {
@@ -475,9 +478,7 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 			query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.id in (?)", subQuery)
 		}
 
-	}
-
-	if input.CategorySlug != "" {
+	}else if input.CategorySlug != "" {
 
 		switch {
 
