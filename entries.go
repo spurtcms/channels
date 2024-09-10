@@ -1094,3 +1094,234 @@ func (channel *Channel) EntryIsActive(entryid int, status int, modifiedby int, t
 	return true, nil
 
 }
+
+//update channel entry view count
+func (channel *Channel) UpdateChannelEntryViewCount(id int,slug string,tenantId int)(int,error){
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return 0,autherr
+	}
+
+	var viewCount int
+
+	err := EntryModel.UpdateEntryViewCount(channel.DB,id,slug,tenantId,&viewCount)
+
+	if err!=nil{
+
+		return int(viewCount),err
+	}
+
+	return int(viewCount),nil
+
+}
+
+//fetch channel netry details
+func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs)(Tblchannelentries, error){
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return Tblchannelentries{},autherr
+	}
+
+	var data JoinEntries
+
+	err := EntryModel.FlexibleChannelEntryDetail(channel.DB,inputs,&data)
+	
+	if err!=nil{
+
+		return Tblchannelentries{},err
+	}
+
+	var memberProfile member.TblMemberProfile
+
+	if inputs.GetMemberProfile {
+
+		memberProfile = member.TblMemberProfile{
+			Id:              data.ProfileId,
+			MemberId:        data.MemberID,
+			ProfilePage:     data.ProfilePage,
+			ProfileName:     data.ProfileName,
+			ProfileSlug:     data.ProfileSlug,
+			CompanyLogo:     data.CompanyLogo,
+			StorageType:     data.ProfStorageType,
+			CompanyName:     data.CompanyName,
+			CompanyLocation: data.CompanyLocation,
+			About:           data.About,
+			Linkedin:        data.Linkedin,
+			Website:         data.Website,
+			Twitter:         data.Twitter,
+			SeoTitle:        data.SeoTitle,
+			SeoDescription:  data.SeoDescription,
+			SeoKeyword:      data.SeoKeyword,
+			MemberDetails:   data.MemberDetails,
+			ClaimStatus:     data.ClaimStatus,
+			CreatedBy:       data.ProfCreatedBy,
+			CreatedOn:       data.ProfCreatedOn,
+			ModifiedBy:      data.ProfModifiedBy,
+			ModifiedOn:      data.ProfModifiedOn,
+			IsDeleted:       data.ProfIsDeleted,
+			DeletedOn:       data.ProfDeletedOn,
+			DeletedBy:       data.ProfDeletedBy,
+			ClaimDate:       data.ClaimDate,
+			TenantId:        data.TenantId,
+		}
+	}
+
+	var authorDetails team.TblUser
+
+	if inputs.GetAuthorDetails {
+
+		authorDetails = team.TblUser{
+			Id:                data.AuthorId,
+			FirstName:         data.FirstName,
+			LastName:          data.LastName,
+			RoleId:            data.RoleId,
+			Email:             data.Email,
+			Username:          data.Username,
+			MobileNo:          data.MobileNo,
+			IsActive:          data.AuthorActive,
+			ProfileImage:      data.ProfileImage,
+			ProfileImagePath:  data.ProfileImagePath,
+			StorageType:       data.AuthorStorageType,
+			DataAccess:        data.DataAccess,
+			CreatedOn:         data.AuthorCreatedOn,
+			CreatedBy:         data.AuthorCreatedBy,
+			ModifiedOn:        data.AuthorModifiedOn,
+			ModifiedBy:        data.AuthorModifiedBy,
+			LastLogin:         data.LastLogin,
+			IsDeleted:         data.AuthorIsDeleted,
+			DeletedOn:         data.AuthorDeletedOn,
+			DeletedBy:         data.AuthorDeletedBy,
+			DefaultLanguageId: data.DefaultLanguageId,
+			TenantId:          data.UserTenantId,
+		}
+
+	}
+
+	var categoryHierarchy [][]categories.TblCategories
+
+	if inputs.GetLinkedCategories && data.CategoriesID != "" {
+
+		var categoriez []categories.TblCategories
+
+		splitArr := strings.Split(data.CategoriesID, ",")
+
+		categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB)
+
+		for _, mapId := range splitArr {
+
+			IntId, _ := strconv.Atoi(mapId)
+
+			var categoryStream []categories.TblCategories
+
+			for _, category := range categoriez {
+
+				if category.Id == IntId {
+
+					parentId := category.ParentId
+
+					categoryStream = append(categoryStream, category)
+
+				LOOP:
+
+					for _, parent := range categoriez {
+
+						if parentId == parent.Id {
+
+							parentId = parent.ParentId
+
+							categoryStream = append(categoryStream, parent)
+
+							if parent.ParentId != 0 {
+
+								goto LOOP
+
+							} else {
+
+								break
+							}
+						}
+					}
+				}
+			}
+
+			categoryHierarchy = append(categoryHierarchy, categoryStream)
+
+		}
+
+	}
+
+	var sections, fields []tblfield
+
+	if inputs.GetAdditionalFields {
+
+		additionalFields, _ := EntryModel.GetChannelAdditionalFields(channel.DB, data.ChannelID)
+
+		for _, field := range additionalFields {
+
+			if field.FieldTypeId != inputs.SectionFieldTypeId {
+
+				if field.OptionExist == 1 {
+
+					field.FieldOptions, _ = EntryModel.GetFieldOptions(channel.DB, field.Id, inputs.TenantId)
+				}
+
+				field.FieldValue, _ = EntryModel.GetFieldValue(channel.DB, field.Id, data.Id, inputs.TenantId)
+
+				fields = append(fields, field)
+
+			} else {
+
+				sections = append(sections, field)
+			}
+		}
+
+	}
+
+	channelEntry := Tblchannelentries{
+		Id:              data.Id,
+		Title:           data.Title,
+		Slug:            data.Slug,
+		Description:     data.Description,
+		UserId:          data.UserID,
+		ChannelId:       data.ChannelID,
+		Status:          data.Status,
+		IsActive:        data.IsActive,
+		CreatedOn:       data.CreatedOn,
+		CreatedBy:       data.CreatedBy,
+		ModifiedBy:      data.ModifiedBy,
+		ModifiedOn:      data.ModifiedOn,
+		CoverImage:      data.CoverImage,
+		ThumbnailImage:  data.ThumbnailImage,
+		PublishedTime:   data.PublishedTime,
+		MetaDescription: data.MetaDescription,
+		MetaTitle:       data.MetaTitle,
+		Keyword:         data.Keyword,
+		ImageAltTag:     data.ImageAltTag,
+		CategoriesId:    data.CategoriesID,
+		RelatedArticles: data.RelatedArticles,
+		Feature:         data.Feature,
+		ViewCount:       data.ViewCount,
+		Author:          data.Author,
+		SortOrder:       data.SortOrder,
+		CreateTime:      data.CreateTime,
+		ReadingTime:     data.ReadingTime,
+		Tags:            data.Tags,
+		Excerpt:         data.Excerpt,
+		IsDeleted:       data.IsDeleted,
+		DeletedOn:       data.DeletedOn,
+		DeletedBy:       data.DeletedBy,
+		AuthorDetail:    authorDetails,
+		MemberProfiles:  memberProfile,
+		Categories:      categoryHierarchy,
+		Sections:        sections,
+		Fields:          fields,
+	}
+
+	return channelEntry,nil
+}

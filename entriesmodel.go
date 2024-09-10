@@ -1,6 +1,7 @@
 package channels
 
 import (
+	"errors"
 	"strconv"
 	"time"
 
@@ -170,6 +171,8 @@ type EntriesModel struct {
 }
 
 type EntriesInputs struct {
+	Id                     int
+	Slug                   string
 	Limit                  int
 	Offset                 int
 	SortBy                 string
@@ -478,7 +481,7 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 			query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.id in (?)", subQuery)
 		}
 
-	}else if input.CategorySlug != "" {
+	} else if input.CategorySlug != "" {
 
 		switch {
 
@@ -955,6 +958,7 @@ func (Ch EntriesModel) GetChannelAdditionalFields(DB *gorm.DB, channelId int) (f
 
 	return fields, nil
 }
+
 // Entry Preview
 func (Ch EntriesModel) GetPreview(chentry *TblChannelEntries, DB *gorm.DB, uuid string) (err error) {
 
@@ -965,10 +969,127 @@ func (Ch EntriesModel) GetPreview(chentry *TblChannelEntries, DB *gorm.DB, uuid 
 
 	return nil
 }
+
 // Entry  IsActive Function
 func (Ch EntriesModel) EntryIsActive(entryisactive Tblchannelentries, entryid int, status int, DB *gorm.DB, tenantid int) error {
 
 	if err := DB.Table("tbl_channel_entries").Where("id=? and (tenant_id is NULL or tenant_id=?)", entryid, tenantid).UpdateColumns(map[string]interface{}{"is_active": status, "modified_by": entryisactive.ModifiedBy, "modified_on": entryisactive.ModifiedOn}).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+}
+
+// Update channel Entry View Count
+func (En *EntriesModel) UpdateEntryViewCount(db *gorm.DB, id int, slug string, tenantId int, count *int) error {
+
+	pipeline := db.Debug().Transaction(func(tx *gorm.DB) error {
+
+		query := tx.Table("tbl_channel_entries").Where("is_deleted=0")
+
+		switch {
+
+		case id != 0:
+
+			query = query.Where("id=?", id)
+
+		case slug != "":
+
+			query = query.Where("slug=?", slug)
+
+		}
+
+		if tenantId != -1 {
+
+			switch {
+
+			case tenantId == 0:
+
+				query = query.Where("tenant_id=? or tenant_id is null", tenantId)
+
+			default:
+
+				query = query.Where("tenant_id=?", tenantId)
+			}
+
+		}
+
+		if rowsAffected := query.Update("view_count", gorm.Expr("view_count + ?", 1)).RowsAffected; rowsAffected == 0 {
+
+			return errors.New("no rows affected")
+		}
+
+		if err := query.Select("view_count").Scan(count).Error; err != nil {
+
+			return err
+		}
+
+		return nil
+
+	})
+
+	if err := pipeline; err != nil {
+
+		return err
+	}
+
+	return nil
+}
+
+func (En *EntriesModel) FlexibleChannelEntryDetail(db *gorm.DB, inputs EntriesInputs, channelEntryDetails *JoinEntries) error {
+
+	selectData := "en.*, en.id as entry_id"
+
+	query := db.Table("tbl_channel_entries").Where("is_deleted=0")
+
+	if inputs.Id != 0 {
+
+		query = query.Where("id=?", inputs.Id)
+	}
+
+	if inputs.Slug != "" {
+
+		query = query.Where("slug=?", inputs.Slug)
+	}
+
+	if inputs.TenantId != -1 {
+
+		query = query.Where("tenant_id = ? or tenant_id is null", inputs.TenantId)
+	}
+
+	var profileCondition string
+
+	if inputs.GetMemberProfile {
+
+		if db.Config.Dialector.Name() == "mysql" {
+
+			profileCondition = `find_in_set(tmp.member_id,cef.field_value) > 0`
+
+		} else if db.Config.Dialector.Name() == "postgres" {
+
+			profileCondition = `tmp.member_id = any(string_to_array(cef.field_value,',')::Integer[])`
+
+		}
+	}
+
+	if inputs.GetMemberProfile {
+
+		selectData += ",mj.*,mj.created_by as prof_created_by,mj.created_on as prof_created_on,mj.modified_on as prof_modified_on,mj.modified_by as prof_modified_by,mj.id as prof_id,mj.is_deleted as prof_is_deleted,mj.deleted_on as prof_deleted_on,mj.deleted_by as prof_deleted_by,mj.storage_type as prof_storage_type,mj.tenant_id as prof_tenant_id"
+
+		joinSubQuery := db.Select("tmp.*,cef.channel_entry_id,cef.field_value").Table("tbl_channel_entry_fields as cef").Joins("inner join tbl_fields tf on tf.id = cef.field_id").Joins("inner join tbl_member_profiles tmp on " + profileCondition).Where("tmp.is_deleted=0 and tf.is_deleted=0")
+
+		query = query.Joins("left join (?) mj on mj.channel_entry_id = en.id", joinSubQuery)
+	}
+
+	if inputs.GetAuthorDetails {
+
+		selectData += ",tu.*,tu.id as author_id,tu.is_active as author_active,tu.created_on as author_created_on,tu.created_by as author_created_by,tu.modified_on as author_modified_on,tu.modified_by as author_modified_by,tu.deleted_on as author_deleted_on,tu.deleted_by as author_deleted_by, tu.is_deleted as author_is_deleted,tu.storage_type as author_storage_type,tu.tenant_id as user_tenant_id"
+
+		query = query.Joins("left join tbl_users as tu on tu.id = en.created_by").Where("tu.is_deleted = 0")
+	}
+
+	if err := query.Select(selectData).First(&channelEntryDetails).Error; err != nil {
 
 		return err
 	}
