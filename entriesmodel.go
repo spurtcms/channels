@@ -1041,21 +1041,21 @@ func (En *EntriesModel) FlexibleChannelEntryDetail(db *gorm.DB, inputs EntriesIn
 
 	selectData := "en.*, en.id as entry_id"
 
-	query := db.Table("tbl_channel_entries").Where("is_deleted=0")
+	query := db.Table("tbl_channel_entries as en").Where("en.is_deleted=0")
 
 	if inputs.Id != 0 {
 
-		query = query.Where("id=?", inputs.Id)
+		query = query.Where("en.id=?", inputs.Id)
 	}
 
 	if inputs.Slug != "" {
 
-		query = query.Where("slug=?", inputs.Slug)
+		query = query.Where("en.slug=?", inputs.Slug)
 	}
 
 	if inputs.TenantId != -1 {
 
-		query = query.Where("tenant_id = ? or tenant_id is null", inputs.TenantId)
+		query = query.Where("en.tenant_id = ? or en.tenant_id is null", inputs.TenantId)
 	}
 
 	var profileCondition string
@@ -1089,10 +1089,11 @@ func (En *EntriesModel) FlexibleChannelEntryDetail(db *gorm.DB, inputs EntriesIn
 		query = query.Joins("left join tbl_users as tu on tu.id = en.created_by").Where("tu.is_deleted = 0")
 	}
 
-	if err := query.Select(selectData).First(&channelEntryDetails).Error; err != nil {
+	if err := query.Debug().Select(selectData).Scan(&channelEntryDetails).Error; err != nil {
 
 		return err
 	}
 
 	return nil
 }
+
