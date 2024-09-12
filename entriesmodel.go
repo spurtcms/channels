@@ -1037,15 +1037,22 @@ func (En *EntriesModel) UpdateEntryViewCount(db *gorm.DB, id int, slug string, t
 	return nil
 }
 
-func (En *EntriesModel) FlexibleChannelEntryDetail(db *gorm.DB, inputs EntriesInputs, channelEntryDetails *JoinEntries) error {
+func (En *EntriesModel) FlexibleChannelEntryDetail(db *gorm.DB, inputs EntriesInputs, multiFetchIds []int, channelEntryDetails *JoinEntries, multiEntryDetails *[]JoinEntries) error {
 
 	selectData := "en.*, en.id as entry_id"
 
 	query := db.Table("tbl_channel_entries as en").Where("en.is_deleted=0")
 
-	if inputs.Id != 0 {
+	switch {
+
+	case len(multiFetchIds) > 0:
+
+		query = query.Where("en.id in (?)", multiFetchIds)
+
+	case inputs.Id != 0:
 
 		query = query.Where("en.id=?", inputs.Id)
+
 	}
 
 	if inputs.Slug != "" {
@@ -1089,7 +1096,19 @@ func (En *EntriesModel) FlexibleChannelEntryDetail(db *gorm.DB, inputs EntriesIn
 		query = query.Joins("left join tbl_users as tu on tu.id = en.created_by").Where("tu.is_deleted = 0")
 	}
 
-	if err := query.Debug().Select(selectData).Scan(&channelEntryDetails).Error; err != nil {
+	switch {
+
+	case len(multiFetchIds) > 0:
+
+		query = query.Debug().Select(selectData).Find(&multiEntryDetails)
+
+	case inputs.Id != 0:
+
+		query = query.Debug().Select(selectData).Scan(&channelEntryDetails)
+
+	}
+
+	if err := query.Error; err != nil {
 
 		return err
 	}

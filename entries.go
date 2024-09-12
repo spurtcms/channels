@@ -1118,210 +1118,414 @@ func (channel *Channel) UpdateChannelEntryViewCount(id int,slug string,tenantId 
 
 }
 
-//fetch channel netry details
-func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs)(Tblchannelentries, error){
+// fetch channel netry details
+func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetchIds []int) (Tblchannelentries, []Tblchannelentries, error) {
 
 	autherr := AuthandPermission(channel)
 
 	if autherr != nil {
 
-		return Tblchannelentries{},autherr
+		return Tblchannelentries{}, []Tblchannelentries{}, autherr
 	}
 
-	var data JoinEntries
+	var (
+		data           JoinEntries
+		multiData      []JoinEntries
+		channelEntry   Tblchannelentries
+		channelEntries []Tblchannelentries
+	)
 
-	err := EntryModel.FlexibleChannelEntryDetail(channel.DB,inputs,&data)
-	
-	if err!=nil{
+	err := EntryModel.FlexibleChannelEntryDetail(channel.DB, inputs, multiFetchIds, &data, &multiData)
 
-		return Tblchannelentries{},err
+	if err != nil {
+
+		return Tblchannelentries{}, []Tblchannelentries{}, err
 	}
 
-	var memberProfile member.TblMemberProfile
+	switch {
 
-	if inputs.GetMemberProfile {
+	case len(multiData) > 0:
 
-		memberProfile = member.TblMemberProfile{
-			Id:              data.ProfileId,
-			MemberId:        data.MemberID,
-			ProfilePage:     data.ProfilePage,
-			ProfileName:     data.ProfileName,
-			ProfileSlug:     data.ProfileSlug,
-			CompanyLogo:     data.CompanyLogo,
-			StorageType:     data.ProfStorageType,
-			CompanyName:     data.CompanyName,
-			CompanyLocation: data.CompanyLocation,
-			About:           data.About,
-			Linkedin:        data.Linkedin,
-			Website:         data.Website,
-			Twitter:         data.Twitter,
-			SeoTitle:        data.SeoTitle,
-			SeoDescription:  data.SeoDescription,
-			SeoKeyword:      data.SeoKeyword,
-			MemberDetails:   data.MemberDetails,
-			ClaimStatus:     data.ClaimStatus,
-			CreatedBy:       data.ProfCreatedBy,
-			CreatedOn:       data.ProfCreatedOn,
-			ModifiedBy:      data.ProfModifiedBy,
-			ModifiedOn:      data.ProfModifiedOn,
-			IsDeleted:       data.ProfIsDeleted,
-			DeletedOn:       data.ProfDeletedOn,
-			DeletedBy:       data.ProfDeletedBy,
-			ClaimDate:       data.ClaimDate,
-			TenantId:        data.TenantId,
+		for _, data := range multiData {
+
+			var memberProfile member.TblMemberProfile
+
+			if inputs.GetMemberProfile {
+
+				memberProfile = member.TblMemberProfile{
+					Id:              data.ProfileId,
+					MemberId:        data.MemberID,
+					ProfilePage:     data.ProfilePage,
+					ProfileName:     data.ProfileName,
+					ProfileSlug:     data.ProfileSlug,
+					CompanyLogo:     data.CompanyLogo,
+					StorageType:     data.ProfStorageType,
+					CompanyName:     data.CompanyName,
+					CompanyLocation: data.CompanyLocation,
+					About:           data.About,
+					Linkedin:        data.Linkedin,
+					Website:         data.Website,
+					Twitter:         data.Twitter,
+					SeoTitle:        data.SeoTitle,
+					SeoDescription:  data.SeoDescription,
+					SeoKeyword:      data.SeoKeyword,
+					MemberDetails:   data.MemberDetails,
+					ClaimStatus:     data.ClaimStatus,
+					CreatedBy:       data.ProfCreatedBy,
+					CreatedOn:       data.ProfCreatedOn,
+					ModifiedBy:      data.ProfModifiedBy,
+					ModifiedOn:      data.ProfModifiedOn,
+					IsDeleted:       data.ProfIsDeleted,
+					DeletedOn:       data.ProfDeletedOn,
+					DeletedBy:       data.ProfDeletedBy,
+					ClaimDate:       data.ClaimDate,
+					TenantId:        data.TenantId,
+				}
+			}
+
+			var authorDetails team.TblUser
+
+			if inputs.GetAuthorDetails {
+
+				authorDetails = team.TblUser{
+					Id:                data.AuthorId,
+					FirstName:         data.FirstName,
+					LastName:          data.LastName,
+					RoleId:            data.RoleId,
+					Email:             data.Email,
+					Username:          data.Username,
+					MobileNo:          data.MobileNo,
+					IsActive:          data.AuthorActive,
+					ProfileImage:      data.ProfileImage,
+					ProfileImagePath:  data.ProfileImagePath,
+					StorageType:       data.AuthorStorageType,
+					DataAccess:        data.DataAccess,
+					CreatedOn:         data.AuthorCreatedOn,
+					CreatedBy:         data.AuthorCreatedBy,
+					ModifiedOn:        data.AuthorModifiedOn,
+					ModifiedBy:        data.AuthorModifiedBy,
+					LastLogin:         data.LastLogin,
+					IsDeleted:         data.AuthorIsDeleted,
+					DeletedOn:         data.AuthorDeletedOn,
+					DeletedBy:         data.AuthorDeletedBy,
+					DefaultLanguageId: data.DefaultLanguageId,
+					TenantId:          data.UserTenantId,
+				}
+
+			}
+
+			var categoryHierarchy [][]categories.TblCategories
+
+			if inputs.GetLinkedCategories && data.CategoriesID != "" {
+
+				var categoriez []categories.TblCategories
+
+				splitArr := strings.Split(data.CategoriesID, ",")
+
+				categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB)
+
+				for _, mapId := range splitArr {
+
+					IntId, _ := strconv.Atoi(mapId)
+
+					var categoryStream []categories.TblCategories
+
+					for _, category := range categoriez {
+
+						if category.Id == IntId {
+
+							parentId := category.ParentId
+
+							categoryStream = append(categoryStream, category)
+
+						LOOPM:
+
+							for _, parent := range categoriez {
+
+								if parentId == parent.Id {
+
+									parentId = parent.ParentId
+
+									categoryStream = append(categoryStream, parent)
+
+									if parent.ParentId != 0 {
+
+										goto LOOPM
+
+									} else {
+
+										break
+									}
+								}
+							}
+						}
+					}
+
+					categoryHierarchy = append(categoryHierarchy, categoryStream)
+
+				}
+
+			}
+
+			var sections, fields []tblfield
+
+			if inputs.GetAdditionalFields {
+
+				additionalFields, _ := EntryModel.GetChannelAdditionalFields(channel.DB, data.ChannelID)
+
+				for _, field := range additionalFields {
+
+					if field.FieldTypeId != inputs.SectionFieldTypeId {
+
+						if field.OptionExist == 1 {
+
+							field.FieldOptions, _ = EntryModel.GetFieldOptions(channel.DB, field.Id, inputs.TenantId)
+						}
+
+						field.FieldValue, _ = EntryModel.GetFieldValue(channel.DB, field.Id, data.Id, inputs.TenantId)
+
+						fields = append(fields, field)
+
+					} else {
+
+						sections = append(sections, field)
+					}
+				}
+
+			}
+
+			channnel_entry := Tblchannelentries{
+				Id:              data.Id,
+				Title:           data.Title,
+				Slug:            data.Slug,
+				Description:     data.Description,
+				UserId:          data.UserID,
+				ChannelId:       data.ChannelID,
+				Status:          data.Status,
+				IsActive:        data.IsActive,
+				CreatedOn:       data.CreatedOn,
+				CreatedBy:       data.CreatedBy,
+				ModifiedBy:      data.ModifiedBy,
+				ModifiedOn:      data.ModifiedOn,
+				CoverImage:      data.CoverImage,
+				ThumbnailImage:  data.ThumbnailImage,
+				PublishedTime:   data.PublishedTime,
+				MetaDescription: data.MetaDescription,
+				MetaTitle:       data.MetaTitle,
+				Keyword:         data.Keyword,
+				ImageAltTag:     data.ImageAltTag,
+				CategoriesId:    data.CategoriesID,
+				RelatedArticles: data.RelatedArticles,
+				Feature:         data.Feature,
+				ViewCount:       data.ViewCount,
+				Author:          data.Author,
+				SortOrder:       data.SortOrder,
+				CreateTime:      data.CreateTime,
+				ReadingTime:     data.ReadingTime,
+				Tags:            data.Tags,
+				Excerpt:         data.Excerpt,
+				IsDeleted:       data.IsDeleted,
+				DeletedOn:       data.DeletedOn,
+				DeletedBy:       data.DeletedBy,
+				AuthorDetail:    authorDetails,
+				MemberProfiles:  memberProfile,
+				Categories:      categoryHierarchy,
+				Sections:        sections,
+				Fields:          fields,
+			}
+
+			channelEntries = append(channelEntries, channnel_entry)
 		}
-	}
 
-	var authorDetails team.TblUser
+	case data.Id != 0:
 
-	if inputs.GetAuthorDetails {
+		var memberProfile member.TblMemberProfile
 
-		authorDetails = team.TblUser{
-			Id:                data.AuthorId,
-			FirstName:         data.FirstName,
-			LastName:          data.LastName,
-			RoleId:            data.RoleId,
-			Email:             data.Email,
-			Username:          data.Username,
-			MobileNo:          data.MobileNo,
-			IsActive:          data.AuthorActive,
-			ProfileImage:      data.ProfileImage,
-			ProfileImagePath:  data.ProfileImagePath,
-			StorageType:       data.AuthorStorageType,
-			DataAccess:        data.DataAccess,
-			CreatedOn:         data.AuthorCreatedOn,
-			CreatedBy:         data.AuthorCreatedBy,
-			ModifiedOn:        data.AuthorModifiedOn,
-			ModifiedBy:        data.AuthorModifiedBy,
-			LastLogin:         data.LastLogin,
-			IsDeleted:         data.AuthorIsDeleted,
-			DeletedOn:         data.AuthorDeletedOn,
-			DeletedBy:         data.AuthorDeletedBy,
-			DefaultLanguageId: data.DefaultLanguageId,
-			TenantId:          data.UserTenantId,
+		if inputs.GetMemberProfile {
+
+			memberProfile = member.TblMemberProfile{
+				Id:              data.ProfileId,
+				MemberId:        data.MemberID,
+				ProfilePage:     data.ProfilePage,
+				ProfileName:     data.ProfileName,
+				ProfileSlug:     data.ProfileSlug,
+				CompanyLogo:     data.CompanyLogo,
+				StorageType:     data.ProfStorageType,
+				CompanyName:     data.CompanyName,
+				CompanyLocation: data.CompanyLocation,
+				About:           data.About,
+				Linkedin:        data.Linkedin,
+				Website:         data.Website,
+				Twitter:         data.Twitter,
+				SeoTitle:        data.SeoTitle,
+				SeoDescription:  data.SeoDescription,
+				SeoKeyword:      data.SeoKeyword,
+				MemberDetails:   data.MemberDetails,
+				ClaimStatus:     data.ClaimStatus,
+				CreatedBy:       data.ProfCreatedBy,
+				CreatedOn:       data.ProfCreatedOn,
+				ModifiedBy:      data.ProfModifiedBy,
+				ModifiedOn:      data.ProfModifiedOn,
+				IsDeleted:       data.ProfIsDeleted,
+				DeletedOn:       data.ProfDeletedOn,
+				DeletedBy:       data.ProfDeletedBy,
+				ClaimDate:       data.ClaimDate,
+				TenantId:        data.TenantId,
+			}
 		}
 
-	}
+		var authorDetails team.TblUser
 
-	var categoryHierarchy [][]categories.TblCategories
+		if inputs.GetAuthorDetails {
 
-	if inputs.GetLinkedCategories && data.CategoriesID != "" {
+			authorDetails = team.TblUser{
+				Id:                data.AuthorId,
+				FirstName:         data.FirstName,
+				LastName:          data.LastName,
+				RoleId:            data.RoleId,
+				Email:             data.Email,
+				Username:          data.Username,
+				MobileNo:          data.MobileNo,
+				IsActive:          data.AuthorActive,
+				ProfileImage:      data.ProfileImage,
+				ProfileImagePath:  data.ProfileImagePath,
+				StorageType:       data.AuthorStorageType,
+				DataAccess:        data.DataAccess,
+				CreatedOn:         data.AuthorCreatedOn,
+				CreatedBy:         data.AuthorCreatedBy,
+				ModifiedOn:        data.AuthorModifiedOn,
+				ModifiedBy:        data.AuthorModifiedBy,
+				LastLogin:         data.LastLogin,
+				IsDeleted:         data.AuthorIsDeleted,
+				DeletedOn:         data.AuthorDeletedOn,
+				DeletedBy:         data.AuthorDeletedBy,
+				DefaultLanguageId: data.DefaultLanguageId,
+				TenantId:          data.UserTenantId,
+			}
 
-		var categoriez []categories.TblCategories
+		}
 
-		splitArr := strings.Split(data.CategoriesID, ",")
+		var categoryHierarchy [][]categories.TblCategories
 
-		categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB)
+		if inputs.GetLinkedCategories && data.CategoriesID != "" {
 
-		for _, mapId := range splitArr {
+			var categoriez []categories.TblCategories
 
-			IntId, _ := strconv.Atoi(mapId)
+			splitArr := strings.Split(data.CategoriesID, ",")
 
-			var categoryStream []categories.TblCategories
+			categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB)
 
-			for _, category := range categoriez {
+			for _, mapId := range splitArr {
 
-				if category.Id == IntId {
+				IntId, _ := strconv.Atoi(mapId)
 
-					parentId := category.ParentId
+				var categoryStream []categories.TblCategories
 
-					categoryStream = append(categoryStream, category)
+				for _, category := range categoriez {
 
-				LOOP:
+					if category.Id == IntId {
 
-					for _, parent := range categoriez {
+						parentId := category.ParentId
 
-						if parentId == parent.Id {
+						categoryStream = append(categoryStream, category)
 
-							parentId = parent.ParentId
+					LOOP:
 
-							categoryStream = append(categoryStream, parent)
+						for _, parent := range categoriez {
 
-							if parent.ParentId != 0 {
+							if parentId == parent.Id {
 
-								goto LOOP
+								parentId = parent.ParentId
 
-							} else {
+								categoryStream = append(categoryStream, parent)
 
-								break
+								if parent.ParentId != 0 {
+
+									goto LOOP
+
+								} else {
+
+									break
+								}
 							}
 						}
 					}
 				}
-			}
 
-			categoryHierarchy = append(categoryHierarchy, categoryStream)
+				categoryHierarchy = append(categoryHierarchy, categoryStream)
+
+			}
 
 		}
 
-	}
+		var sections, fields []tblfield
 
-	var sections, fields []tblfield
+		if inputs.GetAdditionalFields {
 
-	if inputs.GetAdditionalFields {
+			additionalFields, _ := EntryModel.GetChannelAdditionalFields(channel.DB, data.ChannelID)
 
-		additionalFields, _ := EntryModel.GetChannelAdditionalFields(channel.DB, data.ChannelID)
+			for _, field := range additionalFields {
 
-		for _, field := range additionalFields {
+				if field.FieldTypeId != inputs.SectionFieldTypeId {
 
-			if field.FieldTypeId != inputs.SectionFieldTypeId {
+					if field.OptionExist == 1 {
 
-				if field.OptionExist == 1 {
+						field.FieldOptions, _ = EntryModel.GetFieldOptions(channel.DB, field.Id, inputs.TenantId)
+					}
 
-					field.FieldOptions, _ = EntryModel.GetFieldOptions(channel.DB, field.Id, inputs.TenantId)
+					field.FieldValue, _ = EntryModel.GetFieldValue(channel.DB, field.Id, data.Id, inputs.TenantId)
+
+					fields = append(fields, field)
+
+				} else {
+
+					sections = append(sections, field)
 				}
-
-				field.FieldValue, _ = EntryModel.GetFieldValue(channel.DB, field.Id, data.Id, inputs.TenantId)
-
-				fields = append(fields, field)
-
-			} else {
-
-				sections = append(sections, field)
 			}
+
+		}
+
+		channelEntry = Tblchannelentries{
+			Id:              data.Id,
+			Title:           data.Title,
+			Slug:            data.Slug,
+			Description:     data.Description,
+			UserId:          data.UserID,
+			ChannelId:       data.ChannelID,
+			Status:          data.Status,
+			IsActive:        data.IsActive,
+			CreatedOn:       data.CreatedOn,
+			CreatedBy:       data.CreatedBy,
+			ModifiedBy:      data.ModifiedBy,
+			ModifiedOn:      data.ModifiedOn,
+			CoverImage:      data.CoverImage,
+			ThumbnailImage:  data.ThumbnailImage,
+			PublishedTime:   data.PublishedTime,
+			MetaDescription: data.MetaDescription,
+			MetaTitle:       data.MetaTitle,
+			Keyword:         data.Keyword,
+			ImageAltTag:     data.ImageAltTag,
+			CategoriesId:    data.CategoriesID,
+			RelatedArticles: data.RelatedArticles,
+			Feature:         data.Feature,
+			ViewCount:       data.ViewCount,
+			Author:          data.Author,
+			SortOrder:       data.SortOrder,
+			CreateTime:      data.CreateTime,
+			ReadingTime:     data.ReadingTime,
+			Tags:            data.Tags,
+			Excerpt:         data.Excerpt,
+			IsDeleted:       data.IsDeleted,
+			DeletedOn:       data.DeletedOn,
+			DeletedBy:       data.DeletedBy,
+			AuthorDetail:    authorDetails,
+			MemberProfiles:  memberProfile,
+			Categories:      categoryHierarchy,
+			Sections:        sections,
+			Fields:          fields,
 		}
 
 	}
 
-	channelEntry := Tblchannelentries{
-		Id:              data.Id,
-		Title:           data.Title,
-		Slug:            data.Slug,
-		Description:     data.Description,
-		UserId:          data.UserID,
-		ChannelId:       data.ChannelID,
-		Status:          data.Status,
-		IsActive:        data.IsActive,
-		CreatedOn:       data.CreatedOn,
-		CreatedBy:       data.CreatedBy,
-		ModifiedBy:      data.ModifiedBy,
-		ModifiedOn:      data.ModifiedOn,
-		CoverImage:      data.CoverImage,
-		ThumbnailImage:  data.ThumbnailImage,
-		PublishedTime:   data.PublishedTime,
-		MetaDescription: data.MetaDescription,
-		MetaTitle:       data.MetaTitle,
-		Keyword:         data.Keyword,
-		ImageAltTag:     data.ImageAltTag,
-		CategoriesId:    data.CategoriesID,
-		RelatedArticles: data.RelatedArticles,
-		Feature:         data.Feature,
-		ViewCount:       data.ViewCount,
-		Author:          data.Author,
-		SortOrder:       data.SortOrder,
-		CreateTime:      data.CreateTime,
-		ReadingTime:     data.ReadingTime,
-		Tags:            data.Tags,
-		Excerpt:         data.Excerpt,
-		IsDeleted:       data.IsDeleted,
-		DeletedOn:       data.DeletedOn,
-		DeletedBy:       data.DeletedBy,
-		AuthorDetail:    authorDetails,
-		MemberProfiles:  memberProfile,
-		Categories:      categoryHierarchy,
-		Sections:        sections,
-		Fields:          fields,
-	}
-
-	return channelEntry,nil
+	return channelEntry, channelEntries, nil
 }
