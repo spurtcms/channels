@@ -1102,7 +1102,7 @@ func (En *EntriesModel) FlexibleChannelEntryDetail(db *gorm.DB, inputs EntriesIn
 
 		query = query.Debug().Select(selectData).Find(&multiEntryDetails)
 
-	case inputs.Id != 0:
+	default:
 
 		query = query.Debug().Select(selectData).Scan(&channelEntryDetails)
 
