@@ -63,6 +63,7 @@ type Tblchannelentries struct {
 	ImageAltTag          string                       `gorm:"column:image_alt_tag"`
 	TenantId             int                          `gorm:"type:integer"`
 	Uuid                 string                       `gorm:"column:uuid"`
+	ParentId             int                          `gorm:"type:integer"`
 }
 
 type Author struct {
@@ -1116,3 +1117,13 @@ func (En *EntriesModel) FlexibleChannelEntryDetail(db *gorm.DB, inputs EntriesIn
 	return nil
 }
 
+func (Ch EntriesModel) EntryParentIdUpdate(Entries *Tblchannelentries, db *gorm.DB) (error) {
+
+	if err := db.Table("tbl_channel_entries").Where("id=? and (tenant_id is NULL or tenant_id=?)", Entries.Id, Entries.TenantId).UpdateColumns(map[string]interface{}{"parent_id": Entries.ParentId, "modified_by": Entries.ModifiedBy, "modified_on": Entries.ModifiedOn}).Error; err != nil {
+
+		return  err
+	}
+
+	return  nil
+
+}

@@ -1529,3 +1529,28 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 
 	return channelEntry, channelEntries, nil
 }
+
+func (channel *Channel) EntryParentIdUpdate(parentid, entriid, tenantid, userid int)  error {
+	autherr := AuthandPermission(channel)
+	if autherr != nil {
+		return  autherr
+	}
+
+	var entries Tblchannelentries
+	entries.ParentId = parentid
+	entries.ModifiedBy = userid
+	entries.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	entries.Id = entriid
+	entries.TenantId = tenantid
+	err := EntryModel.EntryParentIdUpdate(&entries, channel.DB)
+
+	fmt.Println(entries, "entriessdetails")
+
+	if err != nil {
+
+		fmt.Println(err)
+	}
+
+	return nil
+
+}

@@ -71,6 +71,7 @@ type TblChannelEntry struct {
 	DeletedOn       time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
 	DeletedBy       int       `gorm:"DEFAULT:NULL"`
 	TenantId        int       `gorm:"type:integer"`
+	ParentId        int       `gorm:"type:integer"`
 }
 
 type TblChannelEntryField struct {

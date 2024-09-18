@@ -805,7 +805,7 @@ func (ch ChannelModel) GetChannels(channels *[]Tblchannel, DB *gorm.DB, tenantid
 
 func (ch ChannelModel) GetPermissionChannel(channels *Channel, DB *gorm.DB, tenantid int) (channel []Tblchannel, err error) {
 
-	query := DB.Debug().Table("tbl_channels").Where("is_deleted=0 and is_active=1 and (tenant_id is NULL or tenant_id=?)", tenantid)
+	query := DB.Debug().Table("tbl_channels").Where("is_deleted=0 and is_active=1 and (tenant_id is NULL or tenant_id=?)", tenantid).Order("id desc")
 
 	if channels.PermissionEnable && (channels.Auth.RoleId != 1 && channels.Auth.RoleId != 2) {
 
