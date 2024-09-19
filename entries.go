@@ -1554,3 +1554,23 @@ func (channel *Channel) EntryParentIdUpdate(parentid, entriid, tenantid, userid 
 	return nil
 
 }
+
+func (channel *Channel) EntrylistByParentId(entryid int, tenantid int) ([]Tblchannelentries, error) {
+
+	autherr := AuthandPermission(channel)
+	if autherr != nil {
+		return []Tblchannelentries{}, autherr
+	}
+
+	var entries []Tblchannelentries
+	err := EntryModel.EntrylistByParentId(&entries, entryid, channel.DB, TenantId)
+
+	if err != nil {
+
+		fmt.Println(err)
+	}
+
+	
+
+	return entries, nil
+}

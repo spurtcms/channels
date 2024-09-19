@@ -64,6 +64,7 @@ type Tblchannelentries struct {
 	TenantId             int                          `gorm:"type:integer"`
 	Uuid                 string                       `gorm:"column:uuid"`
 	ParentId             int                          `gorm:"type:integer"`
+	ChildrenList         []Tblchannelentries          `gorm:"-"`
 }
 
 type Author struct {
@@ -1127,3 +1128,14 @@ func (Ch EntriesModel) EntryParentIdUpdate(Entries *Tblchannelentries, db *gorm.
 	return  nil
 
 }
+
+func (Ch EntriesModel) EntrylistByParentId(channel_entries *[]Tblchannelentries, parentid int, DB *gorm.DB, tenantid int) error {
+
+	if err := DB.Debug().Table("tbl_channel_entries").Where("tbl_channel_entries.is_deleted = 0  and tbl_channel_entries.parent_id = ? and (tbl_channel_entries.tenant_id is NULL or tbl_channel_entries.tenant_id=?)", parentid, tenantid).Find(&channel_entries).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+}
+
