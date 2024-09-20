@@ -831,3 +831,13 @@ func (ch ChannelModel) ChangeChanelType(Channels Tblchannel, DB *gorm.DB) (Error
 
 	return nil
 }
+
+func (ch ChannelModel) ModulePermissionChannelDelete(routename string, DB *gorm.DB, tenantid int) error {
+    result := DB.Table("tbl_module_permissions").Where("route_name = ? AND (tenant_id IS NULL OR tenant_id = ?)", routename, tenantid).Delete(nil)
+    
+    if result.Error != nil {
+        return result.Error
+    }
+    
+    return nil
+}

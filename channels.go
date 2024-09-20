@@ -462,7 +462,7 @@ func (channel *Channel) GetChannelsFieldsById(channelid int, tenantid int) (sect
 }
 
 /*Delete Channel*/
-func (channel *Channel) DeleteChannel(channelid, modifiedby int, tenantid int) error {
+func (channel *Channel) DeleteChannel(channelid, modifiedby int,routename string, tenantid int) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -475,6 +475,8 @@ func (channel *Channel) DeleteChannel(channelid, modifiedby int, tenantid int) e
 
 		return ErrorChannelId
 	}
+
+	CH.ModulePermissionChannelDelete(routename, channel.DB, tenantid)
 
 	CH.DeleteEntryByChannelId(channelid, channel.DB, tenantid)
 

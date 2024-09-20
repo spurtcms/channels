@@ -1544,8 +1544,6 @@ func (channel *Channel) EntryParentIdUpdate(parentid, entriid, tenantid, userid 
 	entries.TenantId = tenantid
 	err := EntryModel.EntryParentIdUpdate(&entries, channel.DB)
 
-	fmt.Println(entries, "entriessdetails")
-
 	if err != nil {
 
 		fmt.Println(err)
@@ -1563,7 +1561,7 @@ func (channel *Channel) EntrylistByParentId(entryid int, tenantid int) ([]Tblcha
 	}
 
 	var entries []Tblchannelentries
-	err := EntryModel.EntrylistByParentId(&entries, entryid, channel.DB, TenantId)
+	err := EntryModel.EntrylistByParentId(&entries, entryid, channel.DB, tenantid)
 
 	if err != nil {
 

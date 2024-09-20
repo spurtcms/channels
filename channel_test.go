@@ -354,7 +354,7 @@ func TestDeleteChannel(t *testing.T) {
 
 	if permisison {
 
-		err := channel.DeleteChannel(3, 1, TenantId)
+		err := channel.DeleteChannel(3, 1,"", TenantId)
 
 		if err != nil {
 
