@@ -642,7 +642,7 @@ func (Ch EntriesModel) DeleteChannelEntryFieldId(chentry *TblChannelEntryField, 
 /*Edit Channel Entry*/
 func (Ch EntriesModel) GetChannelEntryById(ent IndivEntriesReq, DB *gorm.DB, tenantid int) (tblchanentry Tblchannelentries, err error) {
 
-	query := DB.Table("tbl_channel_entries").Where("is_deleted=0 and id=? and (tenant_id is NULL or tenant_id=?)", ent.EntryId, tenantid)
+	query := DB.Table("tbl_channel_entries").Select("tbl_channel_entries.*,tbl_users.username,tbl_users.profile_image_path,tbl_channels.channel_name").Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Joins("left join tbl_channels on tbl_channels.id = tbl_channel_entries.channel_id").Where("tbl_channel_entries.is_deleted=0 and tbl_channel_entries.id=? and (tbl_channel_entries.tenant_id is NULL or tbl_channel_entries.tenant_id=?)", ent.EntryId, tenantid)
 
 	if ent.ContentHide {
 
