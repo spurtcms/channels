@@ -1572,3 +1572,36 @@ func (channel *Channel) EntrylistByParentId(entryid int, tenantid int) ([]Tblcha
 
 	return entries, nil
 }
+// Update entry Reorder
+func (channel *Channel) UpdateEntryOrder(Entryids []int, tenantid, userid, offset int) error {
+	autherr := AuthandPermission(channel)
+	if autherr != nil {
+		return autherr
+	}
+
+	var entries Tblchannelentries
+
+	entries.ModifiedBy = userid
+	entries.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	entries.TenantId = tenantid
+
+	for index, id := range Entryids {
+
+		if id != 0 {
+
+			entries.Id = id
+
+			entries.OrderIndex = index + offset
+
+			err := EntryModel.UpdateEntryOrder(&entries, channel.DB)
+
+			if err != nil {
+
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}

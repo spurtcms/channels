@@ -65,6 +65,7 @@ type Tblchannelentries struct {
 	Uuid                 string                       `gorm:"column:uuid"`
 	ParentId             int                          `gorm:"type:integer"`
 	ChildrenList         []Tblchannelentries          `gorm:"-"`
+	OrderIndex           int                          `gorm:"type:integer"`
 }
 
 type Author struct {
@@ -1138,4 +1139,12 @@ func (Ch EntriesModel) EntrylistByParentId(channel_entries *[]Tblchannelentries,
 
 	return nil
 }
+func (Ch EntriesModel) UpdateEntryOrder(Entries *Tblchannelentries, DB *gorm.DB) error {
 
+	if err := DB.Table("tbl_channel_entries").Where("id=? and (tenant_id is NULL or tenant_id=?)", Entries.Id, Entries.TenantId).UpdateColumns(map[string]interface{}{"order_index": Entries.OrderIndex, "modified_by": Entries.ModifiedBy, "modified_on": Entries.ModifiedOn}).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+}
