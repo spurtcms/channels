@@ -977,3 +977,29 @@ func (channel *Channel) ChannelType(Channels Tblchannel) error {
 	return nil
 
 }
+// last 10 days la add pana channel count
+func (channel *Channel) DashBoardChannelCount(tenantid int) (Totalcount int, lcount int, err error) {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return 0, 0, autherr
+	}
+
+	allchannelcount, err := CH.AllChannelCount(channel.DB, tenantid)
+
+	if err != nil {
+
+		return 0, 0, err
+	}
+
+	lchannelcount, err := CH.NewChannelCount(channel.DB, tenantid)
+
+	if err != nil {
+
+		return 0, 0, err
+	}
+
+	return int(allchannelcount), int(lchannelcount), nil
+}

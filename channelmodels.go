@@ -842,3 +842,27 @@ func (ch ChannelModel) ModulePermissionChannelDelete(routename string, DB *gorm.
 
 	return nil
 }
+//Total Channel Count
+
+func (ch ChannelModel) AllChannelCount(DB *gorm.DB, tenantid int) (count int64, err error) {
+
+	if err := DB.Table("tbl_channels").Where("tbl_channels.is_deleted = 0 and  tenant_id = ?", tenantid).Count(&count).Error; err != nil {
+
+		return 0, err
+	}
+
+	return count, nil
+
+}
+
+// Last 10 days Channel Count
+func (ch ChannelModel) NewChannelCount(DB *gorm.DB, tenantid int) (count int64, err error) {
+
+	if err := DB.Table("tbl_channels").Where("created_on >=? and  tenant_id=? and is_deleted = 0", time.Now().AddDate(0, 0, -10), tenantid).Count(&count).Error; err != nil {
+
+		return 0, err
+	}
+
+	return count, nil
+
+}
