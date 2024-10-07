@@ -49,7 +49,8 @@ type Tblchannel struct {
 	ChannelEntries     []TblChannelEntries `gorm:"foreignKey:ChannelId"`
 	ProfileImagePath   string              `gorm:"-;<-:false"`
 	AuthorDetails      team.TblUser        `gorm:"foreignKey:Id;references:CreatedBy"`
-	ChannelType        string              `gorm:"type:character varying"`
+	ChannelType        string              `gorm:"column:channel_type"`
+	TenantId           int                 `gorm:"column:tenant_id"`
 }
 
 type tblchannelcategory struct {
