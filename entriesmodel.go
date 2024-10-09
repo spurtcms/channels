@@ -61,11 +61,12 @@ type Tblchannelentries struct {
 	Tags                 string                       `gorm:"column:tags"`
 	Excerpt              string                       `gorm:"column:excerpt"`
 	ImageAltTag          string                       `gorm:"column:image_alt_tag"`
-	TenantId             int                          `gorm:"type:integer"`
+	TenantId             int                          `gorm:"column:tenant_id"`
 	Uuid                 string                       `gorm:"column:uuid"`
-	ParentId             int                          `gorm:"type:integer"`
+	ParentId             int                          `gorm:"column:parent_id"`
 	ChildrenList         []Tblchannelentries          `gorm:"-"`
-	OrderIndex           int                          `gorm:"type:integer"`
+	OrderIndex           int                          `gorm:"column:order_index"`
+	MembergroupId        string                       `gorm:"type:membergroup_id"`
 }
 
 type Author struct {
@@ -1142,6 +1143,15 @@ func (Ch EntriesModel) EntrylistByParentId(channel_entries *[]Tblchannelentries,
 func (Ch EntriesModel) UpdateEntryOrder(Entries *Tblchannelentries, DB *gorm.DB) error {
 
 	if err := DB.Table("tbl_channel_entries").Where("id=? and tenant_id=?", Entries.Id, Entries.TenantId).UpdateColumns(map[string]interface{}{"order_index": Entries.OrderIndex, "modified_by": Entries.ModifiedBy, "modified_on": Entries.ModifiedOn}).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+}
+func (Ch EntriesModel) UpdateEntryMemberGroupIds(Entries *Tblchannelentries, DB *gorm.DB) error {
+
+	if err := DB.Debug().Table("tbl_channel_entries").Where("id=? and tenant_id=?", Entries.Id, Entries.TenantId).UpdateColumns(map[string]interface{}{"membergroup_id": Entries.MembergroupId, "modified_by": Entries.ModifiedBy, "modified_on": Entries.ModifiedOn}).Error; err != nil {
 
 		return err
 	}

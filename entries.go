@@ -1605,3 +1605,28 @@ func (channel *Channel) UpdateEntryOrder(Entryids []int, tenantid, userid, offse
 
 	return nil
 }
+//Update  Access Permission MemberGroupIds in Entry
+func (channel *Channel) UpdateMemberGroupIds(membergrbids string, entryid int, tenantid int, userid int) error {
+
+	autherr := AuthandPermission(channel)
+	if autherr != nil {
+		return autherr
+	}
+
+	var entries Tblchannelentries
+
+	entries.ModifiedBy = userid
+	entries.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	entries.TenantId = tenantid
+	entries.MembergroupId = membergrbids
+	entries.Id = entryid
+
+	err := EntryModel.UpdateEntryMemberGroupIds(&entries, channel.DB)
+
+	if err != nil {
+
+		return err
+	}
+
+	return nil
+}
