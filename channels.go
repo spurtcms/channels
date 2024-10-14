@@ -244,6 +244,8 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 
 			fldopt.OptionValue = opt.Value
 
+			fldopt.OrderIndex = opt.OrderIndex
+
 			fldopt.FieldId = cfid.Id
 
 			fldopt.CreatedBy = channelcreate.CreatedBy
@@ -859,6 +861,8 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 			fldopt.CreatedBy = channelupt.ModifiedBy
 
 			fldopt.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+			fldopt.OrderIndex = optv.OrderIndex
 
 			if optv.Id != 0 {
 

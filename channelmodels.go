@@ -92,6 +92,7 @@ type OptionValues struct {
 	FieldId    int    `json:"FieldId"`
 	NewFieldId int    `json:"NewFieldId"`
 	Value      string `json:"Value"`
+	OrderIndex   int   `json:"OrderIndex"`
 }
 type TblFieldOption struct {
 	Id          int       `gorm:"column:id"`
@@ -107,6 +108,7 @@ type TblFieldOption struct {
 	DeletedBy   int       `gorm:"column:deleted_by;DEFAULT:NULL"`
 	Idstring    string    `gorm:"-:migration;<-:false"`
 	TenantId    int       `gorm:"type:integer"`
+	OrderIndex  int       `gorm:"type:integer"`
 }
 
 type tblfield struct {
@@ -516,7 +518,7 @@ func (Ch ChannelModel) GetFieldIdByGroupId(id int, DB *gorm.DB, tenantid int) (g
 func (Ch ChannelModel) GetFieldAndOptionValue(id []int, DB *gorm.DB, tenantid int) (fld []tblfield, err error) {
 
 	if err := DB.Table("tbl_fields").Where("id in (?) and tenant_id=? and is_deleted != 1", id, tenantid).Preload("TblFieldOption", func(db *gorm.DB) *gorm.DB {
-		return DB.Where("is_deleted!=1")
+		return DB.Where("is_deleted!=1").Order("order_index asc")
 	}).Order("order_index asc").Find(&fld).Error; err != nil {
 
 		return []tblfield{}, err
@@ -763,7 +765,7 @@ func (Ch ChannelModel) CreateGroupField(grpfield *TblGroupField, DB *gorm.DB) er
 /*Update Field Option Details*/
 func (Ch ChannelModel) UpdateFieldOption(fdoption *TblFieldOption, id int, DB *gorm.DB, tenantid int) error {
 
-	if err := DB.Table("tbl_field_options").Where("id=? and tenant_id=?", id, tenantid).UpdateColumns(map[string]interface{}{"option_name": fdoption.OptionName, "option_value": fdoption.OptionValue, "modified_on": fdoption.ModifiedOn, "modified_by": fdoption.ModifiedBy}).Error; err != nil {
+	if err := DB.Debug().Table("tbl_field_options").Where("id=? and tenant_id=?", id, tenantid).UpdateColumns(map[string]interface{}{"option_name": fdoption.OptionName, "option_value": fdoption.OptionValue, "modified_on": fdoption.ModifiedOn, "modified_by": fdoption.ModifiedBy,"order_index":fdoption.OrderIndex}).Error; err != nil {
 
 		return err
 	}
