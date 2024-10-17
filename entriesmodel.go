@@ -55,7 +55,7 @@ type Tblchannelentries struct {
 	ViewCount            int                          `gorm:"column:view_count;DEFAULT:0"`
 	Author               string                       `gorm:"column:author"`
 	SortOrder            int                          `gorm:"column:sort_order"`
-	CreateTime           time.Time                    `gorm:"column:created_date"`
+	CreateTime           time.Time                    `gorm:"column:create_time"`
 	PublishedTime        time.Time                    `gorm:"column:published_time;default:null"`
 	ReadingTime          int                          `gorm:"column:reading_time;DEFAULT:0"`
 	Tags                 string                       `gorm:"column:tags"`
@@ -68,7 +68,6 @@ type Tblchannelentries struct {
 	OrderIndex           int                          `gorm:"column:order_index"`
 	MembergroupId        string                       `gorm:"type:membergroup_id"`
 }
-
 type Author struct {
 	AuthorID         int       `json:"AuthorId" gorm:"column:id"`
 	FirstName        string    `json:"FirstName"`
