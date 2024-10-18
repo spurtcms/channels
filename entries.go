@@ -709,6 +709,8 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid in
 
 	Entries.ImageAltTag = entriesrequired.SEODetails.ImageAltTag
 
+	Entries.OrderIndex = 1
+
 	Entries.TenantId = tenantid
 
 	Entriess, err := EntryModel.CreateChannelEntry(Entries, channel.DB)
@@ -823,6 +825,8 @@ func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName
 	Entries.Tags = entriesrequired.Tag
 
 	Entries.Excerpt = entriesrequired.Excerpt
+
+	Entries.OrderIndex = entriesrequired.OrderIndex
 
 	err := EntryModel.UpdateChannelEntryDetails(&Entries, EntryId, channel.DB, tenantid)
 
@@ -1095,26 +1099,26 @@ func (channel *Channel) EntryIsActive(entryid int, status int, modifiedby int, t
 
 }
 
-//update channel entry view count
-func (channel *Channel) UpdateChannelEntryViewCount(id int,slug string,tenantId int)(int,error){
+// update channel entry view count
+func (channel *Channel) UpdateChannelEntryViewCount(id int, slug string, tenantId int) (int, error) {
 
 	autherr := AuthandPermission(channel)
 
 	if autherr != nil {
 
-		return 0,autherr
+		return 0, autherr
 	}
 
 	var viewCount int
 
-	err := EntryModel.UpdateEntryViewCount(channel.DB,id,slug,tenantId,&viewCount)
+	err := EntryModel.UpdateEntryViewCount(channel.DB, id, slug, tenantId, &viewCount)
 
-	if err!=nil{
+	if err != nil {
 
-		return int(viewCount),err
+		return int(viewCount), err
 	}
 
-	return int(viewCount),nil
+	return int(viewCount), nil
 
 }
 
@@ -1530,10 +1534,10 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 	return channelEntry, channelEntries, nil
 }
 
-func (channel *Channel) EntryParentIdUpdate(parentid, entriid, tenantid, userid int)  error {
+func (channel *Channel) EntryParentIdUpdate(parentid, entriid, tenantid, userid int) error {
 	autherr := AuthandPermission(channel)
 	if autherr != nil {
-		return  autherr
+		return autherr
 	}
 
 	var entries Tblchannelentries
@@ -1568,10 +1572,9 @@ func (channel *Channel) EntrylistByParentId(entryid int, tenantid int) ([]Tblcha
 		fmt.Println(err)
 	}
 
-	
-
 	return entries, nil
 }
+
 // Update entry Reorder
 func (channel *Channel) UpdateEntryOrder(Entryids []int, tenantid, userid, offset int) error {
 	autherr := AuthandPermission(channel)
@@ -1605,7 +1608,8 @@ func (channel *Channel) UpdateEntryOrder(Entryids []int, tenantid, userid, offse
 
 	return nil
 }
-//Update  Access Permission MemberGroupIds in Entry
+
+// Update  Access Permission MemberGroupIds in Entry
 func (channel *Channel) UpdateMemberGroupIds(membergrbids string, entryid int, tenantid int, userid int) error {
 
 	autherr := AuthandPermission(channel)
