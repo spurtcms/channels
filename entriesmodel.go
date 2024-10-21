@@ -480,7 +480,7 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 
 		default:
 
-			subQuery := db.Table("tbl_categories as cat").Select("cat.id").Where("cat.is_deleted = 0 and cat.id = (?) or cat.parent_id in (?)", input.CategoryId, input.CategoryId)
+			subQuery := db.Table("tbl_categories as cat").Select("cat.id").Where("cat.is_deleted = 0 and tenant_id = ? and cat.id = (?) or cat.parent_id in (?)", input.TenantId, input.CategoryId, input.CategoryId)
 
 			query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.id in (?)", subQuery)
 		}
@@ -495,7 +495,7 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 
 		default:
 
-			innerSubQuery := db.Table("tbl_categories as cat").Select("cat.id").Where("cat.is_deleted = 0 and cat.category_slug = ?", input.CategorySlug)
+			innerSubQuery := db.Table("tbl_categories as cat").Select("cat.id").Where("cat.is_deleted = 0 and tenant_id = ? and cat.category_slug = ?", input.TenantId, input.CategorySlug)
 
 			subQuery := db.Table("tbl_categories as cat").Select("cat.id").Where("cat.is_deleted = 0 and cat.id = (?) or cat.parent_id in (?)", innerSubQuery, innerSubQuery)
 
@@ -558,7 +558,7 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 		query = query.Offset(input.Offset)
 	}
 
-	if err := query.Select(selectData).Find(&joinData).Error; err != nil {
+	if err := query.Distinct("en.id").Select(selectData).Find(&joinData).Error; err != nil {
 
 		return err
 
