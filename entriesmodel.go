@@ -211,10 +211,10 @@ type JoinEntries struct {
 	ChannelID         int
 	Status            int
 	IsActive          int
-	CreatedOn         time.Time
-	CreatedBy         int
-	ModifiedBy        int
-	ModifiedOn        time.Time
+	CreatedOn         time.Time `gorm:"column:entry_created_on"`
+	CreatedBy         int       `gorm:"column:entry_created_by"`
+	ModifiedBy        int       `gorm:"column:entry_modified_by"`
+	ModifiedOn        time.Time `gorm:"column:entry_modified_on"`
 	IsDeleted         int
 	DeletedOn         time.Time
 	DeletedBy         int
@@ -386,9 +386,9 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 // Fetching the channel entries data
 func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Channel, db *gorm.DB, joinData *[]JoinEntries, commoncount, totalCount *int64) error {
 
-	selectData := "en.*, en.id as entry_id"
+	selectData := "en.*, en.id as entry_id,en.created_on as entry_created_on,en.created_by as entry_created_by,en.modified_by as entry_modified_by,en.modified_on as entry_modified_on"
 
-	query := db.Debug().Table("tbl_channel_entries as en").Joins("inner join tbl_channels as tc on tc.id = en.channel_id").Where("en.is_deleted = 0 and tc.is_deleted = 0")
+	query := db.Debug().Distinct("en.id").Table("tbl_channel_entries as en").Joins("inner join tbl_channels as tc on tc.id = en.channel_id").Where("en.is_deleted = 0 and tc.is_deleted = 0")
 
 	if input.TotalCount {
 
@@ -558,7 +558,7 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 		query = query.Offset(input.Offset)
 	}
 
-	if err := query.Distinct("en.id").Select(selectData).Find(&joinData).Error; err != nil {
+	if err := query.Select(selectData).Find(&joinData).Error; err != nil {
 
 		return err
 
