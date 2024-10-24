@@ -1043,7 +1043,7 @@ func (En *EntriesModel) UpdateEntryViewCount(db *gorm.DB, id int, slug string, t
 
 func (En *EntriesModel) FlexibleChannelEntryDetail(db *gorm.DB, inputs EntriesInputs, multiFetchIds []int, channelEntryDetails *JoinEntries, multiEntryDetails *[]JoinEntries) error {
 
-	selectData := "en.*, en.id as entry_id"
+	selectData := "en.*, en.id as entry_id,en.created_on as entry_created_on,en.created_by as entry_created_by,en.modified_by as entry_modified_by,en.modified_on as entry_modified_on"
 
 	query := db.Table("tbl_channel_entries as en").Where("en.is_deleted=0")
 
