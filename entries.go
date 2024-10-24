@@ -1183,7 +1183,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 					DeletedOn:       data.ProfDeletedOn,
 					DeletedBy:       data.ProfDeletedBy,
 					ClaimDate:       data.ClaimDate,
-					TenantId:        data.TenantId,
+					TenantId:        data.ProfTenantId,
 				}
 			}
 
@@ -1332,6 +1332,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 				DeletedOn:       data.DeletedOn,
 				DeletedBy:       data.DeletedBy,
 				AuthorDetail:    authorDetails,
+				TenantId:        data.TenantId,
 				MemberProfiles:  memberProfile,
 				Categories:      categoryHierarchy,
 				Sections:        sections,
@@ -1374,7 +1375,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 				DeletedOn:       data.ProfDeletedOn,
 				DeletedBy:       data.ProfDeletedBy,
 				ClaimDate:       data.ClaimDate,
-				TenantId:        data.TenantId,
+				TenantId:        data.ProfTenantId,
 			}
 		}
 
@@ -1527,6 +1528,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 			Categories:      categoryHierarchy,
 			Sections:        sections,
 			Fields:          fields,
+			TenantId:        data.TenantId,
 		}
 
 	}
