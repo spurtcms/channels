@@ -120,7 +120,7 @@ func (channel *Channel) DashboardRecentActivites(tenantid int) (entries []Recent
 		return []RecentActivities{}, autherr
 	}
 
-	Newentries, _ := EntryModel.Newentries(channel.DB,tenantid)
+	Newentries, _ := EntryModel.Newentries(channel.DB, tenantid)
 
 	var Newrecords []RecentActivities
 
@@ -131,11 +131,11 @@ func (channel *Channel) DashboardRecentActivites(tenantid int) (entries []Recent
 		Newrecords = append(Newrecords, newrecord)
 	}
 
-	Newchannel, _ := EntryModel.Newchannels(channel.DB,tenantid)
+	Newchannel, _ := EntryModel.Newchannels(channel.DB, tenantid)
 
 	for _, val := range Newchannel {
 
-		newrecord := RecentActivities{Contenttype: "channel", Title: val.ChannelName, User: val.AuthorDetails.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, Channelname: val.ChannelName}
+		newrecord := RecentActivities{Contenttype: "channel", Title: val.ChannelName, User: val.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, Channelname: val.ChannelName}
 
 		Newrecords = append(Newrecords, newrecord)
 	}
@@ -180,6 +180,7 @@ func (channel *Channel) DashboardRecentActivites(tenantid int) (entries []Recent
 			newactive.Channelname = val.Channelname
 
 			newactive.Active = strconv.Itoa(hour) + " " + "hrs"
+
 		} else {
 			newactive.Contenttype = val.Contenttype
 
@@ -194,7 +195,6 @@ func (channel *Channel) DashboardRecentActivites(tenantid int) (entries []Recent
 			newactive.Channelname = val.Channelname
 
 			newactive.Active = strconv.Itoa(min) + " " + "mins"
-
 		}
 
 		NewActive = append(NewActive, newactive)
@@ -203,7 +203,6 @@ func (channel *Channel) DashboardRecentActivites(tenantid int) (entries []Recent
 
 	return NewActive, nil
 }
-
 /*Remove entries cover image if media image delete*/
 func (channel *Channel) RemoveEntriesCoverImage(ImagePath string,tenantid int) error {
 

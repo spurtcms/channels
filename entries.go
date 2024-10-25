@@ -281,7 +281,7 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 				DeletedOn:       data.ProfDeletedOn,
 				DeletedBy:       data.ProfDeletedBy,
 				ClaimDate:       data.ClaimDate,
-				TenantId:        data.TenantId,
+				TenantId:        data.ProfTenantId,
 			}
 		}
 
@@ -434,6 +434,7 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 			Categories:      categoryHierarchy,
 			Sections:        sections,
 			Fields:          fields,
+			TenantId:        data.TenantId,
 		}
 
 		channelEntries = append(channelEntries, channnel_entry)

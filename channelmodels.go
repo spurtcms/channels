@@ -47,10 +47,11 @@ type Tblchannel struct {
 	DateString         string              `gorm:"-"`
 	EntriesCount       int                 `gorm:"-"`
 	ChannelEntries     []TblChannelEntries `gorm:"foreignKey:ChannelId"`
-	ProfileImagePath   string              `gorm:"-;<-:false"`
+	ProfileImagePath   string              `gorm:"<-:false"`
 	AuthorDetails      team.TblUser        `gorm:"foreignKey:Id;references:CreatedBy"`
 	ChannelType        string              `gorm:"column:channel_type"`
 	TenantId           int                 `gorm:"column:tenant_id"`
+	Username           string              `gorm:"<-:false"`
 }
 
 type tblchannelcategory struct {
@@ -335,7 +336,7 @@ func IsDeleted(db *gorm.DB) *gorm.DB {
 /*channel list*/
 func (Ch ChannelModel) Channellist(DB *gorm.DB, inputs Channels, channels *[]Tblchannel, count *int64) (err error) {
 
-	query := DB.Debug().Model(TblChannel{}).Where("tbl_channels.is_deleted = 0")
+	query := DB.Debug().Table("tbl_channels").Where("tbl_channels.is_deleted = 0")
 
 	if inputs.TenantId != -1 {
 
