@@ -3,6 +3,7 @@ package channels
 import (
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -126,16 +127,37 @@ func (channel *Channel) DashboardRecentActivites(tenantid int) (entries []Recent
 
 	for _, val := range Newentries {
 
-		newrecord := RecentActivities{Contenttype: "entry", Title: val.Title, User: val.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, Channelname: val.ChannelName}
+		first := val.FirstName
+		last := val.LastName
+		firstn := strings.ToUpper(first[:1])
+		var lastn string
+		if val.LastName != "" {
+			lastn = strings.ToUpper(last[:1])
+		}
+
+		var Name = firstn + lastn
+		
+		newrecord := RecentActivities{Contenttype: "entry", Title: val.Title, User: val.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, Channelname: val.ChannelName,NameString: Name}
 
 		Newrecords = append(Newrecords, newrecord)
+
 	}
 
 	Newchannel, _ := EntryModel.Newchannels(channel.DB, tenantid)
 
 	for _, val := range Newchannel {
 
-		newrecord := RecentActivities{Contenttype: "channel", Title: val.ChannelName, User: val.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, Channelname: val.ChannelName}
+		first := val.FirstName
+		last := val.LastName
+		firstn := strings.ToUpper(first[:1])
+		var lastn string
+		if val.LastName != "" {
+			lastn = strings.ToUpper(last[:1])
+		}
+
+		var Name = firstn + lastn
+
+		newrecord := RecentActivities{Contenttype: "channel", Title: val.ChannelName, User: val.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, Channelname: val.ChannelName,NameString: Name}
 
 		Newrecords = append(Newrecords, newrecord)
 	}
@@ -179,6 +201,8 @@ func (channel *Channel) DashboardRecentActivites(tenantid int) (entries []Recent
 
 			newactive.Channelname = val.Channelname
 
+			newactive.NameString = val.NameString
+
 			newactive.Active = strconv.Itoa(hour) + " " + "hrs"
 
 		} else {
@@ -193,6 +217,8 @@ func (channel *Channel) DashboardRecentActivites(tenantid int) (entries []Recent
 			newactive.Createdon = val.Createdon
 
 			newactive.Channelname = val.Channelname
+
+			newactive.NameString = val.NameString
 
 			newactive.Active = strconv.Itoa(min) + " " + "mins"
 		}

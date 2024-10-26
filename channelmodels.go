@@ -52,6 +52,8 @@ type Tblchannel struct {
 	ChannelType        string              `gorm:"column:channel_type"`
 	TenantId           int                 `gorm:"column:tenant_id"`
 	Username           string              `gorm:"<-:false"`
+	FirstName          string              `gorm:"<-:false"`
+	LastName           string              `gorm:"<-:false"`
 }
 
 type tblchannelcategory struct {

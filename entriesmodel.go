@@ -67,6 +67,8 @@ type Tblchannelentries struct {
 	ChildrenList         []Tblchannelentries          `gorm:"-"`
 	OrderIndex           int                          `gorm:"column:order_index"`
 	MembergroupId        string                       `gorm:"type:membergroup_id"`
+	FirstName            string                       `gorm:"<-:false"`
+	LastName             string                       `gorm:"<-:false"`
 }
 type Author struct {
 	AuthorID         int       `json:"AuthorId" gorm:"column:id"`
@@ -167,6 +169,7 @@ type RecentActivities struct {
 	Createdon   time.Time
 	Active      string
 	Channelname string
+	NameString  string
 }
 
 type EntriesModel struct {
@@ -804,7 +807,7 @@ func (ch EntriesModel) PublishQuery(chl *TblChannelEntries, id int, DB *gorm.DB,
 /*Update Channel Entry Details*/
 func (Ch EntriesModel) UpdateChannelEntryDetails(entry *TblChannelEntries, entryid int, DB *gorm.DB, tenantid int) error {
 
-	if err := DB.Debug().Table("tbl_channel_entries").Where("id=? and tenant_id=?", entryid, tenantid).UpdateColumns(map[string]interface{}{"title": entry.Title, "description": entry.Description, "slug": entry.Slug, "cover_image": entry.CoverImage, "thumbnail_image": entry.ThumbnailImage, "meta_title": entry.MetaTitle, "meta_description": entry.MetaDescription, "keyword": entry.Keyword, "categories_id": entry.CategoriesId, "related_articles": entry.RelatedArticles, "status": entry.Status, "modified_on": entry.ModifiedOn, "modified_by": entry.ModifiedBy, "user_id": entry.UserId, "channel_id": entry.ChannelId, "author": entry.Author, "create_time": entry.CreateTime, "published_time": entry.PublishedTime, "reading_time": entry.ReadingTime, "sort_order": entry.SortOrder, "tags": entry.Tags, "excerpt": entry.Excerpt, "image_alt_tag": entry.ImageAltTag,"order_index":entry.OrderIndex}).Error; err != nil {
+	if err := DB.Debug().Table("tbl_channel_entries").Where("id=? and tenant_id=?", entryid, tenantid).UpdateColumns(map[string]interface{}{"title": entry.Title, "description": entry.Description, "slug": entry.Slug, "cover_image": entry.CoverImage, "thumbnail_image": entry.ThumbnailImage, "meta_title": entry.MetaTitle, "meta_description": entry.MetaDescription, "keyword": entry.Keyword, "categories_id": entry.CategoriesId, "related_articles": entry.RelatedArticles, "status": entry.Status, "modified_on": entry.ModifiedOn, "modified_by": entry.ModifiedBy, "user_id": entry.UserId, "channel_id": entry.ChannelId, "author": entry.Author, "create_time": entry.CreateTime, "published_time": entry.PublishedTime, "reading_time": entry.ReadingTime, "sort_order": entry.SortOrder, "tags": entry.Tags, "excerpt": entry.Excerpt, "image_alt_tag": entry.ImageAltTag, "order_index": entry.OrderIndex}).Error; err != nil {
 
 		return err
 	}
@@ -858,7 +861,7 @@ func (Ch EntriesModel) NewentryCount(DB *gorm.DB, tenantid int) (count int64, er
 
 func (Ch EntriesModel) Newchannels(DB *gorm.DB, tenantid int) (chn []Tblchannel, err error) {
 
-	if err := DB.Table("tbl_channels").Select("tbl_channels.*,tbl_users.username,tbl_users.profile_image_path").
+	if err := DB.Table("tbl_channels").Select("tbl_channels.*,tbl_users.username,tbl_users.profile_image_path,tbl_users.first_name,tbl_users.last_name").
 		Joins("inner join tbl_users on tbl_users.id = tbl_channels.created_by").
 		Where("tbl_channels.is_deleted=0 and tbl_channels.is_active=1 and tbl_channels.created_on >= ? and tbl_channels.tenant_id=?", time.Now().Add(-24*time.Hour).Format("2006-01-02 15:04:05"), tenantid).
 		Order("created_on desc").Limit(6).Find(&chn).Error; err != nil {
@@ -872,7 +875,7 @@ func (Ch EntriesModel) Newchannels(DB *gorm.DB, tenantid int) (chn []Tblchannel,
 
 func (Ch EntriesModel) Newentries(DB *gorm.DB, tenantid int) (entries []Tblchannelentries, err error) {
 
-	if err := DB.Table("tbl_channel_entries").Select("tbl_channel_entries.*,tbl_users.username,tbl_users.profile_image_path").
+	if err := DB.Table("tbl_channel_entries").Select("tbl_channel_entries.*,tbl_users.username,tbl_users.profile_image_path,tbl_users.first_name,tbl_users.last_name").
 		Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Where("tbl_channel_entries.is_deleted=0 and tbl_channel_entries.created_on >=? and tbl_channel_entries.tenant_id=?", time.Now().Add(-24*time.Hour).Format("2006-01-02 15:04:05"), tenantid).
 		Order("created_on desc").Limit(6).Find(&entries).Error; err != nil {
 
