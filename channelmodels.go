@@ -336,9 +336,15 @@ func IsDeleted(db *gorm.DB) *gorm.DB {
 }
 
 /*channel list*/
-func (Ch ChannelModel) Channellist(DB *gorm.DB, inputs Channels, channels *[]Tblchannel, count *int64) (err error) {
+func (Ch ChannelModel) Channellist(DB *gorm.DB,channel *Channel, inputs Channels, channels *[]Tblchannel, count *int64) (err error) {
 
 	query := DB.Debug().Table("tbl_channels").Where("tbl_channels.is_deleted = 0")
+
+	if channel.PermissionEnable && (channel.Auth.RoleId != 1 && channel.Auth.RoleId != 2) {
+
+		query = query.Debug().Where("channel_name in (select display_name from tbl_module_permissions inner join tbl_modules on tbl_modules.id = tbl_module_permissions.module_id inner join tbl_role_permissions on tbl_role_permissions.permission_id = tbl_module_permissions.id where role_id =(?) and tbl_modules.module_name='Entries') ", channel.Auth.RoleId)
+
+	}
 
 	if inputs.TenantId != -1 {
 

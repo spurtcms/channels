@@ -40,11 +40,11 @@ func (channel *Channel) ListChannel(inputs Channels) (channelList []Tblchannel, 
 	CH.Dataaccess = channel.DataAccess
 
 	var (
-		channellist  []Tblchannel
-		count        int64
+		channellist []Tblchannel
+		count       int64
 	)
 
-	err = CH.Channellist(channel.DB,inputs,&channellist,&count)
+	err = CH.Channellist(channel.DB, channel, inputs, &channellist, &count)
 
 	if err != nil {
 		return []Tblchannel{}, 0, err
