@@ -797,7 +797,7 @@ func (Ch ChannelModel) CreateFieldOption(optval *TblFieldOption, DB *gorm.DB) er
 func (ch ChannelModel) GetChannelCount(count *int64, DB *gorm.DB, tenantid int) error {
 
 	if err := DB.Debug().Table("tbl_channels").Distinct("tbl_channels.id").Joins("inner join tbl_channel_entries on tbl_channel_entries.channel_id = tbl_channels.id").
-		Joins("inner join tbl_channel_categories on tbl_channel_categories.channel_id = tbl_channels.id").
+		// Joins("inner join tbl_channel_categories on tbl_channel_categories.channel_id = tbl_channels.id").
 		Where("tbl_channels.is_deleted = 0 and tbl_channels.is_active = 1 and tbl_channel_entries.status = 1 and tbl_channel_entries.tenant_id=?", tenantid).Count(count).Error; err != nil {
 
 		return err
