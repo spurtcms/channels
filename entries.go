@@ -1637,3 +1637,30 @@ func (channel *Channel) UpdateMemberGroupIds(membergrbids string, entryid int, t
 
 	return nil
 }
+// update entries orderindex
+func (channel *Channel) UpdateEntryOrderIndex(Ordenindex int, EntryId int, userid int, tenantid int) (bool, error) {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return false, autherr
+	}
+
+	var Entries TblChannelEntries
+
+	Entries.OrderIndex = Ordenindex
+
+	Entries.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	Entries.ModifiedBy = userid
+
+	err := EntryModel.UpdateEntryOrderIndex(&Entries, EntryId, channel.DB, tenantid)
+
+	if err != nil {
+
+		return false, err
+	}
+
+	return true, nil
+}

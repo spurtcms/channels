@@ -55,7 +55,7 @@ type Tblchannelentries struct {
 	ViewCount            int                          `gorm:"column:view_count;DEFAULT:0"`
 	Author               string                       `gorm:"column:author"`
 	SortOrder            int                          `gorm:"column:sort_order"`
-	CreateTime           time.Time                    `gorm:"column:create_time"`
+	CreateTime           time.Time                    `gorm:"column:create_time;default:null"`
 	PublishedTime        time.Time                    `gorm:"column:published_time;default:null"`
 	ReadingTime          int                          `gorm:"column:reading_time;DEFAULT:0"`
 	Tags                 string                       `gorm:"column:tags"`
@@ -1155,6 +1155,16 @@ func (Ch EntriesModel) UpdateEntryOrder(Entries *Tblchannelentries, DB *gorm.DB)
 func (Ch EntriesModel) UpdateEntryMemberGroupIds(Entries *Tblchannelentries, DB *gorm.DB) error {
 
 	if err := DB.Debug().Table("tbl_channel_entries").Where("id=? and tenant_id=?", Entries.Id, Entries.TenantId).UpdateColumns(map[string]interface{}{"membergroup_id": Entries.MembergroupId, "modified_by": Entries.ModifiedBy, "modified_on": Entries.ModifiedOn}).Error; err != nil {
+
+		return err
+	}
+
+	return nil
+}
+
+func (Ch EntriesModel) UpdateEntryOrderIndex(entry *TblChannelEntries, entryid int, DB *gorm.DB, tenantid int) error {
+
+	if err := DB.Table("tbl_channel_entries").Where("id=? and tenant_id=?", entryid, tenantid).UpdateColumns(map[string]interface{}{"order_index": entry.OrderIndex}).Error; err != nil {
 
 		return err
 	}
