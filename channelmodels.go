@@ -440,7 +440,7 @@ func (Ch ChannelModel) CreateChannel(chn *TblChannel, DB *gorm.DB) (TblChannel, 
 
 func (Ch ChannelModel) ChannelDetail(DB *gorm.DB, inputs Channels, channelDetail *Tblchannel) error {
 
-	query := DB.Debug().Model(TblChannel{}).Where("tbl_channels.is_deleted = 0")
+	query := DB.Debug().Table("tbl_channels").Where("tbl_channels.is_deleted = 0")
 
 	if inputs.Id != 0 {
 

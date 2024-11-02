@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/spurtcms/auth v0.0.12
-	github.com/spurtcms/categories v0.0.12
+	github.com/spurtcms/categories v0.0.23
 	github.com/spurtcms/member v0.0.17
 	github.com/spurtcms/member-access v0.0.1
 	github.com/spurtcms/team v0.0.20

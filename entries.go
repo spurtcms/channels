@@ -58,6 +58,17 @@ func (channel *Channel) ChannelEntriesList(entry Entries, tenantid int) (entries
 
 	for _, entries := range chnentry {
 
+		var first = entries.FirstName
+		var last = entries.LastName
+		var firstn = strings.ToUpper(first[:1])
+		var lastn string
+		if entries.LastName != "" {
+			lastn = strings.ToUpper(last[:1])
+		}
+
+		var Name = firstn + lastn
+		entries.NameString = Name
+
 		if entry.AuthorDetails {
 
 			authorDetails, _ := EntryModel.GetAuthorDetails(channel.DB, entries.CreatedBy, tenantid)
@@ -324,8 +335,13 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 
 			splitArr := strings.Split(data.CategoriesID, ",")
 
-			categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB)
+			err := categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB, channel.DB.Dialector.Name())
 
+			if err != nil{
+
+				fmt.Println("category retrieval error: ",err)
+			}
+			
 			for _, mapId := range splitArr {
 
 				IntId, _ := strconv.Atoi(mapId)
@@ -366,6 +382,8 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 				categoryHierarchy = append(categoryHierarchy, categoryStream)
 
 			}
+
+			fmt.Println("catdata",categoryHierarchy)
 
 		}
 
@@ -1227,7 +1245,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 
 				splitArr := strings.Split(data.CategoriesID, ",")
 
-				categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB)
+				categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB,channel.DB.Dialector.Name())
 
 				for _, mapId := range splitArr {
 
@@ -1419,7 +1437,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 
 			splitArr := strings.Split(data.CategoriesID, ",")
 
-			categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB)
+			categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB,channel.DB.Dialector.Name())
 
 			for _, mapId := range splitArr {
 
@@ -1637,6 +1655,7 @@ func (channel *Channel) UpdateMemberGroupIds(membergrbids string, entryid int, t
 
 	return nil
 }
+
 // update entries orderindex
 func (channel *Channel) UpdateEntryOrderIndex(Ordenindex int, EntryId int, userid int, tenantid int) (bool, error) {
 
