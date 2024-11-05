@@ -115,7 +115,7 @@ func TestCreateChennal(t *testing.T) {
 
 	if permisison {
 
-		chanlist, err := channel.CreateChannel(ChannelCreate{ChannelName: "life style", ChannelDescription: "collections", CategoryIds: []string{"1", "2"}}, 1)
+		chanlist, err := channel.CreateChannel(ChannelCreate{ChannelName: "life style", ChannelDescription: "collections", CategoryIds: []string{"1", "2"}},9, 1)
 
 		if err != nil {
 

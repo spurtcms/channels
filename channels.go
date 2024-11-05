@@ -74,7 +74,7 @@ func (channel *Channel) ChannelDetail(inputs Channels)(channelDetails Tblchannel
 
 
 /*create channel*/
-func (channel *Channel) CreateChannel(channelcreate ChannelCreate, tenantid int) (TblChannel, error) {
+func (channel *Channel) CreateChannel(channelcreate ChannelCreate,moduleid int, tenantid int) (TblChannel, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -106,7 +106,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate, tenantid int)
 	modperms.SlugName = strings.ReplaceAll(strings.ToLower(ch.ChannelName), " ", "_")
 	modperms.CreatedBy = channelcreate.CreatedBy
 	modperms.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-	modperms.ModuleId = 9
+	modperms.ModuleId = moduleid
 	modperms.AssignPermission = 1
 	modperms.OrderIndex = 2
 	modperms.FullAccessPermission = 1
