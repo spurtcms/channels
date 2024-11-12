@@ -970,7 +970,7 @@ func (Ch EntriesModel) GetChannelAdditionalFields(DB *gorm.DB, channelId int) (f
 // Entry Preview
 func (Ch EntriesModel) GetPreview(chentry *TblChannelEntries, DB *gorm.DB, uuid string) (err error) {
 
-	if err = DB.Debug().Table("tbl_channel_entries").Where("uuid = ?", uuid).Find(&chentry).Error; err != nil {
+	if err = DB.Debug().Table("tbl_channel_entries").Where("uuid = ? and is_deleted=0", uuid).Find(&chentry).Error; err != nil {
 
 		return err
 	}
