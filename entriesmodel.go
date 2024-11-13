@@ -1073,6 +1073,11 @@ func (En *EntriesModel) FlexibleChannelEntryDetail(db *gorm.DB, inputs EntriesIn
 		query = query.Where("en.tenant_id = ?", inputs.TenantId)
 	}
 
+	if inputs.ChannelId > 0 {
+
+		query = query.Where("en.channel_id = ?", inputs.ChannelId)
+	}
+
 	var profileCondition string
 
 	if inputs.GetMemberProfile {

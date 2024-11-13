@@ -56,30 +56,27 @@ func main() {
 		fmt.Println(channellist, count, err)
 
 		//create channel
-		cchannel, err := channel.CreateChannel(ChannelCreate{ChannelName: "demo", ChannelDescription: "demo", CategoryIds: []string{"56,77"}, CreatedBy: 1})
+		cchannel, err := channel.CreateChannel(ChannelCreate{ChannelName: "demo", ChannelDescription: "demo", CategoryIds: []string{"56,77"}, CreatedBy: 1},1,1)
 		fmt.Println(cchannel, err)
 
 		//update channel
-		uerr := channel.EditChannel("demo2", "demo2", 2, 1, []string{"55,44"})
+		uerr := channel.EditChannel("demo2", "demo2", 2, 1, []string{"55,44"},1)
 		fmt.Println(uerr)
 
 		//delete channel
-		derr := channel.DeleteChannel(1, 1)
+		derr := channel.DeleteChannel(1, 1,"",1)
 		fmt.Println(derr)
 
 		//create additionfield
-		aerr := channel.CreateAdditionalFields(ChannelAddtionalField{
-			Sections: []Section{
-				{SectionId: 1, SectionName: "New", MasterFieldId: 12, OrderIndex: 1}},
-			FieldValues: []Fiedlvalue{{
-				MasterFieldId: 1,
-				SectionId:     1,
-				FieldName:     "",
-				OrderIndex:    2,
-				DateFormat:    "",
-			}},
-		}, 1)
-		fmt.Println(aerr)
+		field1value := Fiedlvalue{FieldName: "text", MasterFieldId: 2, OrderIndex: 1, IconPath: "/public/img/text.svg"}
+		field2value := Fiedlvalue{FieldName: "date&time", MasterFieldId: 4, OrderIndex: 2, IconPath: "/public/img/date-time.svg",DateFormat: "DD/MM/YYYY",TimeFormat: "12"}
+
+		err := channel.CreateAdditionalFields(ChannelAddtionalField{FieldValues: []Fiedlvalue{field1value, field2value}, CreatedBy: 1}, 10, 1)
+
+		if err != nil {
+
+			panic(err)
+		}
 
 	}
 
@@ -98,28 +95,29 @@ func main() {
 			Publishedonly:            true,
 			ActiveChannelEntriesonly: true,
 			MemberProfile:            true,
-		})
+		},1)
 
 		fmt.Println(entries, filtercount, overallcount, err)
 
 		//create entry
-		entry, flg, cerr := channel.CreateEntry(EntriesRequired{
-			Title:      "demo",
-			Content:    "demo",
-			CoverImage: "",
-		})
+		entries, flg, err := channel.CreateEntry(EntriesRequired{Title: "golang", Content: "about go", ChannelId: 1,CreatedBy: 1}, 1)
 
-		fmt.Println(entry, flg, cerr)
+		if err != nil {
+
+			panic(err)
+		}
+
+		fmt.Println(entry, flg, err)
 
 		//update entry
 		channel.UpdateEntry(EntriesRequired{
 			Title:      "demo2",
 			Content:    "demo2",
 			CoverImage: "",
-		}, "demo", 1)
+		}, "demo", 1,1)
 
 		//delete entry
-		flg, derr := channel.DeleteEntry("demo", 1, 1)
+		flg, derr := channel.DeleteEntry("demo", 1, 1,1)
 
 		if derr != nil {
 
