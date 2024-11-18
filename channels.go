@@ -199,6 +199,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 		cfld.CharacterAllowed = val.CharacterAllowed
 		cfld.Url = val.Url
 		cfld.TenantId = tenantid
+		cfld.MandatoryField = val.Mandatory
 
 		if val.MasterFieldId == 4 {
 
