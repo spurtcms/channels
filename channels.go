@@ -232,7 +232,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 
 		if fiderr != nil {
 
-			fmt.Println(fiderr)
+			fmt.Println("fiderr",fiderr)
 
 		}
 
