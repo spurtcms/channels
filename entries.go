@@ -1683,3 +1683,20 @@ func (channel *Channel) UpdateEntryOrderIndex(Ordenindex int, EntryId int, useri
 
 	return true, nil
 }
+func (channel *Channel) GetChannelEntriesById(id int, tenantid int) (*TblChannelEntries, error) {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return nil, autherr
+	}
+
+	entries, err := EntryModel.GetEntriesById(id, channel.DB, tenantid)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return entries, nil
+
+}

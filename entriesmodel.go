@@ -1177,3 +1177,15 @@ func (Ch EntriesModel) UpdateEntryOrderIndex(entry *TblChannelEntries, entryid i
 
 	return nil
 }
+func (Ch EntriesModel) GetEntriesById(id int, DB *gorm.DB, tenantid int) (*TblChannelEntries, error) {
+
+	var entries TblChannelEntries
+
+	if err := DB.Table("tbl_channel_entries").Where("id=? and tenant_id=?", id, tenantid).Find(&entries).Error; err != nil {
+
+		return nil, err
+	}
+
+	return &entries, nil
+
+}
