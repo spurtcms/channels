@@ -1700,3 +1700,18 @@ func (channel *Channel) GetChannelEntriesById(id int, tenantid int) (*TblChannel
 	return entries, nil
 
 }
+func (channel *Channel) DefaultChannel(slug string, tenantid int) (int, error) {
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return 0, autherr
+	}
+
+	id, err := EntryModel.defaultchannelid(slug,channel.DB, tenantid)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return id, nil
+}

@@ -1189,3 +1189,15 @@ func (Ch EntriesModel) GetEntriesById(id int, DB *gorm.DB, tenantid int) (*TblCh
 	return &entries, nil
 
 }
+func (Ch EntriesModel) defaultchannelid(slug string, DB *gorm.DB,tenantid int) (int,error){
+
+	var Channels TblChannel
+
+	if err:=DB.Table("tbl_channels").Where("slug_name=? and tenant_id=?",slug,tenantid).Find(&Channels).Error; err != nil {
+
+		return 0, err
+	}
+
+
+	return Channels.Id,nil
+}
