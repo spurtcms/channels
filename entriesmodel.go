@@ -107,6 +107,7 @@ type Entries struct {
 	ImageUrlPath             string
 	FieldTypeId              int
 	MemberFieldTypeId        int
+	Sorting                  string
 }
 
 type IndivEntriesReq struct {
@@ -296,7 +297,29 @@ var EntryModel EntriesModel
 /*List Channel Entry*/
 func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, categoryid string, createonly bool, DB *gorm.DB, tenantid int) (chentry []Tblchannelentries, chentcount int64, err error) {
 
-	query := DB.Model(TblChannelEntries{}).Select("tbl_channel_entries.*,tbl_users.username,tbl_users.first_name,tbl_users.last_name,tbl_users.profile_image_path,tbl_channels.channel_name").Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Joins("left join tbl_channels on tbl_channels.id = tbl_channel_entries.channel_id").Where("tbl_channel_entries.is_deleted=0 and tbl_channel_entries.tenant_id=?", tenantid).Order("order_index asc")
+	query := DB.Model(TblChannelEntries{}).Select("tbl_channel_entries.*,tbl_users.username,tbl_users.first_name,tbl_users.last_name,tbl_users.profile_image_path,tbl_channels.channel_name").Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Joins("left join tbl_channels on tbl_channels.id = tbl_channel_entries.channel_id").Where("tbl_channel_entries.is_deleted=0 and tbl_channel_entries.tenant_id=?", tenantid)
+
+	if filter.Sorting == "lastUpdated" {
+
+		query = query.Order("modified_on desc")
+
+	} else if filter.Sorting == "createdDate" {
+
+		query = query.Order("created_on asc")
+
+	} else if filter.Sorting == "asc" {
+
+		query = query.Order("title asc")
+
+	} else if filter.Sorting == "desc" {
+
+		query = query.Order("title desc")
+
+	} else {
+
+		query = query.Order("order_index asc")
+
+	}
 
 	if channel.PermissionEnable && (channel.Auth.RoleId != 1 && channel.Auth.RoleId != 2) {
 
@@ -1189,15 +1212,14 @@ func (Ch EntriesModel) GetEntriesById(id int, DB *gorm.DB, tenantid int) (*TblCh
 	return &entries, nil
 
 }
-func (Ch EntriesModel) defaultchannelid(slug string, DB *gorm.DB,tenantid int) (int,error){
+func (Ch EntriesModel) defaultchannelid(slug string, DB *gorm.DB, tenantid int) (int, error) {
 
 	var Channels TblChannel
 
-	if err:=DB.Table("tbl_channels").Where("slug_name=? and tenant_id=?",slug,tenantid).Find(&Channels).Error; err != nil {
+	if err := DB.Table("tbl_channels").Where("slug_name=? and tenant_id=?", slug, tenantid).Find(&Channels).Error; err != nil {
 
 		return 0, err
 	}
 
-
-	return Channels.Id,nil
+	return Channels.Id, nil
 }
