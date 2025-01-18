@@ -323,6 +323,7 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 				DeletedBy:         data.AuthorDeletedBy,
 				DefaultLanguageId: data.DefaultLanguageId,
 				TenantId:          data.UserTenantId,
+				RoleName:          data.RoleName,
 			}
 
 		}
@@ -337,11 +338,11 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 
 			err := categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB, channel.DB.Dialector.Name())
 
-			if err != nil{
+			if err != nil {
 
-				fmt.Println("category retrieval error: ",err)
+				fmt.Println("category retrieval error: ", err)
 			}
-			
+
 			for _, mapId := range splitArr {
 
 				IntId, _ := strconv.Atoi(mapId)
@@ -383,7 +384,7 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 
 			}
 
-			fmt.Println("catdata",categoryHierarchy)
+			fmt.Println("catdata", categoryHierarchy)
 
 		}
 
@@ -1245,7 +1246,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 
 				splitArr := strings.Split(data.CategoriesID, ",")
 
-				categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB,channel.DB.Dialector.Name())
+				categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB, channel.DB.Dialector.Name())
 
 				for _, mapId := range splitArr {
 
@@ -1437,7 +1438,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 
 			splitArr := strings.Split(data.CategoriesID, ",")
 
-			categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB,channel.DB.Dialector.Name())
+			categories.Categorymodel.GetHierarchicalCategoriesMappedInEntries(splitArr, &categoriez, channel.DB, channel.DB.Dialector.Name())
 
 			for _, mapId := range splitArr {
 
@@ -1708,10 +1709,29 @@ func (channel *Channel) DefaultChannel(slug string, tenantid int) (int, error) {
 		return 0, autherr
 	}
 
-	id, err := EntryModel.defaultchannelid(slug,channel.DB, tenantid)
+	id, err := EntryModel.defaultchannelid(slug, channel.DB, tenantid)
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	return id, nil
+}
+
+
+func (channel *Channel)EntryAuthors(tenantid int)([] Author,error){
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return []Author{}, autherr
+	}
+
+	Authors,err :=EntryModel.EntryAuthors(tenantid,channel.DB)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return Authors, nil
+
 }

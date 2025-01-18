@@ -290,6 +290,7 @@ type JoinEntries struct {
 	AuthorDeletedBy   int       `gorm:"column:author_deleted_by"`
 	DefaultLanguageId int
 	UserTenantId      int `gorm:"column:user_tenant_id"`
+	RoleName          string
 }
 
 var EntryModel EntriesModel
@@ -542,9 +543,25 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 
 	if input.GetAuthorDetails {
 
-		selectData += ",tu.*,tu.id as author_id,tu.is_active as author_active,tu.created_on as author_created_on,tu.created_by as author_created_by,tu.modified_on as author_modified_on,tu.modified_by as author_modified_by,tu.deleted_on as author_deleted_on,tu.deleted_by as author_deleted_by, tu.is_deleted as author_is_deleted,tu.storage_type as author_storage_type,tu.tenant_id as user_tenant_id,tu.profile_image_path as author_profile_image_path"
+		selectData += ", tu.*, " +
+			"tu.id as author_id, " +
+			"tu.is_active as author_active, " +
+			"tu.created_on as author_created_on, " +
+			"tu.created_by as author_created_by, " +
+			"tu.modified_on as author_modified_on, " +
+			"tu.modified_by as author_modified_by, " +
+			"tu.deleted_on as author_deleted_on, " +
+			"tu.deleted_by as author_deleted_by, " +
+			"tu.is_deleted as author_is_deleted, " +
+			"tu.storage_type as author_storage_type, " +
+			"tu.tenant_id as user_tenant_id, " +
+			"tu.profile_image_path as author_profile_image_path, " +
+			"tr.name as role_name"
 
-		query = query.Joins("left join tbl_users as tu on tu.id = en.created_by").Where("tu.is_deleted = 0")
+		query = query.Select(selectData).
+			Joins("LEFT JOIN tbl_users AS tu ON tu.id = en.created_by").
+			Joins("LEFT JOIN tbl_roles AS tr ON tr.id = tu.role_id").
+			Where("tu.is_deleted = 0")
 	}
 
 	if input.MemberAccessControl && input.MemberId != 0 && input.ContentHide {
@@ -1222,4 +1239,23 @@ func (Ch EntriesModel) defaultchannelid(slug string, DB *gorm.DB, tenantid int) 
 	}
 
 	return Channels.Id, nil
+}
+
+func (Ch EntriesModel) EntryAuthors(tenantid int, DB *gorm.DB) ([]Author, error) {
+
+	var authors []Author
+	err := DB.Debug().Table("tbl_channel_entries").
+		Select("tbl_users.*, COUNT(tbl_channel_entries.id) as entry_count").
+		Joins("JOIN tbl_users ON tbl_users.id = tbl_channel_entries.created_by").
+		Where("tbl_channel_entries.tenant_id = ?", tenantid).
+		Group("tbl_users.id").
+		Order("entry_count DESC").
+		Limit(10).
+		Find(&authors).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return authors, nil
+
 }
