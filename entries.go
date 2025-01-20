@@ -1426,6 +1426,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 				DeletedBy:         data.AuthorDeletedBy,
 				DefaultLanguageId: data.DefaultLanguageId,
 				TenantId:          data.UserTenantId,
+				RoleName:          data.RoleName,
 			}
 
 		}
@@ -1717,8 +1718,7 @@ func (channel *Channel) DefaultChannel(slug string, tenantid int) (int, error) {
 	return id, nil
 }
 
-
-func (channel *Channel)EntryAuthors(tenantid int)([] Author,error){
+func (channel *Channel) EntryAuthors(tenantid int) ([]Author, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -1727,7 +1727,7 @@ func (channel *Channel)EntryAuthors(tenantid int)([] Author,error){
 		return []Author{}, autherr
 	}
 
-	Authors,err :=EntryModel.EntryAuthors(tenantid,channel.DB)
+	Authors, err := EntryModel.EntryAuthors(tenantid, channel.DB)
 	if err != nil {
 		fmt.Println(err)
 	}
