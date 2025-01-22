@@ -733,6 +733,8 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid in
 
 	Entries.TenantId = tenantid
 
+	Entries.CtaId = entriesrequired.CtaId
+
 	Entriess, err := EntryModel.CreateChannelEntry(Entries, channel.DB)
 
 	if err != nil {
@@ -847,6 +849,8 @@ func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName
 	Entries.Excerpt = entriesrequired.Excerpt
 
 	Entries.OrderIndex = entriesrequired.OrderIndex
+
+	Entries.CtaId = entriesrequired.CtaId
 
 	err := EntryModel.UpdateChannelEntryDetails(&Entries, EntryId, channel.DB, tenantid)
 
@@ -1234,6 +1238,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 					DeletedBy:         data.AuthorDeletedBy,
 					DefaultLanguageId: data.DefaultLanguageId,
 					TenantId:          data.UserTenantId,
+					RoleName:          data.RoleName,
 				}
 
 			}

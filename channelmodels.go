@@ -213,6 +213,7 @@ type TblChannelEntries struct {
 	DeletedBy       int       `gorm:"DEFAULT:NULL"`
 	Uuid            string    `gorm:"character varying"`
 	OrderIndex      int       `gorm:"type:integer"`
+	CtaId           int       `gorm:"type:integer"`
 }
 
 type TblChannelEntryField struct {
@@ -336,7 +337,7 @@ func IsDeleted(db *gorm.DB) *gorm.DB {
 }
 
 /*channel list*/
-func (Ch ChannelModel) Channellist(DB *gorm.DB,channel *Channel, inputs Channels, channels *[]Tblchannel, count *int64) (err error) {
+func (Ch ChannelModel) Channellist(DB *gorm.DB, channel *Channel, inputs Channels, channels *[]Tblchannel, count *int64) (err error) {
 
 	query := DB.Debug().Table("tbl_channels").Where("tbl_channels.is_deleted = 0")
 
