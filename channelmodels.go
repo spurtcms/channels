@@ -54,6 +54,7 @@ type Tblchannel struct {
 	Username           string              `gorm:"<-:false"`
 	FirstName          string              `gorm:"<-:false"`
 	LastName           string              `gorm:"<-:false"`
+	NameString         string              `gorm:"<-:false"`
 }
 
 type tblchannelcategory struct {
@@ -345,6 +346,9 @@ func (Ch ChannelModel) Channellist(DB *gorm.DB, channel *Channel, inputs Channel
 
 		query = query.Where("tbl_channels.tenant_id=?", inputs.TenantId)
 
+	} else {
+
+		query = query.Where("tbl_channels.tenant_id is null")
 	}
 
 	if inputs.CreateOnly && Ch.Dataaccess == 1 {
@@ -500,11 +504,19 @@ func (Ch ChannelModel) GetChannelByChannelName(name string, DB *gorm.DB, tenanti
 /*Get Channel*/
 func (Ch ChannelModel) GetChannelById(id int, DB *gorm.DB, tenantid int) (ch Tblchannel, err error) {
 
-	if err := DB.Table("tbl_channels").Where("id=? and tenant_id=?", id, tenantid).First(&ch).Error; err != nil {
+	if tenantid != -1 {
 
-		return Tblchannel{}, err
+		if err := DB.Table("tbl_channels").Where("id=? and tenant_id=?", id, tenantid).First(&ch).Error; err != nil {
+
+			return Tblchannel{}, err
+		}
+	} else {
+
+		if err := DB.Table("tbl_channels").Where("id=? and tenant_id is null", id).First(&ch).Error; err != nil {
+
+			return Tblchannel{}, err
+		}
 	}
-
 	return ch, nil
 }
 
@@ -873,5 +885,25 @@ func (ch ChannelModel) NewChannelCount(DB *gorm.DB, tenantid int) (count int64, 
 	}
 
 	return count, nil
+
+}
+
+func (ch ChannelModel) CheckNameInChannel(channelid int, channelname string, DB *gorm.DB, tenantid int) (channel TblChannel, err error) {
+
+	if channelid == 0 {
+
+		if err := DB.Table("tbl_channels").Where("LOWER(TRIM(channel_name))=LOWER(TRIM(?)) and tenant_id=? and is_deleted=0", channelname, tenantid).First(&channel).Error; err != nil {
+
+			return TblChannel{}, err
+		}
+	} else {
+
+		if err := DB.Table("tbl_channels").Where("LOWER(TRIM(channel_name))=LOWER(TRIM(?)) and id not in (?) and tenant_id=?   and is_deleted=0", channelname, channelid, tenantid).First(&channel).Error; err != nil {
+
+			return TblChannel{}, err
+		}
+	}
+
+	return channel, nil
 
 }

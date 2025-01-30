@@ -53,28 +53,27 @@ func (channel *Channel) ListChannel(inputs Channels) (channelList []Tblchannel, 
 	return channellist, int(count), nil
 }
 
-func (channel *Channel) ChannelDetail(inputs Channels)(channelDetails Tblchannel,err error){
+func (channel *Channel) ChannelDetail(inputs Channels) (channelDetails Tblchannel, err error) {
 
 	autherr := AuthandPermission(channel)
 
 	if autherr != nil {
-		return  Tblchannel{}, autherr
+		return Tblchannel{}, autherr
 	}
 
 	CH.Userid = channel.Userid
 	CH.Dataaccess = channel.DataAccess
 
-	if err = CH.ChannelDetail(channel.DB,inputs,&channelDetails);err!=nil{
+	if err = CH.ChannelDetail(channel.DB, inputs, &channelDetails); err != nil {
 
-		return Tblchannel{},err
+		return Tblchannel{}, err
 	}
 
 	return channelDetails, nil
 }
 
-
 /*create channel*/
-func (channel *Channel) CreateChannel(channelcreate ChannelCreate,moduleid int, tenantid int) (TblChannel, error) {
+func (channel *Channel) CreateChannel(channelcreate ChannelCreate, moduleid int, tenantid int) (TblChannel, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -232,7 +231,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 
 		if fiderr != nil {
 
-			fmt.Println("fiderr",fiderr)
+			fmt.Println("fiderr", fiderr)
 
 		}
 
@@ -465,7 +464,7 @@ func (channel *Channel) GetChannelsFieldsById(channelid int, tenantid int) (sect
 }
 
 /*Delete Channel*/
-func (channel *Channel) DeleteChannel(channelid, modifiedby int,routename string, tenantid int) error {
+func (channel *Channel) DeleteChannel(channelid, modifiedby int, routename string, tenantid int) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -503,9 +502,9 @@ func (channel *Channel) DeleteChannel(channelid, modifiedby int,routename string
 
 func (channel *Channel) DeleteChannelPermissions(channelid int) error {
 
-	checkid, _ := permission.AS.GetIdByRouteName(strconv.Itoa(channelid), channel.DB,TenantId)
+	checkid, _ := permission.AS.GetIdByRouteName(strconv.Itoa(channelid), channel.DB, TenantId)
 
-	permission.AS.Deleterolepermission(checkid.Id, channel.DB,TenantId)
+	permission.AS.Deleterolepermission(checkid.Id, channel.DB, TenantId)
 
 	// permission.AS.DeleteModulePermissioninEntries(channelid, channel.DB)
 
@@ -952,6 +951,7 @@ func (channel *Channel) GetChannelsWithEntries(tenantid int) ([]Tblchannel, erro
 	return FinalChannellist, nil
 
 }
+
 // Channel type change
 func (channel *Channel) ChannelType(Channels Tblchannel) error {
 
@@ -982,6 +982,7 @@ func (channel *Channel) ChannelType(Channels Tblchannel) error {
 	return nil
 
 }
+
 // last 10 days la add pana channel count
 func (channel *Channel) DashBoardChannelCount(tenantid int) (Totalcount int, lcount int, err error) {
 
@@ -1007,4 +1008,68 @@ func (channel *Channel) DashBoardChannelCount(tenantid int) (Totalcount int, lco
 	}
 
 	return int(allchannelcount), int(lchannelcount), nil
+}
+
+func (channel *Channel) AddChanneltoMycollecton(channelid int, tenantid int, userid int, moduleid int) (bool, error) {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return false, autherr
+	}
+
+	channelcreate, _, _ := channel.GetChannelsById(channelid, -1)
+
+	fmt.Println(channelcreate, "checkchanneldetails")
+
+	/*create channel*/
+	var cchannel TblChannel
+	cchannel.ChannelName = channelcreate.ChannelName
+	cchannel.ChannelDescription = channelcreate.ChannelDescription
+	cchannel.SlugName = strings.ToLower(strings.ReplaceAll(channelcreate.ChannelName, " ", "-"))
+	cchannel.IsActive = 1
+	cchannel.CreatedBy = userid
+	cchannel.TenantId = tenantid
+	cchannel.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	ch, chanerr := CH.CreateChannel(&cchannel, channel.DB)
+
+	if chanerr != nil {
+
+		fmt.Println(chanerr)
+	}
+
+	/*This is for module permission creation*/
+	var modperms permission.TblModulePermission
+	modperms.DisplayName = ch.ChannelName
+	modperms.RouteName = "/channel/entrylist/" + strconv.Itoa(ch.Id)
+	modperms.SlugName = strings.ReplaceAll(strings.ToLower(ch.ChannelName), " ", "_")
+	modperms.CreatedBy = channelcreate.CreatedBy
+	modperms.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	modperms.ModuleId = moduleid
+	modperms.AssignPermission = 1
+	modperms.OrderIndex = 2
+	modperms.FullAccessPermission = 1
+	modperms.TenantId = tenantid
+
+	permission.AS.CreateModulePermission(&modperms, channel.DB)
+
+	return true, nil
+
+}
+
+func (channel *Channel) CheckNameInChannel(channelid int, cname string, tenantid int) (bool, error) {
+
+	channeldet, err := CH.CheckNameInChannel(channelid, cname, channel.DB, tenantid)
+
+	if err != nil {
+		return false, err
+	}
+	if channeldet.Id == 0 {
+
+		return false, err
+	}
+
+	return true, nil
+
 }
