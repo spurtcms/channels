@@ -908,11 +908,11 @@ func (ch ChannelModel) CheckNameInChannel(channelid int, channelname string, DB 
 
 }
 
-func (ch ChannelModel) GetChannelId(chname string, DB *gorm.DB) (int, error) {
+func (ch ChannelModel) GetChannelId(chname string, tenantid int, DB *gorm.DB) (int, error) {
 
 	var Id int // Define the variable to hold the result
 
-	if err := DB.Table("tbl_channels").Debug().Where("channel_name = ?", chname).Select("Id").Scan(&Id).Error; err != nil {
+	if err := DB.Table("tbl_channels").Debug().Where("channel_name = ? and tenant_id=? and is_deleted=0", chname, tenantid).Select("Id").Scan(&Id).Error; err != nil {
 		return 0, err
 	}
 

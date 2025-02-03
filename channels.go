@@ -1073,8 +1073,8 @@ func (channel *Channel) CheckNameInChannel(channelid int, cname string, tenantid
 	return true, nil
 
 }
-func (channel *Channel) GetChannal(chname string) int {
+func (channel *Channel) GetChannal(chname string, tenantid int) int {
 
-	channelid, _ := CH.GetChannelId(chname, channel.DB)
+	channelid, _ := CH.GetChannelId(chname, tenantid, channel.DB)
 	return channelid
 }
