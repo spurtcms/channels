@@ -691,15 +691,32 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid in
 
 	Entries.Keyword = entriesrequired.SEODetails.MetaKeywords
 
-	Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.Title), " ", "-")
+	// Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.Title), " ", "-")
 
-	re := regexp.MustCompile(`[^a-z0-9\-]`)
+	// re := regexp.MustCompile(`[^a-z0-9\-]`)
 
-	Entries.Slug = re.ReplaceAllString(Entries.Slug, "-")
+	// Entries.Slug = re.ReplaceAllString(Entries.Slug, "-")
 
-	Entries.Slug = regexp.MustCompile(`-+`).ReplaceAllString(Entries.Slug, "-")
+	// Entries.Slug = regexp.MustCompile(`-+`).ReplaceAllString(Entries.Slug, "-")
 
-	Entries.Slug = strings.Trim(Entries.Slug, "-")
+	// Entries.Slug = strings.Trim(Entries.Slug, "-")
+	if entriesrequired.SEODetails.MetaSlug == "" {
+
+		Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.Title), " ", "-")
+
+		re := regexp.MustCompile(`[^a-z0-9\-]`)
+
+		Entries.Slug = re.ReplaceAllString(Entries.Slug, "-")
+
+		Entries.Slug = regexp.MustCompile(`-+`).ReplaceAllString(Entries.Slug, "-")
+
+		Entries.Slug = strings.Trim(Entries.Slug, "-")
+
+	} else if entriesrequired.SEODetails.MetaSlug != "" {
+
+		Entries.Slug=entriesrequired.SEODetails.MetaSlug
+
+	}
 
 	Entries.Status = entriesrequired.Status
 
@@ -814,15 +831,17 @@ func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName
 
 	Entries.ImageAltTag = entriesrequired.SEODetails.ImageAltTag
 
-	Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.Title), " ", "-")
+	// Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.Title), " ", "-")
 
-	re := regexp.MustCompile(`[^a-z0-9\-]`)
+	// re := regexp.MustCompile(`[^a-z0-9\-]`)
 
-	Entries.Slug = re.ReplaceAllString(Entries.Slug, "-")
+	// Entries.Slug = re.ReplaceAllString(Entries.Slug, "-")
 
-	Entries.Slug = regexp.MustCompile(`-+`).ReplaceAllString(Entries.Slug, "-")
+	// Entries.Slug = regexp.MustCompile(`-+`).ReplaceAllString(Entries.Slug, "-")
 
-	Entries.Slug = strings.Trim(Entries.Slug, "-")
+	// Entries.Slug = strings.Trim(Entries.Slug, "-")
+
+	Entries.Slug=entriesrequired.SEODetails.MetaSlug
 
 	Entries.Status = entriesrequired.Status
 
