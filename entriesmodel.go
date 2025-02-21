@@ -3,6 +3,7 @@ package channels
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/spurtcms/categories"
@@ -207,6 +208,7 @@ type EntriesInputs struct {
 	SectionFieldTypeId     int
 	MemberFieldTypeId      int
 	TotalCount             bool
+	AdditionalData         string
 }
 
 type JoinEntries struct {
@@ -465,6 +467,13 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 	if input.Keyword != "" {
 
 		query = query.Where("TRIM(LOWER(en.title)) LIKE TRIM(LOWER(?))", "%"+input.Keyword+"%")
+	}
+
+	if input.AdditionalData != "" {
+		additionalData := strings.ToLower(input.AdditionalData)
+
+		query = query.Joins("inner join tbl_channel_entry_fields as ef on ef.channel_entry_id = en.id").
+			Where("TRIM(LOWER(ef.field_value)) LIKE TRIM(LOWER(?))", "%"+additionalData+"%")
 	}
 
 	if input.Title != "" {
