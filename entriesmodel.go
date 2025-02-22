@@ -366,11 +366,11 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 
 	}
 
-	if filter.Status != "" {
+	// if filter.Status != "" {
 
-		query = query.Where("tbl_channel_entries.status=?", filter.Status)
+	// 	query = query.Where("tbl_channel_entries.status=?", filter.Status)
 
-	}
+	// }
 	if filter.Title != "" {
 
 		query = query.Where("LOWER(TRIM(title)) LIKE LOWER(TRIM(?))", "%"+filter.Title+"%")

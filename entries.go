@@ -24,16 +24,16 @@ func (channel *Channel) ChannelEntriesList(entry Entries, tenantid int) (entries
 		return []Tblchannelentries{}, 0, 0, autherr
 	}
 
-	if entry.Status == "Draft" {
+	// if entry.Status == "Draft" {
 
-		entry.Status = "0"
-	} else if entry.Status == "Published" {
+	// 	entry.Status = "0"
+	// } else if entry.Status == "Published" {
 
-		entry.Status = "1"
-	} else if entry.Status == "Unpublished" {
+	// 	entry.Status = "1"
+	// } else if entry.Status == "Unpublished" {
 
-		entry.Status = "2"
-	}
+	// 	entry.Status = "2"
+	// }
 
 	var categoryid string
 	if entry.CategoryId != 0 && entry.CategoryId > 0 {
@@ -714,7 +714,7 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid in
 
 	} else if entriesrequired.SEODetails.MetaSlug != "" {
 
-		Entries.Slug=entriesrequired.SEODetails.MetaSlug
+		Entries.Slug = entriesrequired.SEODetails.MetaSlug
 
 	}
 
@@ -841,7 +841,7 @@ func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName
 
 	// Entries.Slug = strings.Trim(Entries.Slug, "-")
 
-	Entries.Slug=entriesrequired.SEODetails.MetaSlug
+	Entries.Slug = entriesrequired.SEODetails.MetaSlug
 
 	Entries.Status = entriesrequired.Status
 
