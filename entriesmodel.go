@@ -110,6 +110,7 @@ type Entries struct {
 	FieldTypeId              int
 	MemberFieldTypeId        int
 	Sorting                  string
+	EntriesTitle             string 
 }
 
 type IndivEntriesReq struct {
@@ -366,11 +367,17 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 
 	}
 
-	// if filter.Status != "" {
+	if filter.EntriesTitle != "" {
 
-	// 	query = query.Where("tbl_channel_entries.status=?", filter.Status)
+		query = query.Where("LOWER(TRIM(title)) LIKE LOWER(TRIM(?)) OR LOWER(TRIM(channel_name)) LIKE LOWER(TRIM(?))", "%"+filter.EntriesTitle+"%", "%"+filter.EntriesTitle+"%")
 
-	// }
+	}
+
+	if filter.Status != "" {
+
+		query = query.Where("tbl_channel_entries.status=?", filter.Status)
+
+	}
 	if filter.Title != "" {
 
 		query = query.Where("LOWER(TRIM(title)) LIKE LOWER(TRIM(?))", "%"+filter.Title+"%")
