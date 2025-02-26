@@ -2,6 +2,7 @@ package channels
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -110,7 +111,7 @@ type Entries struct {
 	FieldTypeId              int
 	MemberFieldTypeId        int
 	Sorting                  string
-	EntriesTitle             string 
+	EntriesTitle             string
 }
 
 type IndivEntriesReq struct {
@@ -209,7 +210,9 @@ type EntriesInputs struct {
 	SectionFieldTypeId     int
 	MemberFieldTypeId      int
 	TotalCount             bool
-	AdditionalData         string
+	Location               string
+	Experience             string
+	Posteddate             string
 }
 
 type JoinEntries struct {
@@ -476,11 +479,44 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 		query = query.Where("TRIM(LOWER(en.title)) LIKE TRIM(LOWER(?))", "%"+input.Keyword+"%")
 	}
 
-	if input.AdditionalData != "" {
-		additionalData := strings.ToLower(input.AdditionalData)
+	if input.Location != "" {
+		query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef ON ef.channel_entry_id = en.id").
+			Where("TRIM(LOWER(ef.field_value)) LIKE TRIM(LOWER(?))", "%"+strings.ToLower(input.Location)+"%")
+	}
 
-		query = query.Joins("inner join tbl_channel_entry_fields as ef on ef.channel_entry_id = en.id").
-			Where("TRIM(LOWER(ef.field_value)) LIKE TRIM(LOWER(?))", "%"+additionalData+"%")
+	// Filter by Experience (Fix: Use 'ef2' alias to prevent duplicate alias issue)
+	if input.Experience != "" {
+		query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef2 ON ef2.channel_entry_id = en.id").
+			Where("TRIM(LOWER(ef2.field_value)) = TRIM(LOWER(?))", input.Experience) // Exact match
+	}
+
+	if input.Posteddate != "" {
+		now := time.Now()
+		startOfWeek := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local).AddDate(0, 0, -int(now.Weekday())+1)
+		startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.Local)
+		startOfYear := time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.Local)
+
+		switch strings.ToLower(input.Posteddate) {
+		case "today":
+			query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef3 ON ef3.channel_entry_id = en.id").
+				Where("(ef3.field_value) = ?", now.Format("2006-01-02"))
+
+		case "this week":
+			fmt.Println(input.Posteddate, "postedate")
+			query = query.Debug().Joins("INNER JOIN tbl_channel_entry_fields AS ef3 ON ef3.channel_entry_id = en.id").
+				Where(" ef3.field_value>=?  AND ef3.field_value<=? ", startOfWeek.Format("2006-01-02"), now.Format("2006-01-02"))
+
+		case "this month":
+			query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef3 ON ef3.channel_entry_id = en.id").
+				Where("ef3.field_value>=?  AND ef3.field_value<=?", startOfMonth.Format("2006-01-02"), now.Format("2006-01-02"))
+
+		case "this year":
+			query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef3 ON ef3.channel_entry_id = en.id").
+				Where("ef3.field_value>=?  AND ef3.field_value<=?", startOfYear.Format("2006-01-02"), now.Format("2006-01-02"))
+
+		default:
+			fmt.Println("Invalid posted date filter:", input.Posteddate) // Optional logging
+		}
 	}
 
 	if input.Title != "" {
