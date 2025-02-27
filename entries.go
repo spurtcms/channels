@@ -723,6 +723,8 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid in
 	Entries.ChannelId = entriesrequired.ChannelId
 
 	Entries.CategoriesId = entriesrequired.CategoryIds
+	
+	Entries.MemebrshipLevelIds = entriesrequired.MembershipLevelids
 
 	Entries.CreatedBy = entriesrequired.CreatedBy
 
@@ -830,6 +832,8 @@ func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName
 	Entries.Keyword = entriesrequired.SEODetails.MetaKeywords
 
 	Entries.ImageAltTag = entriesrequired.SEODetails.ImageAltTag
+
+	Entries.MemebrshipLevelIds=entriesrequired.MembershipLevelids
 
 	// Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.Title), " ", "-")
 

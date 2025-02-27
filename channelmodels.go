@@ -180,41 +180,42 @@ type TblGroupField struct {
 }
 
 type TblChannelEntries struct {
-	Id              int       `gorm:"primaryKey;auto_increment;type:serial"`
-	Title           string    `gorm:"type:character varying"`
-	Slug            string    `gorm:"type:character varying"`
-	Description     string    `gorm:"type:character varying"`
-	UserId          int       `gorm:"type:integer"`
-	ChannelId       int       `gorm:"type:integer"`
-	Status          int       `gorm:"type:integer"` //0-draft 1-publish 2-unpublish
-	CoverImage      string    `gorm:"type:character varying"`
-	ThumbnailImage  string    `gorm:"type:character varying"`
-	MetaTitle       string    `gorm:"type:character varying"`
-	MetaDescription string    `gorm:"type:character varying"`
-	Keyword         string    `gorm:"type:character varying"`
-	CategoriesId    string    `gorm:"type:character varying"`
-	RelatedArticles string    `gorm:"type:character varying"`
-	Feature         int       `gorm:"DEFAULT:0"`
-	ViewCount       int       `gorm:"DEFAULT:0"`
-	Author          string    `gorm:"type:character varying"`
-	SortOrder       int       `gorm:"type:integer"`
-	CreateTime      time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
-	PublishedTime   time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
-	ReadingTime     int       `gorm:"type:integer;DEFAULT:0"`
-	Tags            string    `gorm:"type:character varying"`
-	Excerpt         string    `gorm:"type:character varying"`
-	ImageAltTag     string    `gorm:"type:character varying"`
-	CreatedOn       time.Time `gorm:"type:timestamp without time zone"`
-	CreatedBy       int       `gorm:"type:integer"`
-	ModifiedBy      int       `gorm:"DEFAULT:NULL"`
-	ModifiedOn      time.Time `gorm:"DEFAULT:NULL"`
-	IsActive        int       `gorm:"type:integer"`
-	IsDeleted       int       `gorm:"DEFAULT:0"`
-	DeletedOn       time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
-	DeletedBy       int       `gorm:"DEFAULT:NULL"`
-	Uuid            string    `gorm:"character varying"`
-	OrderIndex      int       `gorm:"type:integer"`
-	CtaId           int       `gorm:"type:integer"`
+	Id                 int       `gorm:"primaryKey;auto_increment;type:serial"`
+	Title              string    `gorm:"type:character varying"`
+	Slug               string    `gorm:"type:character varying"`
+	Description        string    `gorm:"type:character varying"`
+	UserId             int       `gorm:"type:integer"`
+	ChannelId          int       `gorm:"type:integer"`
+	Status             int       `gorm:"type:integer"` //0-draft 1-publish 2-unpublish
+	CoverImage         string    `gorm:"type:character varying"`
+	ThumbnailImage     string    `gorm:"type:character varying"`
+	MetaTitle          string    `gorm:"type:character varying"`
+	MetaDescription    string    `gorm:"type:character varying"`
+	Keyword            string    `gorm:"type:character varying"`
+	CategoriesId       string    `gorm:"type:character varying"`
+	RelatedArticles    string    `gorm:"type:character varying"`
+	Feature            int       `gorm:"DEFAULT:0"`
+	ViewCount          int       `gorm:"DEFAULT:0"`
+	Author             string    `gorm:"type:character varying"`
+	SortOrder          int       `gorm:"type:integer"`
+	CreateTime         time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	PublishedTime      time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	ReadingTime        int       `gorm:"type:integer;DEFAULT:0"`
+	Tags               string    `gorm:"type:character varying"`
+	Excerpt            string    `gorm:"type:character varying"`
+	ImageAltTag        string    `gorm:"type:character varying"`
+	CreatedOn          time.Time `gorm:"type:timestamp without time zone"`
+	CreatedBy          int       `gorm:"type:integer"`
+	ModifiedBy         int       `gorm:"DEFAULT:NULL"`
+	ModifiedOn         time.Time `gorm:"DEFAULT:NULL"`
+	IsActive           int       `gorm:"type:integer"`
+	IsDeleted          int       `gorm:"DEFAULT:0"`
+	DeletedOn          time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	DeletedBy          int       `gorm:"DEFAULT:NULL"`
+	Uuid               string    `gorm:"character varying"`
+	OrderIndex         int       `gorm:"type:integer"`
+	CtaId              int       `gorm:"type:integer"`
+	MemebrshipLevelIds string    `gorm:"column:memebrship_level_ids"`
 }
 
 type TblChannelEntryField struct {
