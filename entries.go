@@ -50,7 +50,7 @@ func (channel *Channel) ChannelEntriesList(entry Entries, tenantid int) (entries
 
 	chnentry, _, _ := EntryModel.ChannelEntryList(entry, channel, categoryid, true, channel.DB, tenantid)
 
-	_, filtercount, _ := EntryModel.ChannelEntryList(Entries{Limit: 0, Offset: 0, Keyword: entry.Keyword, ChannelName: entry.ChannelName, Status: entry.Status, Title: entry.Title, UserName: entry.UserName, Publishedonly: entry.Publishedonly, ActiveChannelEntriesonly: entry.ActiveChannelEntriesonly, CategoryId: entry.CategoryId, MemberAccessControl: entry.MemberAccessControl, ChannelId: entry.ChannelId}, channel, categoryid, true, channel.DB, tenantid)
+	_, filtercount, _ := EntryModel.ChannelEntryList(Entries{Limit: 0, Offset: 0, EntriesTitle: entry.EntriesTitle, Keyword: entry.Keyword, ChannelName: entry.ChannelName, Status: entry.Status, Title: entry.Title, UserName: entry.UserName, Publishedonly: entry.Publishedonly, ActiveChannelEntriesonly: entry.ActiveChannelEntriesonly, CategoryId: entry.CategoryId, MemberAccessControl: entry.MemberAccessControl, ChannelId: entry.ChannelId}, channel, categoryid, true, channel.DB, tenantid)
 
 	// _, entrcount, _ := EntryModel.ChannelEntryList(Entries{Limit: 0, Offset: 0, Keyword: entry.Keyword, ChannelName: entry.ChannelName, Status: entry.Status, Title: entry.Title, UserName: entry.UserName, Publishedonly: entry.Publishedonly, ActiveChannelEntriesonly: entry.ActiveChannelEntriesonly, CategoryId: entry.CategoryId, MemberAccessControl: entry.MemberAccessControl, ChannelId: entry.ChannelId}, channel, categoryid, true, channel.DB)
 
@@ -723,7 +723,7 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid in
 	Entries.ChannelId = entriesrequired.ChannelId
 
 	Entries.CategoriesId = entriesrequired.CategoryIds
-	
+
 	Entries.MemebrshipLevelIds = entriesrequired.MembershipLevelids
 
 	Entries.CreatedBy = entriesrequired.CreatedBy
@@ -833,7 +833,7 @@ func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName
 
 	Entries.ImageAltTag = entriesrequired.SEODetails.ImageAltTag
 
-	Entries.MemebrshipLevelIds=entriesrequired.MembershipLevelids
+	Entries.MemebrshipLevelIds = entriesrequired.MembershipLevelids
 
 	// Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.Title), " ", "-")
 
@@ -1640,6 +1640,8 @@ func (channel *Channel) UpdateEntryOrder(Entryids []int, tenantid, userid, offse
 	entries.TenantId = tenantid
 
 	for index, id := range Entryids {
+
+		fmt.Println(id, "idsssiii")
 
 		if id != 0 {
 
