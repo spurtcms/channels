@@ -1385,6 +1385,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 				Categories:      categoryHierarchy,
 				Sections:        sections,
 				Fields:          fields,
+				CtaId:           data.CtaId,
 			}
 
 			channelEntries = append(channelEntries, channnel_entry)
@@ -1578,6 +1579,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 			Sections:        sections,
 			Fields:          fields,
 			TenantId:        data.TenantId,
+			CtaId:           data.CtaId,
 		}
 
 	}

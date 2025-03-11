@@ -301,6 +301,7 @@ type JoinEntries struct {
 	DefaultLanguageId int
 	UserTenantId      int `gorm:"column:user_tenant_id"`
 	RoleName          string
+	CtaId             int
 }
 
 var EntryModel EntriesModel
