@@ -215,6 +215,7 @@ type EntriesInputs struct {
 	Location               string
 	Experience             string
 	Posteddate             string
+	ChannelName            string
 }
 
 type JoinEntries struct {
@@ -463,6 +464,10 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 	if input.ChannelId != 0 {
 
 		query = query.Where("en.channel_id = ?", input.ChannelId)
+	}
+
+	if input.ChannelName != "" {
+		query = query.Where("en.channel_id IN (SELECT id FROM tbl_channels WHERE channel_name = ? AND is_deleted = 0)", input.ChannelName)
 	}
 
 	if input.Status != "" {
