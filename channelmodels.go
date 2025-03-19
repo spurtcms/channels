@@ -1,6 +1,7 @@
 package channels
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/spurtcms/categories"
@@ -35,6 +36,7 @@ type Channels struct {
 type Tblchannel struct {
 	Id                 int                 `gorm:"column:id"`
 	ChannelName        string              `gorm:"column:channel_name"`
+	ChannelUniqueId    string              `gorm:"column:channel_unique_id"`
 	ChannelDescription string              `gorm:"column:channel_description"`
 	SlugName           string              `gorm:"column:slug_name"`
 	FieldGroupId       int                 `gorm:"column:field_group_id"`
@@ -150,6 +152,7 @@ type tblfield struct {
 type TblChannel struct {
 	Id                 int       `gorm:"primaryKey;auto_increment;type:serial"`
 	ChannelName        string    `gorm:"type:character varying"`
+	ChannelUniqueId    string    `gorm:"type:character varying"`
 	ChannelDescription string    `gorm:"type:character varying"`
 	SlugName           string    `gorm:"type:character varying"`
 	FieldGroupId       int       `gorm:"type:integer"`
@@ -310,9 +313,11 @@ type ChannelUpdate struct {
 
 type ChannelCreate struct {
 	ChannelName        string
+	ChannelUniqueId    string
 	ChannelDescription string
 	CategoryIds        []string
 	CreatedBy          int
+	ChannelType        string
 }
 
 type ChannelAddtionalField struct {
@@ -624,10 +629,12 @@ func (Ch ChannelModel) GetAllField(DB *gorm.DB, tenantid int) (channel []TblFiel
 /*Update Channel Details*/
 func (Ch ChannelModel) UpdateChannelDetails(chn *TblChannel, id int, DB *gorm.DB, TenantId int) error {
 
-	if err := DB.Table("tbl_channels").Where("id=? and tenant_id=?", id, TenantId).UpdateColumns(map[string]interface{}{"channel_name": chn.ChannelName, "channel_description": chn.ChannelDescription, "modified_by": chn.ModifiedBy, "modified_on": chn.ModifiedOn}).Error; err != nil {
+	if err := DB.Table("tbl_channels").Where("id=? and tenant_id=?", id, TenantId).UpdateColumns(map[string]interface{}{"channel_name": chn.ChannelName,"channel_unique_id":chn.ChannelUniqueId, "channel_description": chn.ChannelDescription, "modified_by": chn.ModifiedBy, "modified_on": chn.ModifiedOn}).Error; err != nil {
 
 		return err
 	}
+
+	fmt.Println("UpdateChannelDetails:", chn)
 
 	return nil
 }

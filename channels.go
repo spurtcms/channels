@@ -85,6 +85,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate, moduleid int,
 	/*create channel*/
 	var cchannel TblChannel
 	cchannel.ChannelName = channelcreate.ChannelName
+	cchannel.ChannelUniqueId = channelcreate.ChannelUniqueId
 	cchannel.ChannelDescription = channelcreate.ChannelDescription
 	cchannel.SlugName = strings.ToLower(strings.ReplaceAll(channelcreate.ChannelName, " ", "-"))
 	cchannel.IsActive = 1
@@ -562,7 +563,7 @@ func (channel *Channel) GetAllMasterFieldType(tenantid int) (field []TblFieldTyp
 }
 
 /*Edit channel*/
-func (channel *Channel) EditChannel(ChannelName string, ChannelDescription string, modifiedby int, channelid int, CategoryIds []string, tenantid int) error {
+func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, ChannelDescription string, modifiedby int, channelid int, CategoryIds []string, tenantid int) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -574,6 +575,8 @@ func (channel *Channel) EditChannel(ChannelName string, ChannelDescription strin
 	var chn TblChannel
 
 	chn.ChannelName = ChannelName
+
+	chn.ChannelUniqueId = channeluniqueid
 
 	chn.ChannelDescription = ChannelDescription
 
@@ -968,9 +971,9 @@ func (channel *Channel) ChannelType(Channels Tblchannel) error {
 
 	channeltype.ChannelType = Channels.ChannelType
 
-	channeltype.ModifiedBy = Channels.ModifiedBy
+	// channeltype.ModifiedBy = Channels.ModifiedBy
 
-	channeltype.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	// channeltype.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
 	err := CH.ChangeChanelType(channeltype, channel.DB)
 

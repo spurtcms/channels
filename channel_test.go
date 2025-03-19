@@ -69,7 +69,7 @@ func TestChannelList(t *testing.T) {
 
 	if permisison {
 
-		chanlist, count, err := channel.ListChannel(Channels{Limit: 10,Offset: 0,TenantId: TenantId})
+		chanlist, count, err := channel.ListChannel(Channels{Limit: 10, Offset: 0, TenantId: TenantId})
 
 		if err != nil {
 
@@ -115,7 +115,7 @@ func TestCreateChennal(t *testing.T) {
 
 	if permisison {
 
-		chanlist, err := channel.CreateChannel(ChannelCreate{ChannelName: "life style", ChannelDescription: "collections", CategoryIds: []string{"1", "2"}},9, 1)
+		chanlist, err := channel.CreateChannel(ChannelCreate{ChannelName: "life style", ChannelDescription: "collections", CategoryIds: []string{"1", "2"}}, 9, 1)
 
 		if err != nil {
 
@@ -354,7 +354,7 @@ func TestDeleteChannel(t *testing.T) {
 
 	if permisison {
 
-		err := channel.DeleteChannel(3, 1,"", TenantId)
+		err := channel.DeleteChannel(3, 1, "", TenantId)
 
 		if err != nil {
 
@@ -538,7 +538,7 @@ func TestEditChannel(t *testing.T) {
 
 	if permisison {
 
-		err := channel.EditChannel("go", "about golang", 1, 3, []string{"1", "2"}, TenantId)
+		err := channel.EditChannel("go", "", "about golang", 1, 3, []string{"1", "2"}, TenantId)
 
 		if err != nil {
 
