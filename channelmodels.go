@@ -52,6 +52,7 @@ type Tblchannel struct {
 	ProfileImagePath   string              `gorm:"<-:false"`
 	AuthorDetails      team.TblUser        `gorm:"foreignKey:Id;references:CreatedBy"`
 	ChannelType        string              `gorm:"column:channel_type"`
+	CollectionCount    int                 `gorm:"column:collection_count"`
 	TenantId           int                 `gorm:"column:tenant_id"`
 	Username           string              `gorm:"<-:false"`
 	FirstName          string              `gorm:"<-:false"`
@@ -317,7 +318,7 @@ type ChannelCreate struct {
 	ChannelDescription string
 	CategoryIds        []string
 	CreatedBy          int
-	ChannelType        string
+	CollectionCount    int
 }
 
 type ChannelAddtionalField struct {
@@ -629,7 +630,7 @@ func (Ch ChannelModel) GetAllField(DB *gorm.DB, tenantid int) (channel []TblFiel
 /*Update Channel Details*/
 func (Ch ChannelModel) UpdateChannelDetails(chn *TblChannel, id int, DB *gorm.DB, TenantId int) error {
 
-	if err := DB.Table("tbl_channels").Where("id=? and tenant_id=?", id, TenantId).UpdateColumns(map[string]interface{}{"channel_name": chn.ChannelName,"channel_unique_id":chn.ChannelUniqueId, "channel_description": chn.ChannelDescription, "modified_by": chn.ModifiedBy, "modified_on": chn.ModifiedOn}).Error; err != nil {
+	if err := DB.Table("tbl_channels").Where("id=? and tenant_id=?", id, TenantId).UpdateColumns(map[string]interface{}{"channel_name": chn.ChannelName, "channel_unique_id": chn.ChannelUniqueId, "channel_description": chn.ChannelDescription, "modified_by": chn.ModifiedBy, "modified_on": chn.ModifiedOn}).Error; err != nil {
 
 		return err
 	}
@@ -852,7 +853,7 @@ func (ch ChannelModel) GetPermissionChannel(channels *Channel, DB *gorm.DB, tena
 // Channel type change
 func (ch ChannelModel) ChangeChanelType(Channels Tblchannel, DB *gorm.DB) (Error error) {
 
-	if err := DB.Debug().Table("tbl_channels").Where("id=?", Channels.Id).Updates(map[string]interface{}{"channel_type": Channels.ChannelType}).Error; err != nil {
+	if err := DB.Debug().Table("tbl_channels").Where("id=?", Channels.Id).Updates(map[string]interface{}{"collection_count": Channels.CollectionCount}).Error; err != nil {
 
 		return err
 

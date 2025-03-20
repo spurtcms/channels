@@ -969,11 +969,7 @@ func (channel *Channel) ChannelType(Channels Tblchannel) error {
 
 	channeltype.Id = Channels.Id
 
-	channeltype.ChannelType = Channels.ChannelType
-
-	// channeltype.ModifiedBy = Channels.ModifiedBy
-
-	// channeltype.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	channeltype.CollectionCount = Channels.CollectionCount
 
 	err := CH.ChangeChanelType(channeltype, channel.DB)
 
