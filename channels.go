@@ -73,7 +73,7 @@ func (channel *Channel) ChannelDetail(inputs Channels) (channelDetails Tblchanne
 }
 
 /*create channel*/
-func (channel *Channel) CreateChannel(channelcreate ChannelCreate, moduleid int, tenantid int) (TblChannel, error) {
+func (channel *Channel) CreateChannel(channelcreate ChannelCreate, moduleid int, tenantid string) (TblChannel, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -134,7 +134,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate, moduleid int,
 }
 
 /*create additional fields*/
-func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalField, channelid int, tenantid int) error {
+func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalField, channelid int, tenantid string) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -286,7 +286,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 }
 
 /*Get channel by name*/
-func (channel *Channel) GetchannelByName(channelname string, tenantid int) (channels Tblchannel, err error) {
+func (channel *Channel) GetchannelByName(channelname string, tenantid string) (channels Tblchannel, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -307,7 +307,7 @@ func (channel *Channel) GetchannelByName(channelname string, tenantid int) (chan
 }
 
 /*Get Channels By Id*/
-func (channel *Channel) GetChannelsById(channelid int, tenantid int) (channelList Tblchannel, SelectedCategories []categories.Arrangecategories, err error) {
+func (channel *Channel) GetChannelsById(channelid int, tenantid string) (channelList Tblchannel, SelectedCategories []categories.Arrangecategories, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -374,7 +374,7 @@ func (channel *Channel) GetChannelsById(channelid int, tenantid int) (channelLis
 }
 
 /*get channel fields by channel id*/
-func (channel *Channel) GetChannelsFieldsById(channelid int, tenantid int) (section []Section, fields []Fiedlvalue, err error) {
+func (channel *Channel) GetChannelsFieldsById(channelid int, tenantid string) (section []Section, fields []Fiedlvalue, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -465,7 +465,7 @@ func (channel *Channel) GetChannelsFieldsById(channelid int, tenantid int) (sect
 }
 
 /*Delete Channel*/
-func (channel *Channel) DeleteChannel(channelid, modifiedby int, routename string, tenantid int) error {
+func (channel *Channel) DeleteChannel(channelid, modifiedby int, routename string, tenantid string) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -515,7 +515,7 @@ func (channel *Channel) DeleteChannelPermissions(channelid int) error {
 /*Change Channel status*/
 // status 0 = inactive
 // status 1 = active
-func (channel *Channel) ChangeChannelStatus(channelid int, status, modifiedby int, tenantid int) (bool, error) {
+func (channel *Channel) ChangeChannelStatus(channelid int, status, modifiedby int, tenantid string) (bool, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -542,7 +542,7 @@ func (channel *Channel) ChangeChannelStatus(channelid int, status, modifiedby in
 }
 
 /*Get All Master Field type */
-func (channel *Channel) GetAllMasterFieldType(tenantid int) (field []TblFieldType, err error) {
+func (channel *Channel) GetAllMasterFieldType(tenantid string) (field []TblFieldType, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -563,7 +563,7 @@ func (channel *Channel) GetAllMasterFieldType(tenantid int) (field []TblFieldTyp
 }
 
 /*Edit channel*/
-func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, ChannelDescription string, modifiedby int, channelid int, CategoryIds []string, tenantid int) error {
+func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, ChannelDescription string, modifiedby int, channelid int, CategoryIds []string, tenantid string) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -635,7 +635,7 @@ func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, 
 	return nil
 }
 
-func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid int, tenantid int) error {
+func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid int, tenantid string) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -899,7 +899,7 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 }
 
 // Get channel count
-func (channel *Channel) GetChannelCount(tenantid int) (count int, err error) {
+func (channel *Channel) GetChannelCount(tenantid string) (count int, err error) {
 
 	var chcount int64
 
@@ -914,7 +914,7 @@ func (channel *Channel) GetChannelCount(tenantid int) (count int, err error) {
 
 }
 
-func (channel *Channel) GetChannelsWithEntries(tenantid int) ([]Tblchannel, error) {
+func (channel *Channel) GetChannelsWithEntries(tenantid string) ([]Tblchannel, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -983,7 +983,7 @@ func (channel *Channel) ChannelType(Channels Tblchannel) error {
 }
 
 // last 10 days la add pana channel count
-func (channel *Channel) DashBoardChannelCount(tenantid int) (Totalcount int, lcount int, err error) {
+func (channel *Channel) DashBoardChannelCount(tenantid string) (Totalcount int, lcount int, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -1009,7 +1009,7 @@ func (channel *Channel) DashBoardChannelCount(tenantid int) (Totalcount int, lco
 	return int(allchannelcount), int(lchannelcount), nil
 }
 
-func (channel *Channel) AddChanneltoMycollecton(channelid int, tenantid int, userid int, moduleid int) (bool, error) {
+func (channel *Channel) AddChanneltoMycollecton(channelid int, tenantid string, userid int, moduleid int) (bool, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -1018,7 +1018,7 @@ func (channel *Channel) AddChanneltoMycollecton(channelid int, tenantid int, use
 		return false, autherr
 	}
 
-	channelcreate, _, _ := channel.GetChannelsById(channelid, -1)
+	channelcreate, _, _ := channel.GetChannelsById(channelid, "")
 
 	fmt.Println(channelcreate, "checkchanneldetails")
 
@@ -1057,7 +1057,7 @@ func (channel *Channel) AddChanneltoMycollecton(channelid int, tenantid int, use
 
 }
 
-func (channel *Channel) CheckNameInChannel(channelid int, cname string, tenantid int) (bool, error) {
+func (channel *Channel) CheckNameInChannel(channelid int, cname string, tenantid string) (bool, error) {
 
 	channeldet, err := CH.CheckNameInChannel(channelid, cname, channel.DB, tenantid)
 
@@ -1072,7 +1072,7 @@ func (channel *Channel) CheckNameInChannel(channelid int, cname string, tenantid
 	return true, nil
 
 }
-func (channel *Channel) GetChannal(chname string, tenantid int) int {
+func (channel *Channel) GetChannal(chname string, tenantid string) int {
 
 	channelid, _ := CH.GetChannelId(chname, tenantid, channel.DB)
 	return channelid
