@@ -53,6 +53,7 @@ type Tblchannel struct {
 	AuthorDetails      team.TblUser        `gorm:"foreignKey:Id;references:CreatedBy"`
 	ChannelType        string              `gorm:"column:channel_type"`
 	CollectionCount    int                 `gorm:"column:collection_count"`
+	CloneCount         int                 `gorm:"column:clone_count"`
 	TenantId           string              `gorm:"column:tenant_id"`
 	Username           string              `gorm:"<-:false"`
 	FirstName          string              `gorm:"<-:false"`
@@ -853,9 +854,18 @@ func (ch ChannelModel) GetPermissionChannel(channels *Channel, DB *gorm.DB, tena
 // Channel type change
 func (ch ChannelModel) ChangeChanelType(Channels Tblchannel, DB *gorm.DB) (Error error) {
 
-	if err := DB.Debug().Table("tbl_channels").Where("id=?", Channels.Id).Updates(map[string]interface{}{"collection_count": Channels.CollectionCount}).Error; err != nil {
+	if Channels.CollectionCount != 0 {
+		if err := DB.Debug().Table("tbl_channels").Where("id=?", Channels.Id).Updates(map[string]interface{}{"collection_count": Channels.CollectionCount}).Error; err != nil {
 
-		return err
+			return err
+
+		}
+	} else {
+		if err := DB.Debug().Table("tbl_channels").Where("id=?", Channels.Id).Updates(map[string]interface{}{"clone_count": Channels.CloneCount}).Error; err != nil {
+
+			return err
+
+		}
 
 	}
 
