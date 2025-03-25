@@ -337,6 +337,33 @@ type ChannelModel struct {
 	Userid     int
 	Dataaccess int
 }
+type TblMstrchannel struct {
+	Id                 int       `gorm:"column:id"`
+	ChannelName        string    `gorm:"column:channel_name"`
+	ChannelDescription string    `gorm:"column:channel_description"`
+	SlugName           string    `gorm:"column:slug_name"`
+	FieldGroupId       int       `gorm:"column:field_group_id"`
+	IsActive           int       `gorm:"column:is_active"`
+	IsDeleted          int       `gorm:"column:is_deleted"`
+	CreatedOn          time.Time `gorm:"column:created_on"`
+	CreatedBy          int       `gorm:"column:created_by"`
+	ModifiedOn         time.Time `gorm:"column:modified_on;DEFAULT:NULL"`
+	ModifiedBy         int       `gorm:"column:modified_by;DEFAULT:NULL"`
+	DateString         string    `gorm:"-"`
+	ProfileImagePath   string    `gorm:"<-:false"`
+	ChannelType string `gorm:"column:channel_type"`
+	TenantId    int    `gorm:"column:tenant_id"`
+	Username    string `gorm:"<-:false"`
+	FirstName   string `gorm:"<-:false"`
+	LastName    string `gorm:"<-:false"`
+	NameString  string `gorm:"<-:false"`
+}
+type ResponseData struct {
+	BlockCount        int              `json:"block_count"`
+	Allchannellist    []TblMstrchannel `json:"allchannellist"`
+	Channeldetail     TblMstrchannel   `json:"channeldetail"`
+	Channelliststring string           `json:"channelliststring"`
+}
 
 var CH ChannelModel
 
