@@ -1115,7 +1115,7 @@ func (channel *Channel) DefaultChannelList(endurl string, limit int, offset int,
 	if masterconnect {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err == nil {
-			fmt.Println("Error response:", err)
+			
 			resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 			err = json.NewDecoder(resp.Body).Decode(&responseData)
 			if err != nil {
@@ -1128,13 +1128,13 @@ func (channel *Channel) DefaultChannelList(endurl string, limit int, offset int,
 
 	if !masterconnect {
 		responseData = ResponseData{
-			Channellist: []TblMstrchannel{},
-			Channelliststring:"",
-			Count:       0,
+			Allchannellist:    []TblMstrchannel{},
+			Channelliststring: "",
+			BlockCount:        0,
 		}
 	}
 	var channelstring string
-	for _, val := range responseData.Channellist {
+	for _, val := range responseData.Allchannellist {
 
 		channelstring += `<div class="border border-[#ECECEC] rounded f-chn flex flex-col">
 							<a class="group block p-[12px]">
@@ -1181,6 +1181,7 @@ func (channel *Channel) DefaultChannelList(endurl string, limit int, offset int,
 	}
 
 	responedata.Channelliststring = channelstring
+	responedata.BlockCount = responseData.BlockCount
 
 	return responedata, nil
 
