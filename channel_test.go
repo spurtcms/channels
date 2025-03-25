@@ -115,7 +115,7 @@ func TestCreateChennal(t *testing.T) {
 
 	if permisison {
 
-		chanlist, err := channel.CreateChannel(ChannelCreate{ChannelName: "life style", ChannelDescription: "collections", CategoryIds: []string{"1", "2"}}, 9, 1)
+		chanlist, err := channel.CreateChannel(ChannelCreate{ChannelName: "life style", ChannelDescription: "collections", CategoryIds: []string{"1", "2"}}, 9, "1")
 
 		if err != nil {
 
@@ -170,7 +170,7 @@ func TestCreateAdditionalFields(t *testing.T) {
 		field1value := Fiedlvalue{Url: "/defaultchannel", OrderIndex: 1, OptionValue: []OptionValues{optval1, optval2}}
 		field2value := Fiedlvalue{Url: "/defaultchannel", OrderIndex: 2}
 
-		err := channel.CreateAdditionalFields(ChannelAddtionalField{Sections: []Section{field1, field2}, FieldValues: []Fiedlvalue{field1value, field2value}}, 5, 1)
+		err := channel.CreateAdditionalFields(ChannelAddtionalField{Sections: []Section{field1, field2}, FieldValues: []Fiedlvalue{field1value, field2value}}, 5, "1")
 
 		if err != nil {
 
@@ -593,7 +593,7 @@ func TestUpdateChannelField(t *testing.T) {
 		field1value := Fiedlvalue{Url: "/defaultchannel", OrderIndex: 1, OptionValue: []OptionValues{optval1, optval2}, FieldId: 7}
 		field2value := Fiedlvalue{Url: "/defaultchannel", OrderIndex: 2, FieldId: 8}
 
-		err := channel.UpdateChannelField(ChannelUpdate{Sections: []Section{field1}, FieldValues: []Fiedlvalue{field1value, field2value}, Deletesections: []Section{field2}, DeleteFields: []Fiedlvalue{field2value}, DeleteOptionsvalue: []OptionValues{optval2}, CategoryIds: []string{"1", "2"}, ModifiedBy: 1}, 3, 1)
+		err := channel.UpdateChannelField(ChannelUpdate{Sections: []Section{field1}, FieldValues: []Fiedlvalue{field1value, field2value}, Deletesections: []Section{field2}, DeleteFields: []Fiedlvalue{field2value}, DeleteOptionsvalue: []OptionValues{optval2}, CategoryIds: []string{"1", "2"}, ModifiedBy: 1}, 3, "1")
 
 		if err != nil {
 

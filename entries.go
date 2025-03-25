@@ -15,7 +15,7 @@ import (
 )
 
 // get channel Entries List
-func (channel *Channel) ChannelEntriesList(entry Entries, tenantid int) (entries []Tblchannelentries, filterentriescount int, totalentriescount int, err error) {
+func (channel *Channel) ChannelEntriesList(entry Entries, tenantid string) (entries []Tblchannelentries, filterentriescount int, totalentriescount int, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -464,7 +464,7 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 }
 
 // get entry details
-func (channel *Channel) EntryDetailsById(Ent IndivEntriesReq, tenantid int) (Tblchannelentries, error) {
+func (channel *Channel) EntryDetailsById(Ent IndivEntriesReq, tenantid string) (Tblchannelentries, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -660,7 +660,7 @@ func (channel *Channel) EntryDetailsById(Ent IndivEntriesReq, tenantid int) (Tbl
 }
 
 // create entry
-func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid int) (entry Tblchannelentries, flg bool, err error) {
+func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid string) (entry Tblchannelentries, flg bool, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -764,7 +764,7 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid in
 	return Entriess, true, nil
 }
 
-func (channel *Channel) CreateChannelEntryFields(entryid int, createdby int, AdditionalFields []AdditionalFields, tenantid int) error {
+func (channel *Channel) CreateChannelEntryFields(entryid int, createdby int, AdditionalFields []AdditionalFields, tenantid string) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -808,7 +808,7 @@ func (channel *Channel) CreateChannelEntryFields(entryid int, createdby int, Add
 }
 
 // update entry
-func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName string, EntryId int, tenantid int) (bool, error) {
+func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName string, EntryId int, tenantid string) (bool, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -886,7 +886,7 @@ func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName
 }
 
 // update entry additional fields
-func (channel *Channel) UpdateAdditionalField(AdditionalFields []AdditionalFields, EntryId int, tenantid int) (bool, error) {
+func (channel *Channel) UpdateAdditionalField(AdditionalFields []AdditionalFields, EntryId int, tenantid string) (bool, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -944,7 +944,7 @@ func (channel *Channel) UpdateAdditionalField(AdditionalFields []AdditionalField
 }
 
 /**/
-func (channel *Channel) DeleteEntry(ChannelName string, modifiedby int, Entryid int, tenantid int) (bool, error) {
+func (channel *Channel) DeleteEntry(ChannelName string, modifiedby int, Entryid int, tenantid string) (bool, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -988,7 +988,7 @@ func (channel *Channel) DeleteEntry(ChannelName string, modifiedby int, Entryid 
 }
 
 // Makefeature helps to highlights entry, only one entry should be featured of each channel and that is also optional
-func (channel *Channel) MakeFeatureEntry(channelid, entryid, status int, tenantid int) (flag bool, err error) {
+func (channel *Channel) MakeFeatureEntry(channelid, entryid, status int, tenantid string) (flag bool, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -1009,7 +1009,7 @@ func (channel *Channel) MakeFeatureEntry(channelid, entryid, status int, tenanti
 }
 
 // change entries status
-func (channel *Channel) EntryStatus(ChannelName string, EntryId int, status int, modifiedby int, tenantid int) (bool, error) {
+func (channel *Channel) EntryStatus(ChannelName string, EntryId int, status int, modifiedby int, tenantid string) (bool, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -1033,7 +1033,7 @@ func (channel *Channel) EntryStatus(ChannelName string, EntryId int, status int,
 }
 
 // make feature function
-func (channel *Channel) MakeFeature(channelid, entryid, status int, tenantid int) (flag bool, err error) {
+func (channel *Channel) MakeFeature(channelid, entryid, status int, tenantid string) (flag bool, err error) {
 
 	merr := CH.MakeFeature(channelid, entryid, status, channel.DB, tenantid)
 
@@ -1047,7 +1047,7 @@ func (channel *Channel) MakeFeature(channelid, entryid, status int, tenantid int
 }
 
 // MULTI SELECT ENTRY DELETE FUNCTION//
-func (channel *Channel) DeleteSelectedEntry(Entryid []int, modifiedby int, tenantid int) (bool, error) {
+func (channel *Channel) DeleteSelectedEntry(Entryid []int, modifiedby int, tenantid string) (bool, error) {
 
 	var entries TblChannelEntries
 
@@ -1087,7 +1087,7 @@ func (channel *Channel) DeleteSelectedEntry(Entryid []int, modifiedby int, tenan
 }
 
 // MULTI SELECTE ENTRY UNPUBLISHED FUNCTION//
-func (channel *Channel) UnpublishSelectedEntry(entryid []int, status int, modifiedby int, tenantid int) (bool, error) {
+func (channel *Channel) UnpublishSelectedEntry(entryid []int, status int, modifiedby int, tenantid string) (bool, error) {
 
 	autherr := AuthandPermission(channel)
 	if autherr != nil {
@@ -1127,7 +1127,7 @@ func (channel *Channel) EntryPreview(uuid string) (Entry TblChannelEntries, flg 
 }
 
 // Entry is_active
-func (channel *Channel) EntryIsActive(entryid int, status int, modifiedby int, tenantid int) (bool, error) {
+func (channel *Channel) EntryIsActive(entryid int, status int, modifiedby int, tenantid string) (bool, error) {
 
 	if AuthErr := AuthandPermission(channel); AuthErr != nil {
 		return false, AuthErr
@@ -1147,7 +1147,7 @@ func (channel *Channel) EntryIsActive(entryid int, status int, modifiedby int, t
 }
 
 // update channel entry view count
-func (channel *Channel) UpdateChannelEntryViewCount(id int, slug string, tenantId int) (int, error) {
+func (channel *Channel) UpdateChannelEntryViewCount(id int, slug string, tenantId string) (int, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -1587,7 +1587,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 	return channelEntry, channelEntries, nil
 }
 
-func (channel *Channel) EntryParentIdUpdate(parentid, entriid, tenantid, userid int) error {
+func (channel *Channel) EntryParentIdUpdate(parentid, entriid int, tenantid string, userid int) error {
 	autherr := AuthandPermission(channel)
 	if autherr != nil {
 		return autherr
@@ -1610,7 +1610,7 @@ func (channel *Channel) EntryParentIdUpdate(parentid, entriid, tenantid, userid 
 
 }
 
-func (channel *Channel) EntrylistByParentId(entryid int, tenantid int) ([]Tblchannelentries, error) {
+func (channel *Channel) EntrylistByParentId(entryid int, tenantid string) ([]Tblchannelentries, error) {
 
 	autherr := AuthandPermission(channel)
 	if autherr != nil {
@@ -1629,7 +1629,7 @@ func (channel *Channel) EntrylistByParentId(entryid int, tenantid int) ([]Tblcha
 }
 
 // Update entry Reorder
-func (channel *Channel) UpdateEntryOrder(Entryids []int, tenantid, userid, offset int) error {
+func (channel *Channel) UpdateEntryOrder(Entryids []int, tenantid string, userid, offset int) error {
 	autherr := AuthandPermission(channel)
 	if autherr != nil {
 		return autherr
@@ -1665,7 +1665,7 @@ func (channel *Channel) UpdateEntryOrder(Entryids []int, tenantid, userid, offse
 }
 
 // Update  Access Permission MemberGroupIds in Entry
-func (channel *Channel) UpdateMemberGroupIds(membergrbids string, entryid int, tenantid int, userid int) error {
+func (channel *Channel) UpdateMemberGroupIds(membergrbids string, entryid int, tenantid string, userid int) error {
 
 	autherr := AuthandPermission(channel)
 	if autherr != nil {
@@ -1691,7 +1691,7 @@ func (channel *Channel) UpdateMemberGroupIds(membergrbids string, entryid int, t
 }
 
 // update entries orderindex
-func (channel *Channel) UpdateEntryOrderIndex(Ordenindex int, EntryId int, userid int, tenantid int) (bool, error) {
+func (channel *Channel) UpdateEntryOrderIndex(Ordenindex int, EntryId int, userid int, tenantid string) (bool, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -1717,7 +1717,7 @@ func (channel *Channel) UpdateEntryOrderIndex(Ordenindex int, EntryId int, useri
 
 	return true, nil
 }
-func (channel *Channel) GetChannelEntriesById(id int, tenantid int) (*TblChannelEntries, error) {
+func (channel *Channel) GetChannelEntriesById(id int, tenantid string) (*TblChannelEntries, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -1734,7 +1734,7 @@ func (channel *Channel) GetChannelEntriesById(id int, tenantid int) (*TblChannel
 	return entries, nil
 
 }
-func (channel *Channel) DefaultChannel(slug string, tenantid int) (int, error) {
+func (channel *Channel) DefaultChannel(slug string, tenantid string) (int, error) {
 	autherr := AuthandPermission(channel)
 
 	if autherr != nil {
@@ -1750,7 +1750,7 @@ func (channel *Channel) DefaultChannel(slug string, tenantid int) (int, error) {
 	return id, nil
 }
 
-func (channel *Channel) EntryAuthors(tenantid int) ([]Author, error) {
+func (channel *Channel) EntryAuthors(tenantid string) ([]Author, error) {
 
 	autherr := AuthandPermission(channel)
 
