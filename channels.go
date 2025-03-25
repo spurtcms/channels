@@ -1,8 +1,12 @@
 package channels
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -73,7 +77,7 @@ func (channel *Channel) ChannelDetail(inputs Channels) (channelDetails Tblchanne
 }
 
 /*create channel*/
-func (channel *Channel) CreateChannel(channelcreate ChannelCreate, moduleid int, tenantid string) (TblChannel, error) {
+func (channel *Channel) CreateChannel(channelcreate ChannelCreate, moduleid int, tenantid int) (TblChannel, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -134,7 +138,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate, moduleid int,
 }
 
 /*create additional fields*/
-func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalField, channelid int, tenantid string) error {
+func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalField, channelid int, tenantid int) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -286,7 +290,7 @@ func (channel *Channel) CreateAdditionalFields(channelcreate ChannelAddtionalFie
 }
 
 /*Get channel by name*/
-func (channel *Channel) GetchannelByName(channelname string, tenantid string) (channels Tblchannel, err error) {
+func (channel *Channel) GetchannelByName(channelname string, tenantid int) (channels Tblchannel, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -307,7 +311,7 @@ func (channel *Channel) GetchannelByName(channelname string, tenantid string) (c
 }
 
 /*Get Channels By Id*/
-func (channel *Channel) GetChannelsById(channelid int, tenantid string) (channelList Tblchannel, SelectedCategories []categories.Arrangecategories, err error) {
+func (channel *Channel) GetChannelsById(channelid int, tenantid int) (channelList Tblchannel, SelectedCategories []categories.Arrangecategories, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -374,7 +378,7 @@ func (channel *Channel) GetChannelsById(channelid int, tenantid string) (channel
 }
 
 /*get channel fields by channel id*/
-func (channel *Channel) GetChannelsFieldsById(channelid int, tenantid string) (section []Section, fields []Fiedlvalue, err error) {
+func (channel *Channel) GetChannelsFieldsById(channelid int, tenantid int) (section []Section, fields []Fiedlvalue, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -465,7 +469,7 @@ func (channel *Channel) GetChannelsFieldsById(channelid int, tenantid string) (s
 }
 
 /*Delete Channel*/
-func (channel *Channel) DeleteChannel(channelid, modifiedby int, routename string, tenantid string) error {
+func (channel *Channel) DeleteChannel(channelid, modifiedby int, routename string, tenantid int) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -515,7 +519,7 @@ func (channel *Channel) DeleteChannelPermissions(channelid int) error {
 /*Change Channel status*/
 // status 0 = inactive
 // status 1 = active
-func (channel *Channel) ChangeChannelStatus(channelid int, status, modifiedby int, tenantid string) (bool, error) {
+func (channel *Channel) ChangeChannelStatus(channelid int, status, modifiedby int, tenantid int) (bool, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -542,7 +546,7 @@ func (channel *Channel) ChangeChannelStatus(channelid int, status, modifiedby in
 }
 
 /*Get All Master Field type */
-func (channel *Channel) GetAllMasterFieldType(tenantid string) (field []TblFieldType, err error) {
+func (channel *Channel) GetAllMasterFieldType(tenantid int) (field []TblFieldType, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -563,7 +567,7 @@ func (channel *Channel) GetAllMasterFieldType(tenantid string) (field []TblField
 }
 
 /*Edit channel*/
-func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, ChannelDescription string, modifiedby int, channelid int, CategoryIds []string, tenantid string) error {
+func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, ChannelDescription string, modifiedby int, channelid int, CategoryIds []string, tenantid int) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -635,7 +639,7 @@ func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, 
 	return nil
 }
 
-func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid int, tenantid string) error {
+func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid int, tenantid int) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -899,7 +903,7 @@ func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid i
 }
 
 // Get channel count
-func (channel *Channel) GetChannelCount(tenantid string) (count int, err error) {
+func (channel *Channel) GetChannelCount(tenantid int) (count int, err error) {
 
 	var chcount int64
 
@@ -914,7 +918,7 @@ func (channel *Channel) GetChannelCount(tenantid string) (count int, err error) 
 
 }
 
-func (channel *Channel) GetChannelsWithEntries(tenantid string) ([]Tblchannel, error) {
+func (channel *Channel) GetChannelsWithEntries(tenantid int) ([]Tblchannel, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -983,7 +987,7 @@ func (channel *Channel) ChannelType(Channels Tblchannel) error {
 }
 
 // last 10 days la add pana channel count
-func (channel *Channel) DashBoardChannelCount(tenantid string) (Totalcount int, lcount int, err error) {
+func (channel *Channel) DashBoardChannelCount(tenantid int) (Totalcount int, lcount int, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -1009,7 +1013,7 @@ func (channel *Channel) DashBoardChannelCount(tenantid string) (Totalcount int, 
 	return int(allchannelcount), int(lchannelcount), nil
 }
 
-func (channel *Channel) AddChanneltoMycollecton(channelid int, tenantid string, userid int, moduleid int) (bool, error) {
+func (channel *Channel) AddChanneltoMycollecton(channelid int, tenantid int, userid int, moduleid int) (bool, error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -1018,7 +1022,7 @@ func (channel *Channel) AddChanneltoMycollecton(channelid int, tenantid string, 
 		return false, autherr
 	}
 
-	channelcreate, _, _ := channel.GetChannelsById(channelid, "")
+	channelcreate, _, _ := channel.GetChannelsById(channelid, -1)
 
 	fmt.Println(channelcreate, "checkchanneldetails")
 
@@ -1057,7 +1061,7 @@ func (channel *Channel) AddChanneltoMycollecton(channelid int, tenantid string, 
 
 }
 
-func (channel *Channel) CheckNameInChannel(channelid int, cname string, tenantid string) (bool, error) {
+func (channel *Channel) CheckNameInChannel(channelid int, cname string, tenantid int) (bool, error) {
 
 	channeldet, err := CH.CheckNameInChannel(channelid, cname, channel.DB, tenantid)
 
@@ -1072,8 +1076,112 @@ func (channel *Channel) CheckNameInChannel(channelid int, cname string, tenantid
 	return true, nil
 
 }
-func (channel *Channel) GetChannal(chname string, tenantid string) int {
+func (channel *Channel) GetChannal(chname string, tenantid int) int {
 
 	channelid, _ := CH.GetChannelId(chname, tenantid, channel.DB)
 	return channelid
+}
+
+//Default Channellist get from superadmin//
+
+func (channel *Channel) DefaultChannelList(endurl string, limit int, offset int, filter Filter) (responedata ResponseData, err error) {
+
+	req, err := http.NewRequest("GET", endurl, nil)
+	if err != nil {
+
+		return ResponseData{}, err
+	}
+	query := req.URL.Query()
+	query.Add("keyword", filter.Keyword)
+	query.Add("limit", strconv.Itoa(limit))
+	query.Add("offset", strconv.Itoa(offset))
+	req.URL.RawQuery = query.Encode()
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
+	masterconnect := true
+
+	if err != nil || resp.StatusCode != http.StatusOK {
+		fmt.Println("Error connecting to master server:", err)
+		masterconnect = false
+	} else {
+		defer resp.Body.Close()
+	}
+
+	var responseData ResponseData
+	if masterconnect {
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err == nil {
+			fmt.Println("Error response:", err)
+			resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+			err = json.NewDecoder(resp.Body).Decode(&responseData)
+			if err != nil {
+				masterconnect = false
+			}
+		} else {
+			masterconnect = false
+		}
+	}
+
+	if !masterconnect {
+		responseData = ResponseData{
+			Channellist: []TblMstrchannel{},
+			Channelliststring:"",
+			Count:       0,
+		}
+	}
+	var channelstring string
+	for _, val := range responseData.Channellist {
+
+		channelstring += `<div class="border border-[#ECECEC] rounded f-chn flex flex-col">
+							<a class="group block p-[12px]">
+								<div class="flex justify-between items-center mb-2">
+									<h3 class="text-bold-gray text-xs font-light mb-0"></h3>
+									<p class="text-bold-gray text-11 font-light mb-0">(0 Entry Available)</p>
+								</div>
+								<h3 class="text-base font-normal text-bold-black mb-2 group-hover:underline line-clamp-2 break-words chname">` + val.ChannelName + `</h3>
+								<p class="text-11 font-light text-bold-gray mb-2 line-clamp-3 leading-14">` + val.ChannelDescription + `</p>
+								<h5 class="text-[11px] font-light text-bold-gray mb-0"> Last Updated On: ` + val.DateString + `</h5>
+							</a>
+	
+							<div class="flex justify-between items-center border-[#ECECEC] mt-auto px-[12px] py-[8px] border-t">
+								<div class="flex items-center space-x-[8px]">`
+
+		// Check if ProfileImagePath is not empty
+		if val.ProfileImagePath != "" {
+			channelstring += `<div class="min-w-6 w-6 h-6 rounded-full overflow-hidden">
+								<img id="userimage" src="` + val.ProfileImagePath + `" alt="profile">
+							  </div>`
+		} else {
+			channelstring += `<div class="grid place-items-center bg-[#F5F5F5] min-w-[32px] w-[32px] h-[32px] rounded-full overflow-hidden text-sm ">
+								<span id="namestring" class="text-[#252525]">` + val.NameString + `</span>
+							  </div>`
+		}
+
+		channelstring += `<p id="blockusername"
+								class="text-sm font-normal leading-5 text-[#252525] overflow-hidden truncate whitespace-nowrap">` + val.Username + `</p>
+							</div>
+	
+							<div class="flex items-center space-x-[8px]">
+								<div class="flex space-x-[8px] items-center">
+									<a href="/channels/addtomycollection/` + strconv.Itoa(val.Id) + `" data-blockid="` + strconv.Itoa(val.Id) + `" data-bs-toggle="tooltip"
+										data-bs-placement="bottom"
+										data-bs-custom-class="custom-tooltip"
+										data-bs-title="Add to collection"
+										class="w-[24px] h-[24px] grid place-items-center hover:bg-[#F5F5F5] rounded-[4px] relative group">
+										<img src="/public/img/block-add.svg" alt="add">
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>`
+	}
+
+	responedata.Channelliststring = channelstring
+
+	return responedata, nil
+
 }

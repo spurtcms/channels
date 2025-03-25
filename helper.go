@@ -10,11 +10,11 @@ import (
 )
 
 // return all parentid to child ids aray
-func Categories(categoryid int, DB *gorm.DB, tenantid string) string {
+func Categories(categoryid int, DB *gorm.DB, tenantid int) string {
 
 	var id string
 
-	categoreis, _ := EntryModel.GetChildCategories(categoryid, DB, tenantid)
+	categoreis, _ := EntryModel.GetChildCategories(categoryid, DB,tenantid)
 
 	for _, val := range categoreis {
 
@@ -25,13 +25,13 @@ func Categories(categoryid int, DB *gorm.DB, tenantid string) string {
 }
 
 // using name
-func CategoriesByUsingName(categoryname string, DB *gorm.DB, tenantid string) string {
+func CategoriesByUsingName(categoryname string, DB *gorm.DB,tenantid int) string {
 
 	var id string
 
-	categoreid, _ := EntryModel.GetCategoryIdByName(categoryname, DB, tenantid)
+	categoreid, _ := EntryModel.GetCategoryIdByName(categoryname, DB,tenantid)
 
-	categoreis, _ := EntryModel.GetChildCategories(categoreid.Id, DB, tenantid)
+	categoreis, _ := EntryModel.GetChildCategories(categoreid.Id, DB,tenantid)
 
 	for _, val := range categoreis {
 
@@ -42,7 +42,7 @@ func CategoriesByUsingName(categoryname string, DB *gorm.DB, tenantid string) st
 }
 
 // DashboardEntry count function
-func (channel *Channel) DashboardEntriesCount(tenantid string) (totalcount int, lasttendayscount int, err error) {
+func (channel *Channel) DashboardEntriesCount(tenantid int) (totalcount int, lasttendayscount int, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -51,14 +51,14 @@ func (channel *Channel) DashboardEntriesCount(tenantid string) (totalcount int, 
 		return 0, 0, autherr
 	}
 
-	allentrycount, err := EntryModel.AllentryCount(channel.DB, tenantid)
+	allentrycount, err := EntryModel.AllentryCount(channel.DB,tenantid)
 
 	if err != nil {
 
 		return 0, 0, err
 	}
 
-	entrycount, err := EntryModel.NewentryCount(channel.DB, tenantid)
+	entrycount, err := EntryModel.NewentryCount(channel.DB,tenantid)
 
 	if err != nil {
 
@@ -68,7 +68,7 @@ func (channel *Channel) DashboardEntriesCount(tenantid string) (totalcount int, 
 	return int(allentrycount), int(entrycount), nil
 }
 
-func (channel *Channel) DashboardChannellist(tenantid string) (channelList []Tblchannel, err error) {
+func (channel *Channel) DashboardChannellist(tenantid int) (channelList []Tblchannel, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -77,7 +77,7 @@ func (channel *Channel) DashboardChannellist(tenantid string) (channelList []Tbl
 		return []Tblchannel{}, autherr
 	}
 
-	Newchannels, err := EntryModel.Newchannels(channel.DB, tenantid)
+	Newchannels, err := EntryModel.Newchannels(channel.DB,tenantid)
 
 	if err != nil {
 
@@ -90,7 +90,7 @@ func (channel *Channel) DashboardChannellist(tenantid string) (channelList []Tbl
 }
 
 /*DashboardEntries */
-func (channel *Channel) DashboardEntrieslist(tenantid string) (entries []Tblchannelentries, err error) {
+func (channel *Channel) DashboardEntrieslist(tenantid int) (entries []Tblchannelentries, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -99,7 +99,7 @@ func (channel *Channel) DashboardEntrieslist(tenantid string) (entries []Tblchan
 		return []Tblchannelentries{}, autherr
 	}
 
-	Newentries, err := EntryModel.Newentries(channel.DB, tenantid)
+	Newentries, err := EntryModel.Newentries(channel.DB,tenantid)
 
 	if err != nil {
 
@@ -112,7 +112,7 @@ func (channel *Channel) DashboardEntrieslist(tenantid string) (entries []Tblchan
 }
 
 /*Recent activites for dashboard*/
-func (channel *Channel) DashboardRecentActivites(tenantid string) (entries []RecentActivities, err error) {
+func (channel *Channel) DashboardRecentActivites(tenantid int) (entries []RecentActivities, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -136,8 +136,8 @@ func (channel *Channel) DashboardRecentActivites(tenantid string) (entries []Rec
 		}
 
 		var Name = firstn + lastn
-
-		newrecord := RecentActivities{Contenttype: "entry", Title: val.Title, User: val.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, Channelname: val.ChannelName, NameString: Name}
+		
+		newrecord := RecentActivities{Contenttype: "entry", Title: val.Title, User: val.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, Channelname: val.ChannelName,NameString: Name}
 
 		Newrecords = append(Newrecords, newrecord)
 
@@ -157,7 +157,7 @@ func (channel *Channel) DashboardRecentActivites(tenantid string) (entries []Rec
 
 		var Name = firstn + lastn
 
-		newrecord := RecentActivities{Contenttype: "channel", Title: val.ChannelName, User: val.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, Channelname: val.ChannelName, NameString: Name}
+		newrecord := RecentActivities{Contenttype: "channel", Title: val.ChannelName, User: val.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, Channelname: val.ChannelName,NameString: Name}
 
 		Newrecords = append(Newrecords, newrecord)
 	}
@@ -229,9 +229,8 @@ func (channel *Channel) DashboardRecentActivites(tenantid string) (entries []Rec
 
 	return NewActive, nil
 }
-
 /*Remove entries cover image if media image delete*/
-func (channel *Channel) RemoveEntriesCoverImage(ImagePath string, tenantid string) error {
+func (channel *Channel) RemoveEntriesCoverImage(ImagePath string,tenantid int) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -240,7 +239,7 @@ func (channel *Channel) RemoveEntriesCoverImage(ImagePath string, tenantid strin
 		return autherr
 	}
 
-	err := EntryModel.UpdateImagePath(ImagePath, channel.DB, tenantid)
+	err := EntryModel.UpdateImagePath(ImagePath, channel.DB,tenantid)
 
 	if err != nil {
 
@@ -251,7 +250,7 @@ func (channel *Channel) RemoveEntriesCoverImage(ImagePath string, tenantid strin
 
 }
 
-func (channel *Channel) GetPermissionChannel(tenantid string) (channels []Tblchannel, errr error) {
+func (channel *Channel) GetPermissionChannel(tenantid int) (channels []Tblchannel, errr error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -260,7 +259,7 @@ func (channel *Channel) GetPermissionChannel(tenantid string) (channels []Tblcha
 		return []Tblchannel{}, autherr
 	}
 
-	channelss, err := CH.GetPermissionChannel(channel, channel.DB, tenantid)
+	channelss, err := CH.GetPermissionChannel(channel, channel.DB,tenantid)
 
 	var chnallist []Tblchannel
 
@@ -272,7 +271,7 @@ func (channel *Channel) GetPermissionChannel(tenantid string) (channels []Tblcha
 		entriescount := true
 
 		if entriescount {
-			_, entrcount, _ := EntryModel.ChannelEntryList(Entries{ChannelId: val.Id}, channel, Empty, true, channel.DB, tenantid)
+			_, entrcount, _ := EntryModel.ChannelEntryList(Entries{ChannelId: val.Id}, channel, Empty, true, channel.DB,tenantid)
 			val.EntriesCount = int(entrcount)
 		}
 

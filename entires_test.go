@@ -179,7 +179,7 @@ func TestCreateChannelEntryFields(t *testing.T) {
 
 		err := channel.CreateChannelEntryFields(1, 2, []AdditionalFields{
 			{Id: 1, FieldName: "title", FieldValue: "demouser"},
-		}, "1")
+		}, 1)
 
 		if err != nil {
 

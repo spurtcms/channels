@@ -3,6 +3,7 @@ package channels
 import (
 	"errors"
 	"os"
+	"strconv"
 )
 
 var (
@@ -10,7 +11,7 @@ var (
 	ErrorPermission = errors.New("permissions enabled not initialised")
 	ErrorChannelId  = errors.New("invalid channelid")
 	Empty           string
-	TenantId        = os.Getenv("Tenant_ID")
+	TenantId, _     = strconv.Atoi(os.Getenv("Tenant_ID"))
 )
 
 func TruncateDescription(description string, limit int) string {
