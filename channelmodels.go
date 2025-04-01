@@ -59,6 +59,7 @@ type Tblchannel struct {
 	FirstName          string              `gorm:"<-:false"`
 	LastName           string              `gorm:"<-:false"`
 	NameString         string              `gorm:"<-:false"`
+	ImagePath          string              `gorm:"column:image_path"`
 }
 
 type tblchannelcategory struct {
@@ -166,6 +167,7 @@ type TblChannel struct {
 	ModifiedBy         int       `gorm:"DEFAULT:NULL"`
 	TenantId           string    `gorm:"type:character varying"`
 	ChannelType        string    `gorm:"type:character varying"`
+	ImagePath          string    `gorm:"type:character varying"`
 }
 
 type TblChannelCategorie struct {
@@ -320,6 +322,7 @@ type ChannelCreate struct {
 	CategoryIds        []string
 	CreatedBy          int
 	CollectionCount    int
+	ImagePath          string
 }
 
 type ChannelAddtionalField struct {
@@ -351,12 +354,13 @@ type TblMstrchannel struct {
 	ModifiedBy         int       `gorm:"column:modified_by;DEFAULT:NULL"`
 	DateString         string    `gorm:"-"`
 	ProfileImagePath   string    `gorm:"<-:false"`
-	ChannelType string `gorm:"column:channel_type"`
-	TenantId    int    `gorm:"column:tenant_id"`
-	Username    string `gorm:"<-:false"`
-	FirstName   string `gorm:"<-:false"`
-	LastName    string `gorm:"<-:false"`
-	NameString  string `gorm:"<-:false"`
+	ChannelType        string    `gorm:"column:channel_type"`
+	TenantId           int       `gorm:"column:tenant_id"`
+	Username           string    `gorm:"<-:false"`
+	FirstName          string    `gorm:"<-:false"`
+	LastName           string    `gorm:"<-:false"`
+	NameString         string    `gorm:"<-:false"`
+	ImagePath          string    `gorm:"column:image_path"`
 }
 type ResponseData struct {
 	BlockCount        int              `json:"block_count"`

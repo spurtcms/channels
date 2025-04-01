@@ -96,6 +96,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate, moduleid int,
 	cchannel.CreatedBy = channelcreate.CreatedBy
 	cchannel.TenantId = tenantid
 	cchannel.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	cchannel.ImagePath = channelcreate.ImagePath
 	ch, chanerr := CH.CreateChannel(&cchannel, channel.DB)
 
 	if chanerr != nil {
@@ -1138,50 +1139,23 @@ func (channel *Channel) DefaultChannelList(endurl string, limit int, offset int,
 		}
 	}
 	var channelstring string
+	
 	for _, val := range responseData.Allchannellist {
 
-		channelstring += `<div class="border border-[#ECECEC] rounded f-chn flex flex-col">
-							<a class="group block p-[12px]">
-								<div class="flex justify-between items-center mb-2">
-									<h3 class="text-bold-gray text-xs font-light mb-0"></h3>
-									<p class="text-bold-gray text-11 font-light mb-0">(0 Entry Available)</p>
-								</div>
-								<h3 class="text-base font-normal text-bold-black mb-2 group-hover:underline line-clamp-2 break-words chname">` + val.ChannelName + `</h3>
-								<p class="text-11 font-light text-bold-gray mb-2 line-clamp-3 leading-14">` + val.ChannelDescription + `</p>
-								<h5 class="text-[11px] font-light text-bold-gray mb-0"> Last Updated On: ` + val.DateString + `</h5>
-							</a>
-	
-							<div class="flex justify-between items-center border-[#ECECEC] mt-auto px-[12px] py-[8px] border-t">
-								<div class="flex items-center space-x-[8px]">`
+		channelstring += `<div class="border border-[#ECECEC] rounded"><div class="group p-[12px] flex flex-col items-center justify-center">
+                                    <div class="flex items-center flex-col space-y-[16px] mb-[8px]">
+                                        <div class="w-[40px] h-[40px] rounded  grid place-items-center min-w-[32px]">
+                                            <img class="w-full" src="` + val.ImagePath + `">
+                                        </div>
+                                        <p class="text-[16px] font-normal leading-[20px] text-[#262626] ">` + val.ChannelName + `
+                                        </p>
+                                    </div> 
+                                    <p class="text-[11px] font-light text-[#717171] leading-[14px] mb-3 line-clamp-3">` + val.ChannelDescription + `</p>
+                         <a href="/channels/addtomycollection/` + strconv.Itoa(val.Id) + `"
+                                         class="hover:shadow-[0px_2px_4px_0px_#00000014] p-[6px_24px] bg-white text-[12px] font-normal leading-[16px] text-[#000000] border border-solid border-[#ECECEC] rounded-[6px]">+ Add to collection</a>
+                                  
+                                </div></div>`
 
-		// Check if ProfileImagePath is not empty
-		if val.ProfileImagePath != "" {
-			channelstring += `<div class="min-w-6 w-6 h-6 rounded-full overflow-hidden">
-								<img id="userimage" src="` + val.ProfileImagePath + `" alt="profile">
-							  </div>`
-		} else {
-			channelstring += `<div class="grid place-items-center bg-[#F5F5F5] min-w-[32px] w-[32px] h-[32px] rounded-full overflow-hidden text-sm ">
-								<span id="namestring" class="text-[#252525]">` + val.NameString + `</span>
-							  </div>`
-		}
-
-		channelstring += `<p id="blockusername"
-								class="text-sm font-normal leading-5 text-[#252525] overflow-hidden truncate whitespace-nowrap">` + val.Username + `</p>
-							</div>
-	
-							<div class="flex items-center space-x-[8px]">
-								<div class="flex space-x-[8px] items-center">
-									<a href="/channels/addtomycollection/` + strconv.Itoa(val.Id) + `" data-blockid="` + strconv.Itoa(val.Id) + `" data-bs-toggle="tooltip"
-										data-bs-placement="bottom"
-										data-bs-custom-class="custom-tooltip"
-										data-bs-title="Add to collection"
-										class="w-[24px] h-[24px] grid place-items-center hover:bg-[#F5F5F5] rounded-[4px] relative group">
-										<img src="/public/img/block-add.svg" alt="add">
-									</a>
-								</div>
-							</div>
-						</div>
-					</div>`
 	}
 
 	responedata.Channelliststring = channelstring
