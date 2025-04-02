@@ -1767,3 +1767,37 @@ func (channel *Channel) EntryAuthors(tenantid string) ([]Author, error) {
 	return Authors, nil
 
 }
+
+
+func (channel *Channel) EntrySave(entry *EntrySave, save bool) error {
+  
+    authErr := AuthandPermission(channel)
+    if authErr != nil {
+        return ErrorAuth
+    }
+
+    var entrydata EntrySave
+    entrydata.EntryId = entry.EntryId
+    entrydata.UserId = entry.UserId
+    entrydata.TenantId = entry.TenantId
+
+    if save {
+      
+        entrydata.IsDeleted = 0
+        entrydata.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+        err := EntryModel.EntrySave(&entrydata, channel.DB)
+        if err != nil {
+            fmt.Println("Error saving entry:", err)
+            return err
+        }
+    } else {
+      
+        err := EntryModel.EntryUnsave(entry.EntryId, entry.UserId, entry.TenantId, channel.DB)
+        if err != nil {
+            fmt.Println("Error unsaving entry:", err)
+            return err
+        }
+    }
+
+    return nil
+}

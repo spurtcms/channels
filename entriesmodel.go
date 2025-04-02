@@ -216,6 +216,7 @@ type EntriesInputs struct {
 	Experience             string
 	Posteddate             string
 	ChannelName            string
+	GetSavedEntryList      bool
 }
 
 type JoinEntries struct {
@@ -303,6 +304,14 @@ type JoinEntries struct {
 	UserTenantId      string `gorm:"column:user_tenant_id"`
 	RoleName          string
 	CtaId             int
+}
+type EntrySave struct {
+	Id        int       `gorm:"primaryKey;auto_increment;type:serial"`
+	EntryId   int       `gorm:"type:integer"`
+	UserId    int       `gorm:"type:integer"`
+	TenantId  string    `gorm:"type:character varying"`
+	CreatedOn time.Time `gorm:"type:timestamp without time zone"`
+	IsDeleted int       `gorm:"type:integer"`
 }
 
 var EntryModel EntriesModel
@@ -626,6 +635,12 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 			Where("tu.is_deleted = 0")
 	}
 
+	if input.GetSavedEntryList && input.MemberId != 0 {
+		selectData += ", se.entry_id as saved_entry_id"
+
+		query = query.Joins("INNER JOIN tbl_saved_entries as se ON se.entry_id = en.id").
+			Where("se.user_id = ? AND se.tenant_id = ? and se.is_deleted=0", input.MemberId, input.TenantId)
+	}
 	if input.MemberAccessControl && input.MemberId != 0 && input.ContentHide {
 
 		restrictQuery := db.Select("acp.entry_id").Table("tbl_access_control_pages as acp").Joins("inner join tbl_access_control_user_groups as acu on acu.id = acp.access_control_user_group_id").Joins("inner join tbl_members as tm on tm.member_group_id = acu.member_group_id").Where("tm.is_deleted = 0 and tm.id = ? and acu.is_deleted= 0 and acp.is_deleted = 0", input.MemberId)
@@ -1335,4 +1350,24 @@ func (Ch EntriesModel) EntryAuthors(tenantid string, DB *gorm.DB) ([]Author, err
 	}
 	return authors, nil
 
+}
+
+func (Ch EntriesModel) EntrySave(entrydata *EntrySave, DB *gorm.DB) error {
+
+	if err := DB.Table("tbl_saved_entries").Create(&entrydata).Error; err != nil {
+
+		return err
+
+	}
+
+	return nil
+}
+func (Ch EntriesModel) EntryUnsave(entryId int, userId int, tenantId string, DB *gorm.DB) error {
+
+	if err := DB.Table("tbl_saved_entries").
+		Where("entry_id = ? AND user_id = ? AND tenant_id = ?", entryId, userId, tenantId).
+		Update("is_deleted", 1).Error; err != nil {
+		return err
+	}
+	return nil
 }
