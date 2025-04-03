@@ -74,6 +74,7 @@ type Tblchannelentries struct {
 	LastName             string                       `gorm:"<-:false"`
 	NameString           string                       `gorm:"<-:false"`
 	CtaId                int                          `gorm:"column:cta_id"`
+	SavedFlag            bool                         `gorm:"<-:false"`
 }
 type Author struct {
 	AuthorID         int       `json:"AuthorId" gorm:"column:id"`
@@ -304,6 +305,7 @@ type JoinEntries struct {
 	UserTenantId      string `gorm:"column:user_tenant_id"`
 	RoleName          string
 	CtaId             int
+	SavedFlag         bool
 }
 type EntrySave struct {
 	Id        int       `gorm:"primaryKey;auto_increment;type:serial"`
@@ -636,10 +638,13 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 	}
 
 	if input.GetSavedEntryList && input.MemberId != 0 {
-		selectData += ", se.entry_id as saved_entry_id"
-
-		query = query.Joins("INNER JOIN tbl_saved_entries as se ON se.entry_id = en.id").
-			Where("se.user_id = ? AND se.tenant_id = ? and se.is_deleted=0", input.MemberId, input.TenantId)
+		selectData += ", se.entry_id as saved_entry_id, true AS saved_flag"
+		query = query.Joins("INNER JOIN tbl_saved_entries AS se ON se.entry_id = en.id").
+			Where("se.user_id = ? AND se.tenant_id = ? AND se.is_deleted = 0", input.MemberId, input.TenantId)
+	} else if input.MemberId != 0 {
+		// Fetch all entries with savedFlag
+		selectData += ", CASE WHEN se.entry_id IS NOT NULL THEN true ELSE false END AS saved_flag"
+		query = query.Joins("LEFT JOIN tbl_saved_entries AS se ON se.entry_id = en.id AND se.user_id = ? AND se.tenant_id = ? AND se.is_deleted = 0", input.MemberId, input.TenantId)
 	}
 	if input.MemberAccessControl && input.MemberId != 0 && input.ContentHide {
 

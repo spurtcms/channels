@@ -260,7 +260,7 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 	var channelEntries []Tblchannelentries
 
 	for _, data := range EntriesData {
-
+	
 		var memberProfile member.TblMemberProfile
 
 		if input.GetMemberProfile {
@@ -454,6 +454,7 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 			Sections:        sections,
 			Fields:          fields,
 			TenantId:        data.TenantId,
+			SavedFlag:       data.SavedFlag,
 		}
 
 		channelEntries = append(channelEntries, channnel_entry)
@@ -1768,36 +1769,35 @@ func (channel *Channel) EntryAuthors(tenantid string) ([]Author, error) {
 
 }
 
-
 func (channel *Channel) EntrySave(entry *EntrySave, save bool) error {
-  
-    authErr := AuthandPermission(channel)
-    if authErr != nil {
-        return ErrorAuth
-    }
 
-    var entrydata EntrySave
-    entrydata.EntryId = entry.EntryId
-    entrydata.UserId = entry.UserId
-    entrydata.TenantId = entry.TenantId
+	authErr := AuthandPermission(channel)
+	if authErr != nil {
+		return ErrorAuth
+	}
 
-    if save {
-      
-        entrydata.IsDeleted = 0
-        entrydata.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
-        err := EntryModel.EntrySave(&entrydata, channel.DB)
-        if err != nil {
-            fmt.Println("Error saving entry:", err)
-            return err
-        }
-    } else {
-      
-        err := EntryModel.EntryUnsave(entry.EntryId, entry.UserId, entry.TenantId, channel.DB)
-        if err != nil {
-            fmt.Println("Error unsaving entry:", err)
-            return err
-        }
-    }
+	var entrydata EntrySave
+	entrydata.EntryId = entry.EntryId
+	entrydata.UserId = entry.UserId
+	entrydata.TenantId = entry.TenantId
 
-    return nil
+	if save {
+
+		entrydata.IsDeleted = 0
+		entrydata.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+		err := EntryModel.EntrySave(&entrydata, channel.DB)
+		if err != nil {
+			fmt.Println("Error saving entry:", err)
+			return err
+		}
+	} else {
+
+		err := EntryModel.EntryUnsave(entry.EntryId, entry.UserId, entry.TenantId, channel.DB)
+		if err != nil {
+			fmt.Println("Error unsaving entry:", err)
+			return err
+		}
+	}
+
+	return nil
 }
