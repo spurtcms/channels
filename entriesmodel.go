@@ -1200,6 +1200,12 @@ func (En *EntriesModel) FlexibleChannelEntryDetail(db *gorm.DB, inputs EntriesIn
 		query = query.Where("en.channel_id = ?", inputs.ChannelId)
 	}
 
+	if inputs.MemberId > 0 {
+
+		selectData += ", CASE WHEN se.entry_id IS NOT NULL THEN true ELSE false END AS saved_flag"
+		query = query.Joins("LEFT JOIN tbl_saved_entries AS se ON se.entry_id = en.id AND se.user_id = ? AND se.tenant_id = ? AND se.is_deleted = 0", inputs.MemberId, inputs.TenantId)
+	}
+
 	var profileCondition string
 
 	if inputs.GetMemberProfile {

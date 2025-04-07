@@ -260,7 +260,7 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 	var channelEntries []Tblchannelentries
 
 	for _, data := range EntriesData {
-	
+
 		var memberProfile member.TblMemberProfile
 
 		if input.GetMemberProfile {
@@ -1387,6 +1387,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 				Sections:        sections,
 				Fields:          fields,
 				CtaId:           data.CtaId,
+				SavedFlag:       data.SavedFlag,
 			}
 
 			channelEntries = append(channelEntries, channnel_entry)
@@ -1581,6 +1582,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 			Fields:          fields,
 			TenantId:        data.TenantId,
 			CtaId:           data.CtaId,
+			SavedFlag: data.SavedFlag,
 		}
 
 	}
