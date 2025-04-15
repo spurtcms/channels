@@ -454,7 +454,7 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 			Fields:          fields,
 			TenantId:        data.TenantId,
 			SavedFlag:       data.SavedFlag,
-			Uuid:            data.Entry_Uuid ,
+			Uuid:            data.Entry_Uuid,
 		}
 
 		channelEntries = append(channelEntries, channnel_entry)
@@ -1388,6 +1388,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 				Fields:          fields,
 				CtaId:           data.CtaId,
 				SavedFlag:       data.SavedFlag,
+				Uuid:            data.Entry_Uuid,
 			}
 
 			channelEntries = append(channelEntries, channnel_entry)
@@ -1583,6 +1584,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 			TenantId:        data.TenantId,
 			CtaId:           data.CtaId,
 			SavedFlag:       data.SavedFlag,
+			Uuid:            data.Entry_Uuid,
 		}
 
 	}
