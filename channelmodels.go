@@ -223,6 +223,7 @@ type TblChannelEntries struct {
 	OrderIndex         int       `gorm:"type:integer"`
 	CtaId              int       `gorm:"type:integer"`
 	MemebrshipLevelIds string    `gorm:"column:memebrship_level_ids"`
+	LanguageId         int       `gorm:"type:integer"`
 }
 
 type TblChannelEntryField struct {

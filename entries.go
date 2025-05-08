@@ -661,7 +661,7 @@ func (channel *Channel) EntryDetailsById(Ent IndivEntriesReq, tenantid string) (
 }
 
 // create entry
-func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid string) (entry Tblchannelentries, flg bool, err error) {
+func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid string, ReferenceId int) (entry Tblchannelentries, flg bool, err error) {
 
 	autherr := AuthandPermission(channel)
 
@@ -754,6 +754,10 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid st
 	Entries.TenantId = tenantid
 
 	Entries.CtaId = entriesrequired.CtaId
+
+	Entries.LanguageId = entriesrequired.LanguageId
+
+	Entries.EntryReferenceId = ReferenceId
 
 	Entriess, err := EntryModel.CreateChannelEntry(Entries, channel.DB)
 
@@ -875,6 +879,8 @@ func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName
 	Entries.OrderIndex = entriesrequired.OrderIndex
 
 	Entries.CtaId = entriesrequired.CtaId
+
+	Entries.LanguageId = entriesrequired.LanguageId
 
 	err := EntryModel.UpdateChannelEntryDetails(&Entries, EntryId, channel.DB, tenantid)
 

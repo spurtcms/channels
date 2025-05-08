@@ -75,6 +75,8 @@ type Tblchannelentries struct {
 	NameString           string                       `gorm:"<-:false"`
 	CtaId                int                          `gorm:"column:cta_id"`
 	SavedFlag            bool                         `gorm:"<-:false"`
+	LanguageId           int                          `gorm:"column:language_id"`
+	EntryReferenceId     int                          `gorm:"column:entry_reference_id"`
 }
 type Author struct {
 	AuthorID         int       `json:"AuthorId" gorm:"column:id"`
@@ -114,6 +116,7 @@ type Entries struct {
 	MemberFieldTypeId        int
 	Sorting                  string
 	EntriesTitle             string
+	LanguageId               int
 }
 
 type IndivEntriesReq struct {
@@ -169,6 +172,7 @@ type EntriesRequired struct {
 	IsActive           int
 	OrderIndex         int
 	CtaId              int
+	LanguageId         int
 }
 
 type RecentActivities struct {
@@ -322,7 +326,7 @@ var EntryModel EntriesModel
 /*List Channel Entry*/
 func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, categoryid string, createonly bool, DB *gorm.DB, tenantid string) (chentry []Tblchannelentries, chentcount int64, err error) {
 
-	query := DB.Model(TblChannelEntries{}).Select("tbl_channel_entries.*,tbl_users.username,tbl_users.first_name,tbl_users.last_name,tbl_users.profile_image_path,tbl_channels.channel_name").Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Joins("left join tbl_channels on tbl_channels.id = tbl_channel_entries.channel_id").Where("tbl_channel_entries.is_deleted=0 and tbl_channel_entries.tenant_id=?", tenantid)
+	query := DB.Debug().Model(TblChannelEntries{}).Select("tbl_channel_entries.*,tbl_users.username,tbl_users.first_name,tbl_users.last_name,tbl_users.profile_image_path,tbl_channels.channel_name").Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Joins("left join tbl_channels on tbl_channels.id = tbl_channel_entries.channel_id").Where("tbl_channel_entries.is_deleted=0 and tbl_channel_entries.tenant_id=?", tenantid)
 
 	if filter.Sorting == "lastUpdated" {
 
@@ -372,6 +376,15 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 	if filter.ChannelId != 0 {
 
 		query = query.Where("tbl_channel_entries.channel_id=?", filter.ChannelId)
+	}
+
+	if filter.LanguageId != 0 {
+
+		if filter.LanguageId == 1 {
+			query = query.Where("tbl_channel_entries.language_id=? or tbl_channel_entries.language_id is null", filter.LanguageId)
+		} else {
+			query = query.Where("tbl_channel_entries.language_id=?", filter.LanguageId)
+		}
 	}
 
 	if filter.UserName != "" {
@@ -931,7 +944,7 @@ func (ch EntriesModel) PublishQuery(chl *TblChannelEntries, id int, DB *gorm.DB,
 /*Update Channel Entry Details*/
 func (Ch EntriesModel) UpdateChannelEntryDetails(entry *TblChannelEntries, entryid int, DB *gorm.DB, tenantid string) error {
 
-	if err := DB.Table("tbl_channel_entries").Where("id=? and tenant_id=?", entryid, tenantid).UpdateColumns(map[string]interface{}{"title": entry.Title, "description": entry.Description, "slug": entry.Slug, "cover_image": entry.CoverImage, "thumbnail_image": entry.ThumbnailImage, "meta_title": entry.MetaTitle, "meta_description": entry.MetaDescription, "keyword": entry.Keyword, "categories_id": entry.CategoriesId, "related_articles": entry.RelatedArticles, "status": entry.Status, "modified_on": entry.ModifiedOn, "modified_by": entry.ModifiedBy, "user_id": entry.UserId, "channel_id": entry.ChannelId, "author": entry.Author, "create_time": entry.CreateTime, "published_time": entry.PublishedTime, "reading_time": entry.ReadingTime, "sort_order": entry.SortOrder, "tags": entry.Tags, "excerpt": entry.Excerpt, "image_alt_tag": entry.ImageAltTag, "order_index": entry.OrderIndex, "cta_id": entry.CtaId, "memebrship_level_ids": entry.MemebrshipLevelIds}).Error; err != nil {
+	if err := DB.Table("tbl_channel_entries").Where("id=? and tenant_id=?", entryid, tenantid).UpdateColumns(map[string]interface{}{"title": entry.Title, "description": entry.Description, "slug": entry.Slug, "cover_image": entry.CoverImage, "thumbnail_image": entry.ThumbnailImage, "meta_title": entry.MetaTitle, "meta_description": entry.MetaDescription, "keyword": entry.Keyword, "categories_id": entry.CategoriesId, "related_articles": entry.RelatedArticles, "status": entry.Status, "modified_on": entry.ModifiedOn, "modified_by": entry.ModifiedBy, "user_id": entry.UserId, "channel_id": entry.ChannelId, "author": entry.Author, "create_time": entry.CreateTime, "published_time": entry.PublishedTime, "reading_time": entry.ReadingTime, "sort_order": entry.SortOrder, "tags": entry.Tags, "excerpt": entry.Excerpt, "image_alt_tag": entry.ImageAltTag, "order_index": entry.OrderIndex, "cta_id": entry.CtaId, "memebrship_level_ids": entry.MemebrshipLevelIds, "language_id": entry.LanguageId}).Error; err != nil {
 
 		return err
 	}

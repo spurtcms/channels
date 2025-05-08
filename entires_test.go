@@ -131,7 +131,7 @@ func TestCreateEntry(t *testing.T) {
 
 	if permisison {
 
-		entries, flg, err := channel.CreateEntry(EntriesRequired{Title: "java", Content: "about java", ChannelId: 3}, TenantId)
+		entries, flg, err := channel.CreateEntry(EntriesRequired{Title: "java", Content: "about java", ChannelId: 3}, TenantId,0)
 
 		if err != nil {
 
