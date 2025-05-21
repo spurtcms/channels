@@ -1151,7 +1151,7 @@ func (channel *Channel) DefaultChannelList(endurl string, limit int, offset int,
                                         </p>
                                     </div> 
                                     <p class="text-[11px] font-light text-[#717171] leading-[14px] mb-3 line-clamp-3">` + val.ChannelDescription + `</p>
-                         <a href="/channels/addtomycollection/` + strconv.Itoa(val.Id) + `"
+                         <a href="/admin/channels/addtomycollection/` + strconv.Itoa(val.Id) + `"
                                          class="hover:shadow-[0px_2px_4px_0px_#00000014] p-[6px_24px] bg-white text-[12px] font-normal leading-[16px] text-[#000000] border border-solid border-[#ECECEC] rounded-[6px]">+ Add to collection</a>
                                   
                                 </div></div>`
