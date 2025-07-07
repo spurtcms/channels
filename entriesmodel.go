@@ -222,6 +222,7 @@ type EntriesInputs struct {
 	Posteddate             string
 	ChannelName            string
 	GetSavedEntryList      bool
+	Uuid                   string
 }
 
 type JoinEntries struct {
@@ -1201,7 +1202,16 @@ func (En *EntriesModel) FlexibleChannelEntryDetail(db *gorm.DB, inputs EntriesIn
 
 	if inputs.Slug != "" {
 
-		query = query.Where("en.slug=?", inputs.Slug)
+		if inputs.Slug != "" && inputs.Uuid != "" {
+
+			query = query.Where("en.slug=? and en.uuid=?", inputs.Slug, inputs.Uuid)
+
+		} else {
+
+			query = query.Where("en.slug=?", inputs.Slug)
+
+		}
+
 	}
 
 	if inputs.TenantId != "" {
