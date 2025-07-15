@@ -380,7 +380,7 @@ func IsDeleted(db *gorm.DB) *gorm.DB {
 /*channel list*/
 func (Ch ChannelModel) Channellist(DB *gorm.DB, channel *Channel, inputs Channels, channels *[]Tblchannel, count *int64) (err error) {
 
-	query := DB.Debug().Table("tbl_channels").Where("tbl_channels.is_deleted = 0")
+	query := DB.Table("tbl_channels").Where("tbl_channels.is_deleted = 0")
 
 	if inputs.TenantId != "" {
 
@@ -479,7 +479,7 @@ func (Ch ChannelModel) CreateChannel(chn *TblChannel, DB *gorm.DB) (TblChannel, 
 
 func (Ch ChannelModel) ChannelDetail(DB *gorm.DB, inputs Channels, channelDetail *Tblchannel) error {
 
-	query := DB.Debug().Table("tbl_channels").Where("tbl_channels.is_deleted = 0")
+	query := DB.Table("tbl_channels").Where("tbl_channels.is_deleted = 0")
 
 	if inputs.Id != 0 {
 
@@ -824,7 +824,7 @@ func (Ch ChannelModel) CreateGroupField(grpfield *TblGroupField, DB *gorm.DB) er
 /*Update Field Option Details*/
 func (Ch ChannelModel) UpdateFieldOption(fdoption *TblFieldOption, id int, DB *gorm.DB, tenantid string) error {
 
-	if err := DB.Debug().Table("tbl_field_options").Where("id=? and tenant_id=?", id, tenantid).UpdateColumns(map[string]interface{}{"option_name": fdoption.OptionName, "option_value": fdoption.OptionValue, "modified_on": fdoption.ModifiedOn, "modified_by": fdoption.ModifiedBy, "order_index": fdoption.OrderIndex}).Error; err != nil {
+	if err := DB.Table("tbl_field_options").Where("id=? and tenant_id=?", id, tenantid).UpdateColumns(map[string]interface{}{"option_name": fdoption.OptionName, "option_value": fdoption.OptionValue, "modified_on": fdoption.ModifiedOn, "modified_by": fdoption.ModifiedBy, "order_index": fdoption.OrderIndex}).Error; err != nil {
 
 		return err
 	}
@@ -845,7 +845,7 @@ func (Ch ChannelModel) CreateFieldOption(optval *TblFieldOption, DB *gorm.DB) er
 
 func (ch ChannelModel) GetChannelCount(count *int64, DB *gorm.DB, tenantid string) error {
 
-	if err := DB.Debug().Table("tbl_channels").Distinct("tbl_channels.id").Joins("inner join tbl_channel_entries on tbl_channel_entries.channel_id = tbl_channels.id").
+	if err := DB.Table("tbl_channels").Distinct("tbl_channels.id").Joins("inner join tbl_channel_entries on tbl_channel_entries.channel_id = tbl_channels.id").
 		// Joins("inner join tbl_channel_categories on tbl_channel_categories.channel_id = tbl_channels.id").
 		Where("tbl_channels.is_deleted = 0 and tbl_channels.is_active = 1 and tbl_channel_entries.status = 1 and tbl_channel_entries.tenant_id=?", tenantid).Count(count).Error; err != nil {
 
@@ -867,7 +867,7 @@ func (ch ChannelModel) GetChannels(channels *[]Tblchannel, DB *gorm.DB, tenantid
 
 func (ch ChannelModel) GetPermissionChannel(channels *Channel, DB *gorm.DB, tenantid string) (channel []Tblchannel, err error) {
 
-	query := DB.Debug().Table("tbl_channels").Where("is_deleted=0 and is_active=1 and tenant_id=?", tenantid).Order("id desc")
+	query := DB.Table("tbl_channels").Where("is_deleted=0 and is_active=1 and tenant_id=?", tenantid).Order("id desc")
 
 	if channels.PermissionEnable && (channels.Auth.RoleId != 1 && channels.Auth.RoleId != 2) {
 
@@ -887,13 +887,13 @@ func (ch ChannelModel) GetPermissionChannel(channels *Channel, DB *gorm.DB, tena
 func (ch ChannelModel) ChangeChanelType(Channels Tblchannel, DB *gorm.DB) (Error error) {
 
 	if Channels.CollectionCount != 0 {
-		if err := DB.Debug().Table("tbl_channels").Where("id=?", Channels.Id).Updates(map[string]interface{}{"collection_count": Channels.CollectionCount}).Error; err != nil {
+		if err := DB.Table("tbl_channels").Where("id=?", Channels.Id).Updates(map[string]interface{}{"collection_count": Channels.CollectionCount}).Error; err != nil {
 
 			return err
 
 		}
 	} else {
-		if err := DB.Debug().Table("tbl_channels").Where("id=?", Channels.Id).Updates(map[string]interface{}{"clone_count": Channels.CloneCount}).Error; err != nil {
+		if err := DB.Table("tbl_channels").Where("id=?", Channels.Id).Updates(map[string]interface{}{"clone_count": Channels.CloneCount}).Error; err != nil {
 
 			return err
 
@@ -963,7 +963,7 @@ func (ch ChannelModel) GetChannelId(chname string, tenantid string, DB *gorm.DB)
 
 	var Id int // Define the variable to hold the result
 
-	if err := DB.Table("tbl_channels").Debug().Where("channel_name = ? and tenant_id=? and is_deleted=0", chname, tenantid).Select("Id").Scan(&Id).Error; err != nil {
+	if err := DB.Table("tbl_channels").Where("channel_name = ? and tenant_id=? and is_deleted=0", chname, tenantid).Select("Id").Scan(&Id).Error; err != nil {
 		return 0, err
 	}
 

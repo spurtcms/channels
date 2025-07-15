@@ -1139,7 +1139,6 @@ func (channel *Channel) DefaultChannelList(endurl string, limit int, offset int,
 		}
 	}
 	var channelstring string
-	
 	for _, val := range responseData.Allchannellist {
 
 		channelstring += `<div class="border border-[#ECECEC] rounded"><div class="group p-[12px] flex flex-col items-center justify-center">
@@ -1160,6 +1159,7 @@ func (channel *Channel) DefaultChannelList(endurl string, limit int, offset int,
 
 	responedata.Channelliststring = channelstring
 	responedata.BlockCount = responseData.BlockCount
+	responedata.Allchannellist = responseData.Allchannellist
 
 	return responedata, nil
 
