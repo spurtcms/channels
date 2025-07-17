@@ -533,7 +533,7 @@ func (Ch ChannelModel) ChannelDetail(DB *gorm.DB, inputs Channels, channelDetail
 
 func (Ch ChannelModel) GetChannelByChannelName(name string, DB *gorm.DB, tenantid string) (ch Tblchannel, err error) {
 
-	if err := DB.Table("tbl_channels").Where("channel_name=? and tenant_id=? and is_deleted=0", name, tenantid).First(&ch).Error; err != nil {
+	if err := DB.Table("tbl_channels").Where("LOWER(TRIM(channel_name)) = LOWER(TRIM(?))   and tenant_id=? and is_deleted=0", name, tenantid).First(&ch).Error; err != nil {
 
 		return Tblchannel{}, err
 	}
