@@ -137,7 +137,7 @@ func (channel *Channel) DashboardRecentActivites(tenantid string) (entries []Rec
 
 		var Name = firstn + lastn
 
-		newrecord := RecentActivities{Contenttype: "entry", Title: val.Title, User: val.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, Channelname: val.ChannelName, NameString: Name}
+		newrecord := RecentActivities{Contenttype: "entry", Title: val.Title, Id: val.Id, Channelname: val.ChannelName, User: val.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, NameString: Name}
 
 		Newrecords = append(Newrecords, newrecord)
 
@@ -157,7 +157,7 @@ func (channel *Channel) DashboardRecentActivites(tenantid string) (entries []Rec
 
 		var Name = firstn + lastn
 
-		newrecord := RecentActivities{Contenttype: "channel", Title: val.ChannelName, User: val.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, Channelname: val.ChannelName, NameString: Name}
+		newrecord := RecentActivities{Contenttype: "channel", Id: val.Id, Channelname: val.ChannelName, Title: val.ChannelName, User: val.Username, Imagepath: val.ProfileImagePath, Createdon: val.CreatedOn, NameString: Name}
 
 		Newrecords = append(Newrecords, newrecord)
 	}
@@ -189,6 +189,8 @@ func (channel *Channel) DashboardRecentActivites(tenantid string) (entries []Rec
 
 		if hour >= 1 {
 
+			newactive.Id = val.Id
+
 			newactive.Contenttype = val.Contenttype
 
 			newactive.Title = val.Title
@@ -206,6 +208,8 @@ func (channel *Channel) DashboardRecentActivites(tenantid string) (entries []Rec
 			newactive.Active = strconv.Itoa(hour) + " " + "hrs"
 
 		} else {
+			newactive.Id = val.Id
+
 			newactive.Contenttype = val.Contenttype
 
 			newactive.Title = val.Title

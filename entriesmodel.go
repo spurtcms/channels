@@ -176,6 +176,7 @@ type EntriesRequired struct {
 }
 
 type RecentActivities struct {
+	Id          int
 	Contenttype string
 	Title       string
 	User        string
@@ -1013,8 +1014,8 @@ func (Ch EntriesModel) Newchannels(DB *gorm.DB, tenantid string) (chn []Tblchann
 
 func (Ch EntriesModel) Newentries(DB *gorm.DB, tenantid string) (entries []Tblchannelentries, err error) {
 
-	if err := DB.Table("tbl_channel_entries").Select("tbl_channel_entries.*,tbl_users.username,tbl_users.profile_image_path,tbl_users.first_name,tbl_users.last_name").
-		Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Where("tbl_channel_entries.is_deleted=0 and tbl_channel_entries.created_on >=? and tbl_channel_entries.tenant_id=?", time.Now().Add(-24*time.Hour).Format("2006-01-02 15:04:05"), tenantid).
+	if err := DB.Table("tbl_channel_entries").Select("tbl_channel_entries.*,tbl_channels.channel_name, tbl_users.username,tbl_users.profile_image_path,tbl_users.first_name,tbl_users.last_name").
+		Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Joins("inner join tbl_channels on tbl_channels.id = tbl_channel_entries.channel_id").Where("tbl_channel_entries.is_deleted=0 and tbl_channel_entries.created_on >=? and tbl_channel_entries.tenant_id=?", time.Now().Add(-24*time.Hour).Format("2006-01-02 15:04:05"), tenantid).
 		Order("created_on desc").Limit(6).Find(&entries).Error; err != nil {
 
 		return []Tblchannelentries{}, err
