@@ -574,10 +574,13 @@ func (Ch ChannelModel) GetFieldIdByGroupId(id int, DB *gorm.DB, tenantid string)
 /*Get optionvalue*/
 func (Ch ChannelModel) GetFieldAndOptionValue(id []int, DB *gorm.DB, tenantid string) (fld []tblfield, err error) {
 
-	if err := DB.Table("tbl_fields").Where("id in (?) and tenant_id=? and is_deleted != 1", id, tenantid).Preload("TblFieldOption", func(db *gorm.DB) *gorm.DB {
-		return DB.Where("is_deleted!=1").Order("order_index asc")
-	}).Order("order_index asc").Find(&fld).Error; err != nil {
-
+	if err := DB.Table("tbl_fields").
+		Where("id IN (?) AND tenant_id = ? AND is_deleted != 1", id, tenantid).
+		Preload("TblFieldOption", func(db *gorm.DB) *gorm.DB {
+			return db.Where("is_deleted != 1").Order("order_index ASC")
+		}).
+		Order("order_index ASC").
+		Find(&fld).Error; err != nil {
 		return []tblfield{}, err
 	}
 
