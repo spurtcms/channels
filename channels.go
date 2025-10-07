@@ -1133,7 +1133,7 @@ func (channel *Channel) DefaultChannelList(endurl string, limit int, offset int,
 
 	if !masterconnect {
 		responseData = ResponseData{
-			Allchannellist:    []TblMstrchannel{},
+			Allchannellist:    []Tblchannel{},
 			Channelliststring: "",
 			BlockCount:        0,
 		}

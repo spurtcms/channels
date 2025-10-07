@@ -364,10 +364,10 @@ type TblMstrchannel struct {
 	ImagePath          string    `gorm:"column:image_path"`
 }
 type ResponseData struct {
-	BlockCount        int              `json:"block_count"`
-	Allchannellist    []TblMstrchannel `json:"allchannellist"`
-	Channeldetail     TblMstrchannel   `json:"channeldetail"`
-	Channelliststring string           `json:"channelliststring"`
+	BlockCount        int          `json:"block_count"`
+	Allchannellist    []Tblchannel `json:"allchannellist"`
+	Channeldetail     Tblchannel   `json:"channeldetail"`
+	Channelliststring string       `json:"channelliststring"`
 }
 
 var CH ChannelModel
@@ -805,7 +805,7 @@ func (Ch ChannelModel) DeleteOptionById(fieldopt *TblFieldOption, id []int, fid 
 /*create field*/
 func (Ch ChannelModel) CreateFields(flds *TblField, DB *gorm.DB) (*TblField, error) {
 
-	if err := DB.Table("tbl_fields").Create(&flds).Error; err != nil {
+	if err := DB.Debug().Table("tbl_fields").Create(&flds).Error; err != nil {
 
 		return &TblField{}, err
 	}
