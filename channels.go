@@ -116,6 +116,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate, moduleid int,
 	modperms.OrderIndex = 2
 	modperms.FullAccessPermission = 1
 	modperms.TenantId = tenantid
+	modperms.ChannelId = ch.Id
 
 	permission.AS.CreateModulePermission(&modperms, channel.DB)
 
