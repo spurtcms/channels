@@ -510,13 +510,13 @@ func (channel *Channel) DeleteChannel(channelid, modifiedby int, routename strin
 
 }
 
-func (channel *Channel) DeleteChannelPermissions(channelid int) error {
+func (channel *Channel) DeleteChannelPermissions(channelid int, tenantid string) error {
 
-	checkid, _ := permission.AS.GetIdByRouteName(strconv.Itoa(channelid), channel.DB, TenantId)
+	checkid, _ := permission.AS.GetModulePermissionByChannelId(channelid, channel.DB, tenantid)
 
-	permission.AS.Deleterolepermission(checkid.Id, channel.DB, TenantId)
+	permission.AS.Deleterolepermission(checkid.Id, channel.DB, tenantid)
 
-	// permission.AS.DeleteModulePermissioninEntries(channelid, channel.DB)
+	permission.AS.DeleteModulePermissioninEntries(channelid, channel.DB, tenantid)
 
 	return nil
 }
