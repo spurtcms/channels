@@ -18,7 +18,7 @@ func Categories(categoryid int, DB *gorm.DB, tenantid string) string {
 
 	for _, val := range categoreis {
 
-		id += strconv.Itoa(val.Id) + ","
+		id += strconv.Itoa(val.Id)
 	}
 
 	return id

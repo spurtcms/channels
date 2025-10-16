@@ -904,16 +904,17 @@ func (ch EntriesModel) GetCategoryIdByName(name string, DB *gorm.DB, tenantid st
 
 func (ch EntriesModel) GetChildCategories(categoryid int, DB *gorm.DB, tenantid string) (categories []categories.TblCategories, er error) {
 
-	if err := DB.Raw(`WITH RECURSIVE cat_tree AS (SELECT id, category_name, category_slug,image_path, parent_id,created_on,modified_on,is_deleted
-		FROM tbl_categories
-		WHERE id = (?)
-		UNION
-		SELECT cat.id, cat.category_name, cat.category_slug, cat.image_path ,cat.parent_id,cat.created_on,cat.modified_on,
-		cat.is_deleted
-		FROM tbl_categories AS cat
-		JOIN cat_tree ON cat.parent_id = cat_tree.id )
-		SELECT * FROM cat_tree where is_deleted = 0 and tenant_id=?`, tenantid, categoryid).Find(&categories).Error; err != nil {
-
+	if err := DB.Raw(`WITH RECURSIVE cat_tree AS (
+        SELECT id, category_name, category_slug, image_path, parent_id, created_on, modified_on, is_deleted, tenant_id
+        FROM tbl_categories
+        WHERE id = ?
+        UNION
+        SELECT cat.id, cat.category_name, cat.category_slug, cat.image_path, cat.parent_id, cat.created_on, cat.modified_on,
+               cat.is_deleted, cat.tenant_id
+        FROM tbl_categories AS cat
+        JOIN cat_tree ON cat.parent_id = cat_tree.id
+    )
+    SELECT * FROM cat_tree WHERE is_deleted = 0 AND tenant_id = ?`, categoryid, tenantid).Find(&categories).Error; err != nil {
 		return categories, err
 	}
 
