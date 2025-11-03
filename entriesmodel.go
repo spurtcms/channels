@@ -120,6 +120,7 @@ type Entries struct {
 	Sorting                  string
 	EntriesTitle             string
 	LanguageId               int
+	SlugName                 string
 }
 
 type IndivEntriesReq struct {
@@ -230,6 +231,7 @@ type EntriesInputs struct {
 	ChannelName            string
 	GetSavedEntryList      bool
 	Uuid                   string
+	SlugName               string
 }
 
 type JoinEntries struct {
@@ -429,7 +431,11 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 		query = query.Where("LOWER(TRIM(channel_name)) LIKE LOWER(TRIM(?))", "%"+filter.ChannelName+"%")
 
 	}
+	if filter.SlugName != "" {
 
+		query = query.Where("LOWER(TRIM(slug_name)) LIKE LOWER(TRIM(?))", "%"+filter.SlugName+"%")
+
+	}
 	if filter.CategoryId != 0 && filter.CategoryId > 0 {
 
 		query = query.Where("STRING_TO_ARRAY(categories_id, ',')::integer[] && ARRAY[" + categoryid + "]")
@@ -502,7 +508,9 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 	if input.ChannelName != "" {
 		query = query.Where("en.channel_id IN (SELECT id FROM tbl_channels WHERE channel_name = ? AND is_deleted = 0)", input.ChannelName)
 	}
-
+	if input.SlugName != "" {
+		query = query.Where("en.channel_id IN (SELECT id FROM tbl_channels WHERE slug_name = ? AND is_deleted = 0)", input.SlugName)
+	}
 	if input.Status != "" {
 
 		status, _ := strconv.Atoi(input.Status)

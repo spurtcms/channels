@@ -669,7 +669,7 @@ func (Ch ChannelModel) GetAllField(DB *gorm.DB, tenantid string) (channel []TblF
 /*Update Channel Details*/
 func (Ch ChannelModel) UpdateChannelDetails(chn *TblChannel, id int, DB *gorm.DB, TenantId string) error {
 
-	if err := DB.Table("tbl_channels").Where("id=? and tenant_id=?", id, TenantId).UpdateColumns(map[string]interface{}{"channel_name": chn.ChannelName, "channel_unique_id": chn.ChannelUniqueId, "channel_description": chn.ChannelDescription, "modified_by": chn.ModifiedBy, "modified_on": chn.ModifiedOn}).Error; err != nil {
+	if err := DB.Table("tbl_channels").Where("id=? and tenant_id=?", id, TenantId).UpdateColumns(map[string]interface{}{"channel_name": chn.ChannelName, "slug_name": chn.SlugName, "channel_unique_id": chn.ChannelUniqueId, "channel_description": chn.ChannelDescription, "modified_by": chn.ModifiedBy, "modified_on": chn.ModifiedOn}).Error; err != nil {
 
 		return err
 	}

@@ -589,6 +589,8 @@ func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, 
 
 	chn.ChannelDescription = ChannelDescription
 
+	chn.SlugName = strings.ReplaceAll(strings.ToLower(ChannelName), " ", "-")
+
 	chn.ModifiedBy = modifiedby
 
 	chn.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
