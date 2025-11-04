@@ -702,29 +702,27 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid st
 
 	// Entries.Slug = strings.Trim(Entries.Slug, "-")
 	if entriesrequired.SEODetails.MetaSlug == "" {
-
 		Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.Title), " ", "-")
 
-		re := regexp.MustCompile(`[^a-z0-9\-]`)
-
+		// Regex to allow a-z, 0-9, hyphen, and forward slash
+		re := regexp.MustCompile(`[^a-z0-9\-\/]`)
 		Entries.Slug = re.ReplaceAllString(Entries.Slug, "-")
 
+		// Replace multiple hyphens with a single hyphen
 		Entries.Slug = regexp.MustCompile(`-+`).ReplaceAllString(Entries.Slug, "-")
 
+		// Trim hyphens from start and end
 		Entries.Slug = strings.Trim(Entries.Slug, "-")
 
 	} else if entriesrequired.SEODetails.MetaSlug != "" {
-
 		Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.SEODetails.MetaSlug), " ", "-")
 
-		re := regexp.MustCompile(`[^a-z0-9\-]`)
-
+		re := regexp.MustCompile(`[^a-z0-9\-\/]`)
 		Entries.Slug = re.ReplaceAllString(Entries.Slug, "-")
 
 		Entries.Slug = regexp.MustCompile(`-+`).ReplaceAllString(Entries.Slug, "-")
 
 		Entries.Slug = strings.Trim(Entries.Slug, "-")
-
 	}
 
 	Entries.Status = entriesrequired.Status
@@ -856,7 +854,7 @@ func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName
 
 	Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.SEODetails.MetaSlug), " ", "-")
 
-	re := regexp.MustCompile(`[^a-z0-9\-]`)
+	re := regexp.MustCompile(`[^a-z0-9\-\/]`)
 
 	Entries.Slug = re.ReplaceAllString(Entries.Slug, "-")
 
