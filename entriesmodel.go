@@ -121,6 +121,7 @@ type Entries struct {
 	EntriesTitle             string
 	LanguageId               int
 	SlugName                 string
+	CategorySlug             string
 }
 
 type IndivEntriesReq struct {

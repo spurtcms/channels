@@ -715,7 +715,15 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid st
 
 	} else if entriesrequired.SEODetails.MetaSlug != "" {
 
-		Entries.Slug = entriesrequired.SEODetails.MetaSlug
+		Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.SEODetails.MetaSlug), " ", "-")
+
+		re := regexp.MustCompile(`[^a-z0-9\-]`)
+
+		Entries.Slug = re.ReplaceAllString(Entries.Slug, "-")
+
+		Entries.Slug = regexp.MustCompile(`-+`).ReplaceAllString(Entries.Slug, "-")
+
+		Entries.Slug = strings.Trim(Entries.Slug, "-")
 
 	}
 
@@ -763,7 +771,7 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid st
 
 	Entries.UserRoleId = entriesrequired.UserRoleId
 
-	Entries.MembershipLevelId =entriesrequired.MembershipLevelId
+	Entries.MembershipLevelId = entriesrequired.MembershipLevelId
 
 	Entriess, err := EntryModel.CreateChannelEntry(Entries, channel.DB)
 
@@ -846,17 +854,15 @@ func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName
 
 	Entries.MemebrshipLevelIds = entriesrequired.MembershipLevelids
 
-	// Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.Title), " ", "-")
+	Entries.Slug = strings.ReplaceAll(strings.ToLower(entriesrequired.SEODetails.MetaSlug), " ", "-")
 
-	// re := regexp.MustCompile(`[^a-z0-9\-]`)
+	re := regexp.MustCompile(`[^a-z0-9\-]`)
 
-	// Entries.Slug = re.ReplaceAllString(Entries.Slug, "-")
+	Entries.Slug = re.ReplaceAllString(Entries.Slug, "-")
 
-	// Entries.Slug = regexp.MustCompile(`-+`).ReplaceAllString(Entries.Slug, "-")
+	Entries.Slug = regexp.MustCompile(`-+`).ReplaceAllString(Entries.Slug, "-")
 
-	// Entries.Slug = strings.Trim(Entries.Slug, "-")
-
-	Entries.Slug = entriesrequired.SEODetails.MetaSlug
+	Entries.Slug = strings.Trim(Entries.Slug, "-")
 
 	Entries.Status = entriesrequired.Status
 
