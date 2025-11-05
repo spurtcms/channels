@@ -233,6 +233,7 @@ type EntriesInputs struct {
 	GetSavedEntryList      bool
 	Uuid                   string
 	SlugName               string
+	Profile                bool
 }
 
 type JoinEntries struct {
@@ -506,6 +507,9 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 		query = query.Where("en.channel_id = ?", input.ChannelId)
 	}
 
+	if !input.Profile {
+		query = query.Where("en.access_type = ? OR en.access_type IS NULL", "every_one")
+	}
 	if input.ChannelName != "" {
 		query = query.Where("en.channel_id IN (SELECT id FROM tbl_channels WHERE channel_name = ? AND is_deleted = 0)", input.ChannelName)
 	}
