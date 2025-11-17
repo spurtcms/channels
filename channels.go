@@ -331,7 +331,6 @@ func (channel *Channel) GetChannelsById(channelid int, tenantid string) (channel
 	}
 
 	GetSelectedChannelCateogry, err1 := CH.GetSelectedCategoryChannelById(channelid, channel.DB, tenantid)
-	fmt.Println("GetSelectedChannelCateogry:", GetSelectedChannelCateogry)
 
 	if err1 != nil {
 
@@ -352,10 +351,8 @@ func (channel *Channel) GetChannelsById(channelid int, tenantid string) (channel
 
 			id = append(id, convid)
 		}
-		fmt.Println("ids:", ids)
 
 		GetSelectedCategory, _ := CH.GetCategoriseById(id, channel.DB, tenantid)
-		fmt.Println("GetSelectedCategory:", GetSelectedCategory)
 
 		var addcat categories.Arrangecategories
 
