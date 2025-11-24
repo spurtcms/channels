@@ -1164,3 +1164,22 @@ func (channel *Channel) DefaultChannelList(endurl string, limit int, offset int,
 	return responedata, nil
 
 }
+
+func (channel *Channel) GetChannelByCategoryId(categoryid int) (TblChannel, error) {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return TblChannel{}, autherr
+	}
+
+	channellist, err := CH.GetChannelByCategoryId(categoryid, channel.DB)
+
+	if err != nil {
+
+		fmt.Println(err)
+	}
+
+	return channellist, nil
+}

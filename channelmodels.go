@@ -2,6 +2,7 @@ package channels
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/spurtcms/categories"
@@ -975,4 +976,14 @@ func (ch ChannelModel) GetChannelId(chname string, tenantid string, DB *gorm.DB)
 
 	return Id, nil
 
+}
+
+func (ch ChannelModel) GetChannelByCategoryId(categoryid int, DB *gorm.DB) (channel TblChannel, err error) {
+	categoryStr := strconv.Itoa(categoryid)
+	err = DB.Table("tbl_channels c").
+		Select("c.*").
+		Joins("inner join tbl_channel_categories cc on cc.channel_id = c.id").
+		Where("? = ANY(string_to_array(cc.category_id, ','))", categoryStr).
+		First(&channel).Error
+	return channel, err
 }
