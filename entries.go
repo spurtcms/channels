@@ -771,6 +771,8 @@ func (channel *Channel) CreateEntry(entriesrequired EntriesRequired, tenantid st
 
 	Entries.MembershipLevelId = entriesrequired.MembershipLevelId
 
+	Entries.TechStackLogos = entriesrequired.TechStackLogos
+
 	Entriess, err := EntryModel.CreateChannelEntry(Entries, channel.DB)
 
 	if err != nil {
@@ -897,6 +899,8 @@ func (channel *Channel) UpdateEntry(entriesrequired EntriesRequired, ChannelName
 	Entries.UserRoleId = entriesrequired.UserRoleId
 
 	Entries.MembershipLevelId = entriesrequired.MembershipLevelId
+
+	Entries.TechStackLogos = entriesrequired.TechStackLogos
 
 	err := EntryModel.UpdateChannelEntryDetails(&Entries, EntryId, channel.DB, tenantid)
 

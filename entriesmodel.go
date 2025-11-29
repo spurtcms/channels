@@ -81,6 +81,7 @@ type Tblchannelentries struct {
 	AccessType           string                       `gorm:"column:access_type"`
 	UserRoleId           int                          `gorm:"column:user_role_id"`
 	MembershipLevelId    int                          `gorm:"column:membership_level_id"`
+	TechStackLogos       string                       `gorm:"column:tech_stack_logos"`
 }
 type Author struct {
 	AuthorID         int       `json:"AuthorId" gorm:"column:id"`
@@ -182,6 +183,7 @@ type EntriesRequired struct {
 	AccessType         string
 	UserRoleId         int
 	MembershipLevelId  int
+	TechStackLogos     string
 }
 
 type RecentActivities struct {
@@ -967,7 +969,7 @@ func (ch EntriesModel) PublishQuery(chl *TblChannelEntries, id int, DB *gorm.DB,
 /*Update Channel Entry Details*/
 func (Ch EntriesModel) UpdateChannelEntryDetails(entry *TblChannelEntries, entryid int, DB *gorm.DB, tenantid string) error {
 
-	if err := DB.Table("tbl_channel_entries").Where("id=? and tenant_id=?", entryid, tenantid).UpdateColumns(map[string]interface{}{"title": entry.Title, "description": entry.Description, "slug": entry.Slug, "cover_image": entry.CoverImage, "thumbnail_image": entry.ThumbnailImage, "meta_title": entry.MetaTitle, "meta_description": entry.MetaDescription, "keyword": entry.Keyword, "categories_id": entry.CategoriesId, "related_articles": entry.RelatedArticles, "status": entry.Status, "modified_on": entry.ModifiedOn, "modified_by": entry.ModifiedBy, "user_id": entry.UserId, "channel_id": entry.ChannelId, "author": entry.Author, "create_time": entry.CreateTime, "published_time": entry.PublishedTime, "reading_time": entry.ReadingTime, "sort_order": entry.SortOrder, "tags": entry.Tags, "excerpt": entry.Excerpt, "image_alt_tag": entry.ImageAltTag, "order_index": entry.OrderIndex, "cta_id": entry.CtaId, "memebrship_level_ids": entry.MemebrshipLevelIds, "language_id": entry.LanguageId, "access_type": entry.AccessType, "user_role_id": entry.UserRoleId, "membership_level_id": entry.MembershipLevelId}).Error; err != nil {
+	if err := DB.Table("tbl_channel_entries").Where("id=? and tenant_id=?", entryid, tenantid).UpdateColumns(map[string]interface{}{"title": entry.Title, "description": entry.Description, "slug": entry.Slug, "cover_image": entry.CoverImage, "thumbnail_image": entry.ThumbnailImage, "meta_title": entry.MetaTitle, "meta_description": entry.MetaDescription, "keyword": entry.Keyword, "categories_id": entry.CategoriesId, "related_articles": entry.RelatedArticles, "status": entry.Status, "modified_on": entry.ModifiedOn, "modified_by": entry.ModifiedBy, "user_id": entry.UserId, "channel_id": entry.ChannelId, "author": entry.Author, "create_time": entry.CreateTime, "published_time": entry.PublishedTime, "reading_time": entry.ReadingTime, "sort_order": entry.SortOrder, "tags": entry.Tags, "excerpt": entry.Excerpt, "image_alt_tag": entry.ImageAltTag, "order_index": entry.OrderIndex, "cta_id": entry.CtaId, "memebrship_level_ids": entry.MemebrshipLevelIds, "language_id": entry.LanguageId, "access_type": entry.AccessType, "user_role_id": entry.UserRoleId, "membership_level_id": entry.MembershipLevelId, "tech_stack_logos": entry.TechStackLogos}).Error; err != nil {
 
 		return err
 	}

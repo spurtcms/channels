@@ -228,6 +228,7 @@ type TblChannelEntries struct {
 	AccessType         string    `gorm:"type:character varying"`
 	UserRoleId         int       `gorm:"type:integer"`
 	MembershipLevelId  int       `gorm:"type:integer"`
+	TechStackLogos     string    `gorm:"type:character varying"`
 }
 
 type TblChannelEntryField struct {
