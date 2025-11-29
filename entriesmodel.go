@@ -204,40 +204,42 @@ type EntriesModel struct {
 }
 
 type EntriesInputs struct {
-	Id                     int
-	Slug                   string
-	Limit                  int
-	Offset                 int
-	SortBy                 string
-	Order                  int
-	Keyword                string
-	Title                  string
-	Status                 string
-	ChannelId              int
-	CategoryId             int
-	CategorySlug           string
-	TenantId               string
-	SelectedCategoryFilter bool
-	ActiveEntriesonly      bool
-	GetMemberProfile       bool
-	GetAdditionalFields    bool
-	GetAuthorDetails       bool
-	GetLinkedCategories    bool
-	ContentHide            bool
-	MemberAccessControl    bool
-	MemberId               int
-	SectionFieldTypeId     int
-	MemberFieldTypeId      int
-	TotalCount             bool
-	Location               string
-	Experience             string
-	Posteddate             string
-	ChannelName            string
-	GetSavedEntryList      bool
-	Uuid                   string
-	SlugName               string
-	Profile                bool
+    Id                     int
+    Slug                   string
+    Limit                  int
+    Offset                 int
+    SortBy                 string
+    Order                  int
+    Keyword                string
+    Title                  string
+    Status                 string
+    ChannelId              int
+    CategoryId             int
+    CategorySlug           string
+    TenantId               string
+    SelectedCategoryFilter bool
+    ActiveEntriesonly      bool
+    GetMemberProfile       bool
+    GetAdditionalFields    bool
+    GetAuthorDetails       bool
+    GetLinkedCategories    bool
+    ContentHide            bool
+    MemberAccessControl    bool
+    MemberId               int
+    SectionFieldTypeId     int
+    MemberFieldTypeId      int
+    TotalCount             bool
+    Location               string
+    Experience             string
+    Posteddate             string
+    ChannelName            string
+    GetSavedEntryList      bool
+    Uuid                   string
+    SlugName               string
+    Profile                bool
+    UserRoleId             int
 }
+ 
 
 type JoinEntries struct {
 	Id                int `gorm:"column:entry_id"`
@@ -475,262 +477,271 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 
 // Fetching the channel entries data
 func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Channel, db *gorm.DB, joinData *[]JoinEntries, commoncount, totalCount *int64) error {
-
-	selectData := "en.*, en.id as entry_id,en.uuid as entry_uuid, en.created_on as entry_created_on,en.created_by as entry_created_by,en.modified_by as entry_modified_by,en.modified_on as entry_modified_on"
-
-	query := db.Distinct("en.id").Table("tbl_channel_entries as en").Joins("inner join tbl_channels as tc on tc.id = en.channel_id").Where("en.is_deleted = 0 and tc.is_deleted = 0")
-
-	if input.TotalCount {
-
-		if err := query.Count(totalCount).Error; err != nil {
-
-			return err
-		}
-	}
-
-	if channel.PermissionEnable && (channel.Auth.RoleId != 1 && channel.Auth.RoleId != 2) {
-
-		query = query.Where("channel_id in (select id from tbl_channels where channel_name in (select display_name from tbl_module_permissions inner join tbl_modules on tbl_modules.id = tbl_module_permissions.module_id inner join tbl_role_permissions on tbl_role_permissions.permission_id = tbl_module_permissions.id where role_id =(?) and tbl_modules.module_name='Entries' )) ", channel.Auth.RoleId)
-
-	}
-
-	if Ch.Dataaccess == 1 {
-
-		query = query.Where("en.created_by=?", Ch.Userid)
-
-	}
-
-	if input.TenantId != "" {
-
-		query = query.Where("en.tenant_id=?", input.TenantId)
-	}
-
-	if input.ChannelId != 0 {
-
-		query = query.Where("en.channel_id = ?", input.ChannelId)
-	}
-
-	if !input.Profile {
-		query = query.Where("en.access_type = ? OR en.access_type IS NULL", "every_one")
-	}
-	if input.ChannelName != "" {
-		query = query.Where("en.channel_id IN (SELECT id FROM tbl_channels WHERE channel_name = ? AND is_deleted = 0)", input.ChannelName)
-	}
-	if input.SlugName != "" {
-		query = query.Where("en.channel_id IN (SELECT id FROM tbl_channels WHERE slug_name = ? AND is_deleted = 0)", input.SlugName)
-	}
-	if input.Status != "" {
-
-		status, _ := strconv.Atoi(input.Status)
-
-		query = query.Where("en.status = ?", status)
-	}
-
-	if input.ActiveEntriesonly {
-
-		query = query.Where("en.is_active = ?", 1)
-	}
-
-	if input.Keyword != "" {
-
-		query = query.Where("TRIM(LOWER(en.title)) LIKE TRIM(LOWER(?))", "%"+input.Keyword+"%")
-	}
-
-	if input.Location != "" {
-		query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef ON ef.channel_entry_id = en.id").
-			Where("TRIM(LOWER(ef.field_value)) LIKE TRIM(LOWER(?))", "%"+strings.ToLower(input.Location)+"%")
-	}
-
-	// Filter by Experience (Fix: Use 'ef2' alias to prevent duplicate alias issue)
-	if input.Experience != "" {
-		query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef2 ON ef2.channel_entry_id = en.id").
-			Where("TRIM(LOWER(ef2.field_value)) = TRIM(LOWER(?))", input.Experience) // Exact match
-	}
-
-	if input.Posteddate != "" {
-		now := time.Now()
-		startOfWeek := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local).AddDate(0, 0, -int(now.Weekday())+1)
-		startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.Local)
-		startOfYear := time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.Local)
-
-		switch strings.ToLower(input.Posteddate) {
-		case "today":
-			query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef3 ON ef3.channel_entry_id = en.id").
-				Where("(ef3.field_value) = ?", now.Format("2006-01-02"))
-
-		case "this week":
-			fmt.Println(input.Posteddate, "postedate")
-			query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef3 ON ef3.channel_entry_id = en.id").
-				Where(" ef3.field_value>=?  AND ef3.field_value<=? ", startOfWeek.Format("2006-01-02"), now.Format("2006-01-02"))
-
-		case "this month":
-			query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef3 ON ef3.channel_entry_id = en.id").
-				Where("ef3.field_value>=?  AND ef3.field_value<=?", startOfMonth.Format("2006-01-02"), now.Format("2006-01-02"))
-
-		case "this year":
-			query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef3 ON ef3.channel_entry_id = en.id").
-				Where("ef3.field_value>=?  AND ef3.field_value<=?", startOfYear.Format("2006-01-02"), now.Format("2006-01-02"))
-
-		default:
-			fmt.Println("Invalid posted date filter:", input.Posteddate) // Optional logging
-		}
-	}
-
-	if input.Title != "" {
-
-		query = query.Where("en.title = ?", input.Title)
-	}
-
-	var joinCondition, profileCondition string
-
-	if input.CategoryId != 0 || input.CategorySlug != "" {
-
-		if db.Config.Dialector.Name() == "mysql" {
-
-			joinCondition = `find_in_set(cat.id,en.categories_id) > 0`
-
-		} else if db.Config.Dialector.Name() == "postgres" {
-
-			joinCondition = `cat.id = any(string_to_array(en.categories_id,',')::Integer[])`
-
-		}
-	}
-
-	if input.GetMemberProfile {
-
-		if db.Config.Dialector.Name() == "mysql" {
-
-			profileCondition = `find_in_set(tmp.member_id,cef.field_value) > 0`
-
-		} else if db.Config.Dialector.Name() == "postgres" {
-
-			profileCondition = `tmp.member_id = any(string_to_array(cef.field_value,',')::Integer[])`
-
-		}
-	}
-
-	if input.CategoryId != 0 {
-
-		switch {
-
-		case input.SelectedCategoryFilter:
-
-			query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.id = ?", input.CategoryId)
-
-		default:
-
-			subQuery := db.Table("tbl_categories as cat").Select("cat.id").Where("cat.is_deleted = 0 and tenant_id = ? and cat.id = (?) or cat.parent_id in (?)", input.TenantId, input.CategoryId, input.CategoryId)
-
-			query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.id in (?)", subQuery)
-		}
-
-	} else if input.CategorySlug != "" {
-
-		switch {
-
-		case input.SelectedCategoryFilter:
-
-			query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.category_slug = ?", input.CategorySlug)
-
-		default:
-
-			innerSubQuery := db.Table("tbl_categories as cat").Select("cat.id").Where("cat.is_deleted = 0 and tenant_id = ? and cat.category_slug = ?", input.TenantId, input.CategorySlug)
-
-			subQuery := db.Table("tbl_categories as cat").Select("cat.id").Where("cat.is_deleted = 0 and cat.id = (?) or cat.parent_id in (?)", innerSubQuery, innerSubQuery)
-
-			query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.id in (?)", subQuery)
-		}
-
-	}
-
-	if input.GetMemberProfile {
-
-		selectData += ",mj.*,mj.created_by as prof_created_by,mj.created_on as prof_created_on,mj.modified_on as prof_modified_on,mj.modified_by as prof_modified_by,mj.id as prof_id,mj.is_deleted as prof_is_deleted,mj.deleted_on as prof_deleted_on,mj.deleted_by as prof_deleted_by,mj.storage_type as prof_storage_type,mj.tenant_id as prof_tenant_id"
-
-		joinSubQuery := db.Select("tmp.*,cef.channel_entry_id,cef.field_value").Table("tbl_channel_entry_fields as cef").Joins("inner join tbl_fields tf on tf.id = cef.field_id").Joins("inner join tbl_member_profiles tmp on " + profileCondition).Where("tmp.is_deleted=0 and tf.is_deleted=0")
-
-		query = query.Joins("left join (?) mj on mj.channel_entry_id = en.id", joinSubQuery)
-	}
-
-	if input.GetAuthorDetails {
-
-		selectData += ", tu.*, " +
-			"tu.id as author_id, " +
-			"tu.is_active as author_active, " +
-			"tu.created_on as author_created_on, " +
-			"tu.created_by as author_created_by, " +
-			"tu.modified_on as author_modified_on, " +
-			"tu.modified_by as author_modified_by, " +
-			"tu.deleted_on as author_deleted_on, " +
-			"tu.deleted_by as author_deleted_by, " +
-			"tu.is_deleted as author_is_deleted, " +
-			"tu.storage_type as author_storage_type, " +
-			"tu.tenant_id as user_tenant_id, " +
-			"tu.profile_image_path as author_profile_image_path, " +
-			"tr.name as role_name"
-
-		query = query.Select(selectData).
-			Joins("LEFT JOIN tbl_users AS tu ON tu.id = en.created_by").
-			Joins("LEFT JOIN tbl_roles AS tr ON tr.id = tu.role_id").
-			Where("tu.is_deleted = 0")
-	}
-
-	if input.GetSavedEntryList && input.MemberId != 0 {
-		selectData += ", se.entry_id as saved_entry_id, true AS saved_flag"
-		query = query.Joins("INNER JOIN tbl_saved_entries AS se ON se.entry_id = en.id").
-			Where("se.user_id = ? AND se.tenant_id = ? AND se.is_deleted = 0", input.MemberId, input.TenantId)
-	} else if input.MemberId != 0 {
-		// Fetch all entries with savedFlag
-		selectData += ", CASE WHEN se.entry_id IS NOT NULL THEN true ELSE false END AS saved_flag"
-		query = query.Joins("LEFT JOIN tbl_saved_entries AS se ON se.entry_id = en.id AND se.user_id = ? AND se.tenant_id = ? AND se.is_deleted = 0", input.MemberId, input.TenantId)
-	}
-	if input.MemberAccessControl && input.MemberId != 0 && input.ContentHide {
-
-		restrictQuery := db.Select("acp.entry_id").Table("tbl_access_control_pages as acp").Joins("inner join tbl_access_control_user_groups as acu on acu.id = acp.access_control_user_group_id").Joins("inner join tbl_members as tm on tm.member_group_id = acu.member_group_id").Where("tm.is_deleted = 0 and tm.id = ? and acu.is_deleted= 0 and acp.is_deleted = 0", input.MemberId)
-
-		query = query.Where("en.id not in (?)", restrictQuery)
-	}
-
-	if err := query.Count(commoncount).Error; err != nil {
-
-		return err
-	}
-
-	if input.SortBy != "" {
-
-		if input.Order > 0 {
-
-			query = query.Order(input.SortBy + " desc")
-
-		} else {
-
-			query = query.Order(input.SortBy)
-		}
-
-	} else {
-
-		query = query.Order("en.id desc")
-	}
-
-	if input.Limit > 0 {
-
-		query = query.Limit(input.Limit)
-	}
-
-	if input.Offset > -1 {
-
-		query = query.Offset(input.Offset)
-	}
-
-	if err := query.Select(selectData).Find(&joinData).Error; err != nil {
-
-		return err
-
-	}
-
-	return nil
-
+ 
+    selectData := "en.*, en.id as entry_id,en.uuid as entry_uuid, en.created_on as entry_created_on,en.created_by as entry_created_by,en.modified_by as entry_modified_by,en.modified_on as entry_modified_on"
+ 
+    query := db.Distinct("en.id").Table("tbl_channel_entries as en").Joins("inner join tbl_channels as tc on tc.id = en.channel_id").Where("en.is_deleted = 0 and tc.is_deleted = 0")
+ 
+    if input.TotalCount {
+ 
+        if err := query.Count(totalCount).Error; err != nil {
+ 
+            return err
+        }
+    }
+ 
+    if channel.PermissionEnable && (channel.Auth.RoleId != 1 && channel.Auth.RoleId != 2) {
+ 
+        query = query.Where("channel_id in (select id from tbl_channels where channel_name in (select display_name from tbl_module_permissions inner join tbl_modules on tbl_modules.id = tbl_module_permissions.module_id inner join tbl_role_permissions on tbl_role_permissions.permission_id = tbl_module_permissions.id where role_id =(?) and tbl_modules.module_name='Entries' )) ", channel.Auth.RoleId)
+ 
+    }
+ 
+    if Ch.Dataaccess == 1 {
+ 
+        query = query.Where("en.created_by=?", Ch.Userid)
+ 
+    }
+ 
+    if input.TenantId != "" {
+ 
+        query = query.Where("en.tenant_id=?", input.TenantId)
+    }
+ 
+    if input.ChannelId != 0 {
+ 
+        query = query.Where("en.channel_id = ?", input.ChannelId)
+    }
+ 
+    if !input.Profile {
+        query = query.Where("en.access_type = ? OR en.access_type IS NULL", "every_one")
+    }
+    if input.ChannelName != "" {
+        query = query.Where("en.channel_id IN (SELECT id FROM tbl_channels WHERE channel_name = ? AND is_deleted = 0)", input.ChannelName)
+    }
+    if input.SlugName != "" {
+        query = query.Where("en.channel_id IN (SELECT id FROM tbl_channels WHERE slug_name = ? AND is_deleted = 0)", input.SlugName)
+    }
+    if input.Status != "" {
+ 
+        status, _ := strconv.Atoi(input.Status)
+ 
+        query = query.Where("en.status = ?", status)
+    }
+ 
+    if input.ActiveEntriesonly {
+ 
+        query = query.Where("en.is_active = ?", 1)
+    }
+ 
+    if input.Keyword != "" {
+ 
+        query = query.Where("TRIM(LOWER(en.title)) LIKE TRIM(LOWER(?))", "%"+input.Keyword+"%")
+    }
+ 
+    if !input.Profile {
+        query = query.Where("en.access_type = ? OR en.access_type IS NULL", "every_one")
+    }
+ 
+    if input.UserRoleId != 2 {
+        query = query.Where("en.user_role_id = ? OR en.user_role_id = 0", 1)
+    }
+ 
+    if input.Location != "" {
+        query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef ON ef.channel_entry_id = en.id").
+            Where("TRIM(LOWER(ef.field_value)) LIKE TRIM(LOWER(?))", "%"+strings.ToLower(input.Location)+"%")
+    }
+ 
+    // Filter by Experience (Fix: Use 'ef2' alias to prevent duplicate alias issue)
+    if input.Experience != "" {
+        query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef2 ON ef2.channel_entry_id = en.id").
+            Where("TRIM(LOWER(ef2.field_value)) = TRIM(LOWER(?))", input.Experience) // Exact match
+    }
+ 
+    if input.Posteddate != "" {
+        now := time.Now()
+        startOfWeek := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local).AddDate(0, 0, -int(now.Weekday())+1)
+        startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.Local)
+        startOfYear := time.Date(now.Year(), 1, 1, 0, 0, 0, 0, time.Local)
+ 
+        switch strings.ToLower(input.Posteddate) {
+        case "today":
+            query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef3 ON ef3.channel_entry_id = en.id").
+                Where("(ef3.field_value) = ?", now.Format("2006-01-02"))
+ 
+        case "this week":
+            fmt.Println(input.Posteddate, "postedate")
+            query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef3 ON ef3.channel_entry_id = en.id").
+                Where(" ef3.field_value>=?  AND ef3.field_value<=? ", startOfWeek.Format("2006-01-02"), now.Format("2006-01-02"))
+ 
+        case "this month":
+            query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef3 ON ef3.channel_entry_id = en.id").
+                Where("ef3.field_value>=?  AND ef3.field_value<=?", startOfMonth.Format("2006-01-02"), now.Format("2006-01-02"))
+ 
+        case "this year":
+            query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef3 ON ef3.channel_entry_id = en.id").
+                Where("ef3.field_value>=?  AND ef3.field_value<=?", startOfYear.Format("2006-01-02"), now.Format("2006-01-02"))
+ 
+        default:
+            fmt.Println("Invalid posted date filter:", input.Posteddate) // Optional logging
+        }
+    }
+ 
+    if input.Title != "" {
+ 
+        query = query.Where("en.title = ?", input.Title)
+    }
+ 
+    var joinCondition, profileCondition string
+ 
+    if input.CategoryId != 0 || input.CategorySlug != "" {
+ 
+        if db.Config.Dialector.Name() == "mysql" {
+ 
+            joinCondition = `find_in_set(cat.id,en.categories_id) > 0`
+ 
+        } else if db.Config.Dialector.Name() == "postgres" {
+ 
+            joinCondition = `cat.id = any(string_to_array(en.categories_id,',')::Integer[])`
+ 
+        }
+    }
+ 
+    if input.GetMemberProfile {
+ 
+        if db.Config.Dialector.Name() == "mysql" {
+ 
+            profileCondition = `find_in_set(tmp.member_id,cef.field_value) > 0`
+ 
+        } else if db.Config.Dialector.Name() == "postgres" {
+ 
+            profileCondition = `tmp.member_id = any(string_to_array(cef.field_value,',')::Integer[])`
+ 
+        }
+    }
+ 
+    if input.CategoryId != 0 {
+ 
+        switch {
+ 
+        case input.SelectedCategoryFilter:
+ 
+            query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.id = ?", input.CategoryId)
+ 
+        default:
+ 
+            subQuery := db.Table("tbl_categories as cat").Select("cat.id").Where("cat.is_deleted = 0 and tenant_id = ? and cat.id = (?) or cat.parent_id in (?)", input.TenantId, input.CategoryId, input.CategoryId)
+ 
+            query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.id in (?)", subQuery)
+        }
+ 
+    } else if input.CategorySlug != "" {
+ 
+        switch {
+ 
+        case input.SelectedCategoryFilter:
+ 
+            query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.category_slug = ?", input.CategorySlug)
+ 
+        default:
+ 
+            innerSubQuery := db.Table("tbl_categories as cat").Select("cat.id").Where("cat.is_deleted = 0 and tenant_id = ? and cat.category_slug = ?", input.TenantId, input.CategorySlug)
+ 
+            subQuery := db.Table("tbl_categories as cat").Select("cat.id").Where("cat.is_deleted = 0 and cat.id = (?) or cat.parent_id in (?)", innerSubQuery, innerSubQuery)
+ 
+            query = query.Joins("inner join tbl_categories as cat on "+joinCondition+" and cat.id in (?)", subQuery)
+        }
+ 
+    }
+ 
+    if input.GetMemberProfile {
+ 
+        selectData += ",mj.*,mj.created_by as prof_created_by,mj.created_on as prof_created_on,mj.modified_on as prof_modified_on,mj.modified_by as prof_modified_by,mj.id as prof_id,mj.is_deleted as prof_is_deleted,mj.deleted_on as prof_deleted_on,mj.deleted_by as prof_deleted_by,mj.storage_type as prof_storage_type,mj.tenant_id as prof_tenant_id"
+ 
+        joinSubQuery := db.Select("tmp.*,cef.channel_entry_id,cef.field_value").Table("tbl_channel_entry_fields as cef").Joins("inner join tbl_fields tf on tf.id = cef.field_id").Joins("inner join tbl_member_profiles tmp on " + profileCondition).Where("tmp.is_deleted=0 and tf.is_deleted=0")
+ 
+        query = query.Joins("left join (?) mj on mj.channel_entry_id = en.id", joinSubQuery)
+    }
+ 
+    if input.GetAuthorDetails {
+ 
+        selectData += ", tu.*, " +
+            "tu.id as author_id, " +
+            "tu.is_active as author_active, " +
+            "tu.created_on as author_created_on, " +
+            "tu.created_by as author_created_by, " +
+            "tu.modified_on as author_modified_on, " +
+            "tu.modified_by as author_modified_by, " +
+            "tu.deleted_on as author_deleted_on, " +
+            "tu.deleted_by as author_deleted_by, " +
+            "tu.is_deleted as author_is_deleted, " +
+            "tu.storage_type as author_storage_type, " +
+            "tu.tenant_id as user_tenant_id, " +
+            "tu.profile_image_path as author_profile_image_path, " +
+            "tr.name as role_name"
+ 
+        query = query.Select(selectData).
+            Joins("LEFT JOIN tbl_users AS tu ON tu.id = en.created_by").
+            Joins("LEFT JOIN tbl_roles AS tr ON tr.id = tu.role_id").
+            Where("tu.is_deleted = 0")
+    }
+ 
+    if input.GetSavedEntryList && input.MemberId != 0 {
+        selectData += ", se.entry_id as saved_entry_id, true AS saved_flag"
+        query = query.Joins("INNER JOIN tbl_saved_entries AS se ON se.entry_id = en.id").
+            Where("se.user_id = ? AND se.tenant_id = ? AND se.is_deleted = 0", input.MemberId, input.TenantId)
+    } else if input.MemberId != 0 {
+        // Fetch all entries with savedFlag
+        selectData += ", CASE WHEN se.entry_id IS NOT NULL THEN true ELSE false END AS saved_flag"
+        query = query.Joins("LEFT JOIN tbl_saved_entries AS se ON se.entry_id = en.id AND se.user_id = ? AND se.tenant_id = ? AND se.is_deleted = 0", input.MemberId, input.TenantId)
+    }
+    if input.MemberAccessControl && input.MemberId != 0 && input.ContentHide {
+ 
+        restrictQuery := db.Select("acp.entry_id").Table("tbl_access_control_pages as acp").Joins("inner join tbl_access_control_user_groups as acu on acu.id = acp.access_control_user_group_id").Joins("inner join tbl_members as tm on tm.member_group_id = acu.member_group_id").Where("tm.is_deleted = 0 and tm.id = ? and acu.is_deleted= 0 and acp.is_deleted = 0", input.MemberId)
+ 
+        query = query.Where("en.id not in (?)", restrictQuery)
+    }
+ 
+    if err := query.Count(commoncount).Error; err != nil {
+ 
+        return err
+    }
+ 
+    if input.SortBy != "" {
+ 
+        if input.Order > 0 {
+ 
+            query = query.Order(input.SortBy + " desc")
+ 
+        } else {
+ 
+            query = query.Order(input.SortBy)
+        }
+ 
+    } else {
+ 
+        query = query.Order("en.id desc")
+    }
+ 
+    if input.Limit > 0 {
+ 
+        query = query.Limit(input.Limit)
+    }
+ 
+    if input.Offset > -1 {
+ 
+        query = query.Offset(input.Offset)
+    }
+ 
+    if err := query.Select(selectData).Find(&joinData).Error; err != nil {
+ 
+        return err
+ 
+    }
+ 
+    return nil
+ 
 }
+ 
 
 func (ch EntriesModel) MemberAccessCheck(memberid int, DB *gorm.DB, tenantid string) ([]int, []int) {
 
