@@ -139,6 +139,7 @@ type IndivEntriesReq struct {
 	ImageUrlPath      string
 	FieldTypeId       int
 	MemberFieldTypeId int
+	NoDirectAccess   bool
 }
 
 type SEODetails struct {
@@ -344,8 +345,6 @@ var EntryModel EntriesModel
 func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, categoryid string, createonly bool, DB *gorm.DB, tenantid string) (chentry []Tblchannelentries, chentcount int64, err error) {
 
 	query := DB.Model(TblChannelEntries{}).Select("tbl_channel_entries.*,tbl_categories.id AS cat_id,tbl_categories.category_name AS cat_name,tbl_categories.image_path AS cat_image_path,tbl_categories.parent_id AS cat_parent_id,tbl_categories.created_on AS cat_created_on,tbl_categories.modified_on AS cat_modified_on,tbl_users.username,tbl_users.first_name,tbl_users.last_name,tbl_users.profile_image_path,tbl_channels.channel_name,tbl_channels.slug_name as channel_slug").Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Joins("left join tbl_channels on tbl_channels.id = tbl_channel_entries.channel_id").Where("tbl_channel_entries.is_deleted=0 and tbl_channel_entries.tenant_id=?", tenantid)
-
-	
 	if filter.Sorting == "lastUpdated" {
 
 		query = query.Order("modified_on desc")
@@ -368,14 +367,12 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 
 	}
 
-
 	if !filter.Categorys {
 		query = query.Joins(`
 			LEFT JOIN tbl_categories 
 			ON tbl_categories.id::text = split_part(tbl_channel_entries.categories_id, ',', 1)
 		`)
 	}
-	
 
 	if channel.PermissionEnable && (channel.Auth.RoleId != 1 && channel.Auth.RoleId != 2) {
 
@@ -406,12 +403,8 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 	}
 
 	if filter.LanguageId != 0 {
-
-		if filter.LanguageId == 1 {
-			query = query.Where("tbl_channel_entries.language_id=? or tbl_channel_entries.language_id is null", filter.LanguageId)
-		} else {
-			query = query.Where("tbl_channel_entries.language_id=?", filter.LanguageId)
-		}
+		query = query.Where("? = ANY(string_to_array(tbl_channel_entries.categories_id, ','))",
+			strconv.Itoa(filter.LanguageId))
 	}
 
 	if filter.UserName != "" {
@@ -475,7 +468,6 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 
 		query.Limit(filter.Limit).Offset(filter.Offset).Order("tbl_channel_entries.order_index asc, tbl_channel_entries.id asc").Find(&chentry)
 
-
 	} else {
 
 		query.Find(&chentry).Count(&chentcount)
@@ -526,6 +518,11 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 	if !input.Profile {
 		query = query.Where("en.access_type = ? OR en.access_type IS NULL", "every_one")
 	}
+
+	if input.Profile {
+		query = query.Where("en.access_type <> ?", "no_direct_access")
+	}
+
 	if input.ChannelName != "" {
 		query = query.Where("en.channel_id IN (SELECT id FROM tbl_channels WHERE channel_name = ? AND is_deleted = 0)", input.ChannelName)
 	}
@@ -547,10 +544,6 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 	if input.Keyword != "" {
 
 		query = query.Where("TRIM(LOWER(en.title)) LIKE TRIM(LOWER(?))", "%"+input.Keyword+"%")
-	}
-
-	if !input.Profile {
-		query = query.Where("en.access_type = ? OR en.access_type IS NULL", "every_one")
 	}
 
 	if input.UserRoleId != 2 {
@@ -850,6 +843,11 @@ func (Ch EntriesModel) GetChannelEntryById(ent IndivEntriesReq, DB *gorm.DB, ten
 	query = query.Preload("TblChannelEntryField", func(db *gorm.DB) *gorm.DB {
 		return db.Select("tbl_channel_entry_fields.*,tbl_fields.field_type_id").Joins("inner join tbl_fields on tbl_fields.Id = tbl_channel_entry_fields.field_id")
 	})
+
+	if ent.NoDirectAccess{
+		query = query.Where("tbl_channel_entries.access_type <> ?", "no_direct_access")
+
+	}
 
 	query.Find(&tblchanentry)
 

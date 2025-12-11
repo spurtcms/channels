@@ -61,6 +61,9 @@ type Tblchannel struct {
 	LastName           string              `gorm:"<-:false"`
 	NameString         string              `gorm:"<-:false"`
 	ImagePath          string              `gorm:"column:image_path"`
+	SeoTitle           string              `gorm:"column:seo_title"`
+	SeoDescription     string              `gorm:"column:seo_description"`
+	SeoKeyword         string              `gorm:"column:seo_keyword"`
 }
 
 type tblchannelcategory struct {
@@ -169,6 +172,9 @@ type TblChannel struct {
 	TenantId           string    `gorm:"type:character varying"`
 	ChannelType        string    `gorm:"type:character varying"`
 	ImagePath          string    `gorm:"type:character varying"`
+	SeoTitle           string    `gorm:"type:character varying"`
+	SeoDescription     string    `gorm:"type:character varying"`
+	SeoKeyword         string    `gorm:"type:character varying"`
 }
 
 type TblChannelCategorie struct {
@@ -329,6 +335,9 @@ type ChannelCreate struct {
 	CreatedBy          int
 	CollectionCount    int
 	ImagePath          string
+	SeoTitle           string
+	SeoDescription     string
+	SeoKeyword         string
 }
 
 type ChannelAddtionalField struct {
@@ -472,7 +481,9 @@ func (Ch ChannelModel) Channellist(DB *gorm.DB, channel *Channel, inputs Channel
 /*Craete channel */
 func (Ch ChannelModel) CreateChannel(chn *TblChannel, DB *gorm.DB) (TblChannel, error) {
 
-	if err := DB.Table("tbl_channels").Create(&chn).Error; err != nil {
+	fmt.Println("CreateChannel::")
+
+	if err := DB.Debug().Table("tbl_channels").Create(&chn).Error; err != nil {
 
 		return TblChannel{}, err
 
@@ -671,7 +682,7 @@ func (Ch ChannelModel) GetAllField(DB *gorm.DB, tenantid string) (channel []TblF
 /*Update Channel Details*/
 func (Ch ChannelModel) UpdateChannelDetails(chn *TblChannel, id int, DB *gorm.DB, TenantId string) error {
 
-	if err := DB.Table("tbl_channels").Where("id=? and tenant_id=?", id, TenantId).UpdateColumns(map[string]interface{}{"channel_name": chn.ChannelName, "slug_name": chn.SlugName, "channel_unique_id": chn.ChannelUniqueId, "channel_description": chn.ChannelDescription, "modified_by": chn.ModifiedBy, "modified_on": chn.ModifiedOn}).Error; err != nil {
+	if err := DB.Table("tbl_channels").Where("id=? and tenant_id=?", id, TenantId).UpdateColumns(map[string]interface{}{"channel_name": chn.ChannelName, "slug_name": chn.SlugName, "channel_unique_id": chn.ChannelUniqueId, "channel_description": chn.ChannelDescription, "seo_title": chn.SeoTitle, "seo_description": chn.SeoDescription, "seo_keyword": chn.SeoKeyword, "modified_by": chn.ModifiedBy, "modified_on": chn.ModifiedOn}).Error; err != nil {
 
 		return err
 	}
