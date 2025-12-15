@@ -400,7 +400,7 @@ func TestDeleteChannelPermissions(t *testing.T) {
 
 	if permisison {
 
-		err := channel.DeleteChannelPermissions(3,TenantId)
+		err := channel.DeleteChannelPermissions(3, TenantId)
 
 		if err != nil {
 
@@ -538,7 +538,7 @@ func TestEditChannel(t *testing.T) {
 
 	if permisison {
 
-		err := channel.EditChannel("go", "", "about golang", 1, 3, []string{"1", "2"}, TenantId)
+		err := channel.EditChannel("go", "", "about golang", "", "", "", 1, 3, []string{"1", "2"}, TenantId)
 
 		if err != nil {
 

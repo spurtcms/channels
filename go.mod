@@ -5,14 +5,14 @@ go 1.20
 require (
 	github.com/google/uuid v1.6.0
 	github.com/spurtcms/auth v0.0.37
-	github.com/spurtcms/categories v0.0.23
+	github.com/spurtcms/categories v0.0.32
 	github.com/spurtcms/member v0.0.23
 	github.com/spurtcms/member-access v0.0.1
 	github.com/spurtcms/team v0.0.33
-	github.com/spurtcms/team-roles v0.0.21
+	github.com/spurtcms/team-roles v0.0.23
 	gorm.io/datatypes v1.2.0
-	gorm.io/driver/postgres v1.5.7
-	gorm.io/gorm v1.25.9
+	gorm.io/driver/postgres v1.5.9
+	gorm.io/gorm v1.25.10
 )
 
 require (
