@@ -369,6 +369,8 @@ func (channel *Channel) GetChannelsById(channelid int, tenantid string) (channel
 
 			individual.Category = CategoriesArrange.CategoryName
 
+			individual.CategorySlug = CategoriesArrange.CategorySlug
+
 			individualid = append(individualid, individual)
 
 		}
