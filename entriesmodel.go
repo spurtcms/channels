@@ -83,6 +83,7 @@ type Tblchannelentries struct {
 	MembershipLevelId    int                          `gorm:"column:membership_level_id"`
 	TechStackLogos       string                       `gorm:"column:tech_stack_logos"`
 	TagsArray            []string                     `gorm:"-"`
+	Categoriesnew        []categories.TblCategories   `gorm:"-"`
 }
 type Author struct {
 	AuthorID         int       `json:"AuthorId" gorm:"column:id"`
