@@ -141,6 +141,7 @@ type IndivEntriesReq struct {
 	ImageUrlPath      string
 	FieldTypeId       int
 	MemberFieldTypeId int
+	NoDirectAccess    bool
 }
 
 type SEODetails struct {
@@ -241,6 +242,7 @@ type EntriesInputs struct {
 	SlugName               string
 	Profile                bool
 	UserRoleId             int
+	NoDirectAccess         bool
 }
 
 type JoinEntries struct {
@@ -504,7 +506,11 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 		query = query.Where("channel_id in (select id from tbl_channels where channel_name in (select display_name from tbl_module_permissions inner join tbl_modules on tbl_modules.id = tbl_module_permissions.module_id inner join tbl_role_permissions on tbl_role_permissions.permission_id = tbl_module_permissions.id where role_id =(?) and tbl_modules.module_name='Entries' )) ", channel.Auth.RoleId)
 
 	}
+	if input.NoDirectAccess {
 
+		query = query.Debug().Where("en.access_type <> ?", "no_direct_access")
+
+	}
 	if Ch.Dataaccess == 1 {
 
 		query = query.Where("en.created_by=?", Ch.Userid)
@@ -522,7 +528,12 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 	}
 
 	if !input.Profile {
+
 		query = query.Where("en.access_type = ? OR en.access_type IS NULL", "every_one")
+	}
+
+	if input.UserRoleId != 2 {
+		query = query.Where("en.user_role_id = ? OR en.user_role_id = 0", 1)
 	}
 	if input.ChannelName != "" {
 		query = query.Where("en.channel_id IN (SELECT id FROM tbl_channels WHERE channel_name = ? AND is_deleted = 0)", input.ChannelName)
@@ -545,14 +556,6 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 	if input.Keyword != "" {
 
 		query = query.Where("TRIM(LOWER(en.title)) LIKE TRIM(LOWER(?))", "%"+input.Keyword+"%")
-	}
-
-	if !input.Profile {
-		query = query.Where("en.access_type = ? OR en.access_type IS NULL", "every_one")
-	}
-
-	if input.UserRoleId != 2 {
-		query = query.Where("en.user_role_id = ? OR en.user_role_id = 0", 1)
 	}
 
 	if input.Location != "" {
