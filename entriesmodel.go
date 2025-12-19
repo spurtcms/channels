@@ -407,14 +407,9 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 	}
 
 	if filter.LanguageId != 0 {
-
-		if filter.LanguageId == 1 {
-			query = query.Where("tbl_channel_entries.language_id=? or tbl_channel_entries.language_id is null", filter.LanguageId)
-		} else {
-			query = query.Where("tbl_channel_entries.language_id=?", filter.LanguageId)
-		}
+		query = query.Where("? = ANY(string_to_array(tbl_channel_entries.categories_id, ','))",
+			strconv.Itoa(filter.LanguageId))
 	}
-
 	if filter.UserName != "" {
 
 		query = query.Where("LOWER(TRIM(tbl_users.username)) LIKE LOWER(TRIM(?))", "%"+filter.UserName+"%")
