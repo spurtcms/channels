@@ -91,7 +91,7 @@ func (channel *Channel) CreateChannel(channelcreate ChannelCreate, moduleid int,
 	cchannel.ChannelName = channelcreate.ChannelName
 	cchannel.ChannelUniqueId = channelcreate.ChannelUniqueId
 	cchannel.ChannelDescription = channelcreate.ChannelDescription
-	cchannel.SlugName = strings.ToLower(strings.ReplaceAll(channelcreate.ChannelName, " ", "-"))
+	cchannel.SlugName = strings.ToLower(strings.ReplaceAll(channelcreate.SlugName, " ", "-"))
 	cchannel.IsActive = 1
 	cchannel.CreatedBy = channelcreate.CreatedBy
 	cchannel.TenantId = tenantid
@@ -1193,4 +1193,118 @@ func (channel *Channel) GetChannelByCategoryId(categoryid int) (TblChannel, erro
 	}
 
 	return channellist, nil
+}
+
+func (channel *Channel) CheckDupliateRoute(productid int, slug string, modulename string, tenantid string) (bool, error) {
+
+	channeldet, err := CH.CheckDupliateRoute(productid, slug, modulename, channel.DB, tenantid)
+
+	if err != nil {
+		return false, err
+	}
+	if channeldet.Id == 0 {
+
+		return false, err
+	}
+
+	return true, nil
+
+}
+func (channel *Channel) CreateGenetricRouteslug(data TblRouteSlugs) (TblRouteSlugs, error) {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return TblRouteSlugs{}, autherr
+	}
+
+	var Routeslugdata TblRouteSlugs
+
+	Routeslugdata.ProductId = data.ProductId
+	Routeslugdata.Slug = data.Slug
+	Routeslugdata.TenantId = data.TenantId
+	Routeslugdata.ModuleName = data.ModuleName
+	Routeslugdata.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	Routedata, err := CH.CreateGenetricRouteslug(&Routeslugdata, channel.DB)
+
+	if err != nil {
+
+		fmt.Println(err)
+	}
+	return Routedata, err
+}
+
+func (channel *Channel) UpdateGenericRouteslug(data TblRouteSlugs) error {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return autherr
+	}
+
+	var Routeslugdata TblRouteSlugs
+
+	Routeslugdata.ProductId = data.ProductId
+	Routeslugdata.Slug = strings.ReplaceAll(strings.ToLower(data.Slug), " ", "-")
+	Routeslugdata.TenantId = data.TenantId
+	Routeslugdata.ModuleName = data.ModuleName
+	Routeslugdata.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	Routeslugdata.ModifiedBy = data.ModifiedBy
+
+	err := CH.UpdateGenericRouteslug(&Routeslugdata, channel.DB)
+
+	if err != nil {
+
+		fmt.Println(err)
+	}
+	return err
+}
+
+// Delete route slug
+
+func (channel *Channel) DeleteGenericRouteslug(ProductId int, TenantId string, userid int) error {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return autherr
+	}
+
+	var Routeslugdata TblRouteSlugs
+
+	Routeslugdata.ProductId = ProductId
+	Routeslugdata.TenantId = TenantId
+	Routeslugdata.DeletedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	Routeslugdata.DeletedBy = userid
+
+	err := CH.DeleteGenericRouteslug(&Routeslugdata, channel.DB)
+
+	if err != nil {
+
+		fmt.Println(err)
+	}
+	return err
+}
+
+// Get Slug Form DB
+func (channel *Channel) GetSlugTypeFromDB(slug string) (*TblRouteSlugs, error) {
+ 
+    autherr := AuthandPermission(channel)
+ 
+    if autherr != nil {
+ 
+        return &TblRouteSlugs{}, autherr
+    }
+ 
+    Routedata, err := CH.GetSlugRouteTypeFromDB(slug, channel.DB)
+ 
+    if err != nil {
+ 
+        fmt.Println(err)
+    }
+    return Routedata, autherr
 }

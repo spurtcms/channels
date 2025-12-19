@@ -290,6 +290,20 @@ type TblFieldGroup struct {
 	DeletedOn  time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
 	DeletedBy  int       `gorm:"DEFAULT:NULL"`
 }
+type TblRouteSlugs struct {
+	Id         int
+	Slug       string
+	ModuleName string
+	ProductId  int
+	TenantId   string
+	CreatedOn  time.Time `gorm:"column:created_on"`
+	CreatedBy  int       `gorm:"column:created_by"`
+	ModifiedOn time.Time `gorm:"column:modified_on;DEFAULT:NULL"`
+	ModifiedBy int       `gorm:"column:modified_by;DEFAULT:NULL"`
+	IsDeleted  int       `gorm:"column:is_deleted;DEFAULT:0"`
+	DeletedOn  time.Time `gorm:"column:deleted_on;DEFAULT:NULL"`
+	DeletedBy  int       `gorm:"column:deleted_by;DEFAULT:NULL"`
+}
 
 // type TblFieldOption struct {
 // 	Id          int       `gorm:"primaryKey;auto_increment;type:serial"`
@@ -338,6 +352,7 @@ type ChannelCreate struct {
 	SeoTitle           string
 	SeoDescription     string
 	SeoKeyword         string
+	SlugName           string
 }
 
 type ChannelAddtionalField struct {
@@ -998,4 +1013,99 @@ func (ch ChannelModel) GetChannelByCategoryId(categoryid int, DB *gorm.DB) (chan
 		Where("? = ANY(string_to_array(cc.category_id, ','))", categoryStr).
 		First(&channel).Error
 	return channel, err
+}
+func (Ch ChannelModel) CreateGenetricRouteslug(routeData *TblRouteSlugs, DB *gorm.DB) (TblRouteSlugs, error) {
+
+	fmt.Println("CreateChannel::")
+
+	if err := DB.Debug().Table("tbl_route_slugs").Create(&routeData).Error; err != nil {
+
+		return TblRouteSlugs{}, err
+
+	}
+
+	return *routeData, nil
+
+}
+func (ch ChannelModel) CheckDupliateRoute(productid int, slugname string, modulename string, DB *gorm.DB, tenantid string) (routes TblRouteSlugs, err error) {
+
+	if productid == 0 {
+
+		if err := DB.Table("tbl_route_slugs").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and tenant_id=? and is_deleted=0", slugname, tenantid).First(&routes).Error; err != nil {
+
+			return TblRouteSlugs{}, err
+		}
+	} else {
+
+		if err := DB.Table("tbl_route_slugs").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and product_id not in (?) and tenant_id=?   and is_deleted=0", slugname, productid, tenantid).First(&routes).Error; err != nil {
+
+			return TblRouteSlugs{}, err
+		}
+	}
+
+	return routes, nil
+
+}
+
+// channel route sloug update
+
+func (Ch ChannelModel) UpdateGenericRouteslug(data *TblRouteSlugs, DB *gorm.DB) error {
+
+	err := DB.
+		Table("tbl_route_slugs").
+		Where("product_id = ? AND tenant_id = ? AND is_deleted = 0",
+			data.ProductId,
+			data.TenantId,
+		).
+		Updates(map[string]interface{}{
+			"slug":        data.Slug,
+			"module_name": data.ModuleName,
+			"modified_on": data.ModifiedOn,
+			"modified_by": data.ModifiedBy,
+		}).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// channel route sloug Delete
+
+func (Ch ChannelModel) DeleteGenericRouteslug(data *TblRouteSlugs, DB *gorm.DB) error {
+
+	err := DB.
+		Table("tbl_route_slugs").
+		Where("product_id = ? AND tenant_id = ? AND is_deleted = 0",
+			data.ProductId,
+			data.TenantId,
+		).
+		Updates(map[string]interface{}{
+
+			"is_deleted": 1,
+			"deleted_on": data.DeletedOn,
+			"deleted_by": data.DeletedBy,
+		}).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (Ch ChannelModel) GetSlugRouteTypeFromDB(slug string, db *gorm.DB) (*TblRouteSlugs, error) {
+	var route TblRouteSlugs
+
+	err := db.
+		Table("tbl_route_slugs").
+		Where("slug = ? AND is_deleted = ?", slug, 0).
+		First(&route).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &route, nil
 }
