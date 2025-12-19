@@ -574,7 +574,8 @@ func (channel *Channel) GetAllMasterFieldType(tenantid string) (field []TblField
 }
 
 /*Edit channel*/
-func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, ChannelDescription, seotitle, seodescription, seokeyword string, modifiedby int, channelid int, CategoryIds []string, tenantid string) error {
+
+func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, channelslugname string, ChannelDescription, seotitle, seodescription, seokeyword string, modifiedby int, channelid int, CategoryIds []string, tenantid string) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -597,7 +598,7 @@ func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, 
 
 	chn.SeoKeyword = seokeyword
 
-	chn.SlugName = strings.ReplaceAll(strings.ToLower(ChannelName), " ", "-")
+	chn.SlugName = strings.ReplaceAll(strings.ToLower(channelslugname), " ", "-")
 
 	chn.ModifiedBy = modifiedby
 
@@ -653,7 +654,6 @@ func (channel *Channel) EditChannel(ChannelName string, channeluniqueid string, 
 
 	return nil
 }
-
 func (channel *Channel) UpdateChannelField(channelupt ChannelUpdate, channelid int, tenantid string) error {
 
 	autherr := AuthandPermission(channel)
@@ -1292,19 +1292,19 @@ func (channel *Channel) DeleteGenericRouteslug(ProductId int, TenantId string, u
 
 // Get Slug Form DB
 func (channel *Channel) GetSlugTypeFromDB(slug string) (*TblRouteSlugs, error) {
- 
-    autherr := AuthandPermission(channel)
- 
-    if autherr != nil {
- 
-        return &TblRouteSlugs{}, autherr
-    }
- 
-    Routedata, err := CH.GetSlugRouteTypeFromDB(slug, channel.DB)
- 
-    if err != nil {
- 
-        fmt.Println(err)
-    }
-    return Routedata, autherr
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return &TblRouteSlugs{}, autherr
+	}
+
+	Routedata, err := CH.GetSlugRouteTypeFromDB(slug, channel.DB)
+
+	if err != nil {
+
+		fmt.Println(err)
+	}
+	return Routedata, autherr
 }
