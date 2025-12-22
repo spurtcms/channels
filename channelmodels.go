@@ -1031,13 +1031,13 @@ func (ch ChannelModel) CheckDupliateRoute(productid int, slugname string, module
 
 	if productid == 0 {
 
-		if err := DB.Table("tbl_route_slugs").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and tenant_id=? and is_deleted=0", slugname, tenantid).First(&routes).Error; err != nil {
+		if err := DB.Table("tbl_route_slugs").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and tenant_id=?  and module_name=? and is_deleted=0", slugname, tenantid, modulename).First(&routes).Error; err != nil {
 
 			return TblRouteSlugs{}, err
 		}
 	} else {
 
-		if err := DB.Table("tbl_route_slugs").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and product_id not in (?) and tenant_id=?   and is_deleted=0", slugname, productid, tenantid).First(&routes).Error; err != nil {
+		if err := DB.Table("tbl_route_slugs").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and product_id not in (?) and module_name=? and tenant_id=?   and is_deleted=0", slugname, productid, modulename, tenantid).First(&routes).Error; err != nil {
 
 			return TblRouteSlugs{}, err
 		}
@@ -1077,7 +1077,8 @@ func (Ch ChannelModel) DeleteGenericRouteslug(data *TblRouteSlugs, DB *gorm.DB) 
 
 	err := DB.
 		Table("tbl_route_slugs").
-		Where("product_id = ? AND tenant_id = ? AND is_deleted = 0",
+		Where("module_name=? and product_id = ? AND tenant_id = ? AND is_deleted = 0",
+			data.ModuleName,
 			data.ProductId,
 			data.TenantId,
 		).
@@ -1101,6 +1102,20 @@ func (Ch ChannelModel) GetSlugRouteTypeFromDB(slug string, db *gorm.DB) (*TblRou
 	err := db.
 		Table("tbl_route_slugs").
 		Where("slug = ? AND is_deleted = ?", slug, 0).
+		First(&route).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &route, nil
+}
+func (Ch ChannelModel) CheckSlugInRoutes(productid int, slug string, modulename string, tenantid string, db *gorm.DB) (*TblRouteSlugs, error) {
+	var route TblRouteSlugs
+
+	err := db.
+		Table("tbl_route_slugs").
+		Where(" product_id=? and module_name=? and tenant_id=? AND is_deleted = ?", productid, modulename, tenantid, 0).
 		First(&route).Error
 
 	if err != nil {

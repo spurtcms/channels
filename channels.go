@@ -1265,7 +1265,7 @@ func (channel *Channel) UpdateGenericRouteslug(data TblRouteSlugs) error {
 
 // Delete route slug
 
-func (channel *Channel) DeleteGenericRouteslug(ProductId int, TenantId string, userid int) error {
+func (channel *Channel) DeleteGenericRouteslug(ModuleName string, ProductId int, TenantId string, userid int) error {
 
 	autherr := AuthandPermission(channel)
 
@@ -1280,6 +1280,7 @@ func (channel *Channel) DeleteGenericRouteslug(ProductId int, TenantId string, u
 	Routeslugdata.TenantId = TenantId
 	Routeslugdata.DeletedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 	Routeslugdata.DeletedBy = userid
+	Routeslugdata.ModuleName = ModuleName
 
 	err := CH.DeleteGenericRouteslug(&Routeslugdata, channel.DB)
 
@@ -1304,7 +1305,26 @@ func (channel *Channel) GetSlugTypeFromDB(slug string) (*TblRouteSlugs, error) {
 
 	if err != nil {
 
-		fmt.Println(err)
+		return &TblRouteSlugs{}, err
 	}
-	return Routedata, autherr
+	return Routedata, nil
+}
+
+// Get Slug Form DB
+func (channel *Channel) CheckSlugInRoutes(productid int, slug string, modulename string, Tenantid string) (*TblRouteSlugs, error) {
+
+	autherr := AuthandPermission(channel)
+
+	if autherr != nil {
+
+		return &TblRouteSlugs{}, autherr
+	}
+
+	Routedata, err := CH.CheckSlugInRoutes(productid, slug, modulename, Tenantid, channel.DB)
+
+	if err != nil {
+
+		return &TblRouteSlugs{}, err
+	}
+	return Routedata, nil
 }
