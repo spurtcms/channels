@@ -1053,13 +1053,13 @@ func (Ch ChannelModel) UpdateGenericRouteslug(data *TblRouteSlugs, DB *gorm.DB) 
 
 	err := DB.
 		Table("tbl_route_slugs").
-		Where("product_id = ? AND tenant_id = ? AND is_deleted = 0",
+		Where("product_id = ? AND module_name=? and tenant_id = ? AND is_deleted = 0",
 			data.ProductId,
+			data.ModuleName,
 			data.TenantId,
 		).
 		Updates(map[string]interface{}{
 			"slug":        data.Slug,
-			"module_name": data.ModuleName,
 			"modified_on": data.ModifiedOn,
 			"modified_by": data.ModifiedBy,
 		}).Error
