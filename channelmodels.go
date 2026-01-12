@@ -1031,13 +1031,13 @@ func (ch ChannelModel) CheckDupliateRoute(productid int, slugname string, module
 
 	if productid == 0 {
 
-		if err := DB.Table("tbl_route_slugs").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and tenant_id=?  and module_name=? and is_deleted=0", slugname, tenantid, modulename).First(&routes).Error; err != nil {
+		if err := DB.Table("tbl_route_slugs").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and tenant_id=?   and is_deleted=0", slugname, tenantid).First(&routes).Error; err != nil {
 
 			return TblRouteSlugs{}, err
 		}
 	} else {
 
-		if err := DB.Table("tbl_route_slugs").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and product_id not in (?) and module_name=? and tenant_id=?   and is_deleted=0", slugname, productid, modulename, tenantid).First(&routes).Error; err != nil {
+		if err := DB.Table("tbl_route_slugs").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and product_id not in (?)  and tenant_id=?   and is_deleted=0", slugname, productid, tenantid).First(&routes).Error; err != nil {
 
 			return TblRouteSlugs{}, err
 		}
