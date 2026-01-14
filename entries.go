@@ -474,6 +474,7 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 			TenantId:        data.TenantId,
 			SavedFlag:       data.SavedFlag,
 			Uuid:            data.Entry_Uuid,
+			TblChannelEntryField: entryFieldMap[data.Id],
 		}
 
 		channelEntries = append(channelEntries, channnel_entry)
