@@ -334,12 +334,6 @@ type JoinEntries struct {
 	SavedFlag         bool
 	Entry_Uuid        string
 	EntryFieldId      int       `gorm:"column:entry_field_id"`
-	FieldId           int       `gorm:"column:field_id"`
-	FieldName         string    `gorm:"column:field_name"`
-	FieldValue        string    `gorm:"column:field_value"`
-	FieldTypeId       int       `gorm:"column:field_type_id"`
-	FieldEntryId      int       `gorm:"column:field_entry_id"`
-	FieldCreatedOn    time.Time `gorm:"column:field_created_on"`
 }
 type EntrySave struct {
 	Id        int       `gorm:"primaryKey;auto_increment;type:serial"`
@@ -493,22 +487,9 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Channel, db *gorm.DB, joinData *[]JoinEntries, commoncount, totalCount *int64) error {
 
 	selectData := "en.*, en.id as entry_id,en.uuid as entry_uuid, en.created_on as entry_created_on,en.created_by as entry_created_by,en.modified_by as entry_modified_by,en.modified_on as entry_modified_on"
-	selectData += `,
-    cef.id as entry_field_id,
-    cef.field_id,
-    tf.field_name,
-    cef.field_value,
-    tf.field_type_id,
-    cef.channel_entry_id as field_entry_id,
-    cef.created_on as field_created_on
-`
 
 	query := db.Distinct("en.id").Table("tbl_channel_entries as en").Joins("inner join tbl_channels as tc on tc.id = en.channel_id").Where("en.is_deleted = 0 and tc.is_deleted = 0")
 
-	query = query.
-		Joins("LEFT JOIN tbl_channel_entry_fields cef ON cef.channel_entry_id = en.id AND cef.deleted_on IS NULL").
-		Joins("LEFT JOIN tbl_fields tf ON tf.id = cef.field_id AND tf.is_deleted = 0")
-	query = query.Group("en.id, cef.id, tf.id")
 
 	if input.TotalCount {
 

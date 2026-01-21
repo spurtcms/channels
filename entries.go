@@ -249,7 +249,6 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 		EntriesData             []JoinEntries
 		commonCount, totalCount int64
 	)
-	entryFieldMap := make(map[int][]TblChannelEntryField)
 
 	err = EntryModel.GetFlexibleEntriesData(input, channel, channel.DB, &EntriesData, &commonCount, &totalCount)
 
@@ -259,24 +258,6 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 	}
 
 	var channelEntries []Tblchannelentries
-
-	for _, data := range EntriesData {
- 
-		if data.EntryFieldId != 0 {
-	 
-			field := TblChannelEntryField{
-				Id:             data.EntryFieldId,
-				FieldId:        data.FieldId,
-				FieldName:      data.FieldName,
-				FieldValue:     data.FieldValue,
-				FieldTypeId:    data.FieldTypeId,
-				ChannelEntryId: data.FieldEntryId,
-				CreatedOn:      data.FieldCreatedOn,
-			}
-	 
-			entryFieldMap[data.Id] = append(entryFieldMap[data.Id], field)
-		}
-	}
 
 	for _, data := range EntriesData {
 		var memberProfile member.TblMemberProfile
@@ -474,7 +455,6 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 			TenantId:        data.TenantId,
 			SavedFlag:       data.SavedFlag,
 			Uuid:            data.Entry_Uuid,
-			TblChannelEntryField: entryFieldMap[data.Id],
 		}
 
 		channelEntries = append(channelEntries, channnel_entry)
