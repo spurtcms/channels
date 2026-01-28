@@ -85,6 +85,7 @@ type Tblchannelentries struct {
 	TagsArray            []string                     `gorm:"-"`
 	Categoriesnew        []categories.TblCategories   `gorm:"-"`
 	AuthorArray          []string                     `gorm:"-"`
+	Index                int                          `gorm:"-"`
 }
 type Author struct {
 	AuthorID         int       `json:"AuthorId" gorm:"column:id"`
