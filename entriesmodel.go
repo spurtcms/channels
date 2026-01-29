@@ -52,8 +52,8 @@ type Tblchannelentries struct {
 	Categories           [][]categories.TblCategories `gorm:"-"`
 	AdditionalData       string                       `gorm:"-"`
 	AuthorDetail         team.TblUser                 `gorm:"-"`
-	Sections             []tblfield                   `gorm:"-"`
-	Fields               []tblfield                   `gorm:"-"`
+	Sections             []Tblfield                   `gorm:"-"`
+	Fields               []Tblfield                   `gorm:"-"`
 	MemberProfiles       member.TblMemberProfile      `gorm:"-"`
 	Feature              int                          `gorm:"column:feature;DEFAULT:0"`
 	ViewCount            int                          `gorm:"column:view_count;DEFAULT:0"`
@@ -872,23 +872,23 @@ func (Ch EntriesModel) GetAuthorDetails(DB *gorm.DB, authorId int, tenantid stri
 	return authorDetail, nil
 }
 
-func (Ch EntriesModel) GetSectionsUnderEntries(DB *gorm.DB, channelId, sectionTypeId int, tenantid string) (sections []tblfield, err error) {
+func (Ch EntriesModel) GetSectionsUnderEntries(DB *gorm.DB, channelId, sectionTypeId int, tenantid string) (sections []Tblfield, err error) {
 
 	if err = DB.Table("tbl_group_fields").Select("tbl_fields.*,tbl_field_types.type_name").Joins("inner join tbl_fields on tbl_fields.id = tbl_group_fields.field_id").Joins("inner join tbl_field_types on tbl_field_types.id = tbl_fields.field_type_id").
 		Where("tbl_fields.is_deleted = 0 and tbl_field_types.is_deleted = 0 and tbl_fields.field_type_id = ? and tbl_group_fields.channel_id = ? and tbl_group_fields.tenant_id=?", sectionTypeId, channelId, tenantid).Find(&sections).Error; err != nil {
 
-		return []tblfield{}, err
+		return []Tblfield{}, err
 	}
 
 	return sections, nil
 }
 
-func (Ch EntriesModel) GetFieldsInEntries(DB *gorm.DB, channelId, sectionTypeId int, tenantid string) (fields []tblfield, err error) {
+func (Ch EntriesModel) GetFieldsInEntries(DB *gorm.DB, channelId, sectionTypeId int, tenantid string) (fields []Tblfield, err error) {
 
 	if err = DB.Table("tbl_group_fields").Select("tbl_fields.*,tbl_field_types.type_name").Joins("inner join tbl_fields on tbl_fields.id = tbl_group_fields.field_id").Joins("inner join tbl_field_types on tbl_field_types.id = tbl_fields.field_type_id").
 		Where("tbl_fields.is_deleted = 0 and tbl_field_types.is_deleted = 0 and tbl_fields.field_type_id != ? and tbl_group_fields.channel_id = ? and tbl_group_fields.tenant_id=?", sectionTypeId, channelId, tenantid).Find(&fields).Error; err != nil {
 
-		return []tblfield{}, err
+		return []Tblfield{}, err
 	}
 
 	return fields, nil
@@ -1139,11 +1139,11 @@ func (Ch EntriesModel) UnpublishSelectedChannelEntryId(chentry *TblChannelEntrie
 
 }
 
-func (Ch EntriesModel) GetChannelAdditionalFields(DB *gorm.DB, channelId int) (fields []tblfield, err error) {
+func (Ch EntriesModel) GetChannelAdditionalFields(DB *gorm.DB, channelId int) (fields []Tblfield, err error) {
 
 	if err = DB.Table("tbl_group_fields as tgf").Select("tf.*").Joins("inner join tbl_fields as tf on tf.id = tgf.field_id").Where("tf.is_deleted = 0 and tgf.channel_id = ?", channelId).Find(&fields).Error; err != nil {
 
-		return []tblfield{}, err
+		return []Tblfield{}, err
 	}
 
 	return fields, nil

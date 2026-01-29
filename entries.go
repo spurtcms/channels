@@ -87,7 +87,7 @@ func (channel *Channel) ChannelEntriesList(entry Entries, tenantid string) (entr
 
 		var (
 			memberId         string
-			final_fieldsList []tblfield
+			final_fieldsList []Tblfield
 		)
 
 		if entry.AdditionalFields {
@@ -387,7 +387,7 @@ func (channel *Channel) FlexibleChannelEntriesList(input EntriesInputs) (Channel
 
 		}
 
-		var sections, fields []tblfield
+		var sections, fields []Tblfield
 
 		if input.GetAdditionalFields {
 
@@ -505,7 +505,7 @@ func (channel *Channel) EntryDetailsById(Ent IndivEntriesReq, tenantid string) (
 
 		Entry.Sections = sections
 
-		var final_fieldsList []tblfield
+		var final_fieldsList []Tblfield
 
 		fields, _ := EntryModel.GetFieldsInEntries(channel.DB, Entry.ChannelId, Ent.FieldTypeId, tenantid)
 
@@ -1348,7 +1348,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 
 			}
 
-			var sections, fields []tblfield
+			var sections, fields []Tblfield
 
 			if inputs.GetAdditionalFields {
 
@@ -1544,7 +1544,7 @@ func (channel *Channel) FetchChannelEntryDetail(inputs EntriesInputs, multiFetch
 
 		}
 
-		var sections, fields []tblfield
+		var sections, fields []Tblfield
 
 		if inputs.GetAdditionalFields {
 

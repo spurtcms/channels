@@ -124,7 +124,7 @@ type TblFieldOption struct {
 	OrderIndex  int       `gorm:"type:integer"`
 }
 
-type tblfield struct {
+type Tblfield struct {
 	Id               int                  `gorm:"column:id"`
 	FieldName        string               `gorm:"column:field_name"`
 	FieldDesc        string               `gorm:"column:field_desc"`
@@ -603,7 +603,7 @@ func (Ch ChannelModel) GetFieldIdByGroupId(id int, DB *gorm.DB, tenantid string)
 }
 
 /*Get optionvalue*/
-func (Ch ChannelModel) GetFieldAndOptionValue(id []int, DB *gorm.DB, tenantid string) (fld []tblfield, err error) {
+func (Ch ChannelModel) GetFieldAndOptionValue(id []int, DB *gorm.DB, tenantid string) (fld []Tblfield, err error) {
 
 	if err := DB.Table("tbl_fields").
 		Where("id IN (?) AND tenant_id = ? AND is_deleted != 1", id, tenantid).
@@ -612,7 +612,7 @@ func (Ch ChannelModel) GetFieldAndOptionValue(id []int, DB *gorm.DB, tenantid st
 		}).
 		Order("order_index ASC").
 		Find(&fld).Error; err != nil {
-		return []tblfield{}, err
+		return []Tblfield{}, err
 	}
 
 	return fld, nil
