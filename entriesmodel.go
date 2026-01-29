@@ -159,6 +159,7 @@ type AdditionalFields struct {
 	FieldName     string
 	FieldValue    string
 	FieldId       int
+	FieldTypeId   int
 	MultipleValue []string
 	ModifiedBy    int
 }
@@ -334,7 +335,7 @@ type JoinEntries struct {
 	CtaId             int
 	SavedFlag         bool
 	Entry_Uuid        string
-	EntryFieldId      int       `gorm:"column:entry_field_id"`
+	EntryFieldId      int `gorm:"column:entry_field_id"`
 }
 type EntrySave struct {
 	Id        int       `gorm:"primaryKey;auto_increment;type:serial"`
@@ -490,7 +491,6 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 	selectData := "en.*, en.id as entry_id,en.uuid as entry_uuid, en.created_on as entry_created_on,en.created_by as entry_created_by,en.modified_by as entry_modified_by,en.modified_on as entry_modified_on"
 
 	query := db.Distinct("en.id").Table("tbl_channel_entries as en").Joins("inner join tbl_channels as tc on tc.id = en.channel_id").Where("en.is_deleted = 0 and tc.is_deleted = 0")
-
 
 	if input.TotalCount {
 

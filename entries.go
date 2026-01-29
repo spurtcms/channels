@@ -803,6 +803,8 @@ func (channel *Channel) CreateChannelEntryFields(entryid int, createdby int, Add
 		Entrfield.FieldName = val.FieldName
 
 		Entrfield.FieldValue = val.FieldValue
+		
+		Entrfield.FieldTypeId = val.FieldTypeId
 
 		Entrfield.FieldId = val.FieldId
 
@@ -934,6 +936,9 @@ func (channel *Channel) UpdateAdditionalField(AdditionalFields []AdditionalField
 
 			Entrfield.FieldValue = val.FieldValue
 
+			Entrfield.FieldTypeId = val.FieldTypeId
+
+
 			Entrfield.FieldId = val.FieldId
 
 			Entrfield.CreatedBy = val.ModifiedBy
@@ -955,6 +960,9 @@ func (channel *Channel) UpdateAdditionalField(AdditionalFields []AdditionalField
 			Entrfield.FieldName = val.FieldName
 
 			Entrfield.FieldValue = val.FieldValue
+
+			Entrfield.FieldTypeId = val.FieldTypeId
+
 
 			Entrfield.FieldId = val.FieldId
 
