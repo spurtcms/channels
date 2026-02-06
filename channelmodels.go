@@ -242,7 +242,7 @@ type TblChannelEntryField struct {
 	Id                 int           `gorm:"primaryKey;auto_increment;type:serial"`
 	FieldName          string        `gorm:"type:character varying"`
 	FieldValue         string        `gorm:"type:character varying"`
-	FieldTypeId        int           `gorm:"-:migration;<-:false"`
+	FieldTypeId        int           `gorm:"type:integer"`
 	ChannelEntryId     int           `gorm:"type:integer"`
 	FieldId            int           `gorm:"type:integer"`
 	FieldEditorContent template.HTML `gorm:"-"`
