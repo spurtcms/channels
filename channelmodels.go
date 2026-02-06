@@ -2,6 +2,7 @@ package channels
 
 import (
 	"fmt"
+	"html/template"
 	"strconv"
 	"time"
 
@@ -238,19 +239,20 @@ type TblChannelEntries struct {
 }
 
 type TblChannelEntryField struct {
-	Id             int       `gorm:"primaryKey;auto_increment;type:serial"`
-	FieldName      string    `gorm:"type:character varying"`
-	FieldValue     string    `gorm:"type:character varying"`
-	FieldTypeId    int       `gorm:"-:migration;<-:false"`
-	ChannelEntryId int       `gorm:"type:integer"`
-	FieldId        int       `gorm:"type:integer"`
-	CreatedOn      time.Time `gorm:"type:timestamp without time zone"`
-	CreatedBy      int       `gorm:"type:integer"`
-	ModifiedOn     time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
-	ModifiedBy     int       `gorm:"DEFAULT:NULL"`
-	DeletedBy      int       `gorm:"DEFAULT:NULL"`
-	DeletedOn      time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
-	TenantId       string    `gorm:"type:character varying"`
+	Id                 int           `gorm:"primaryKey;auto_increment;type:serial"`
+	FieldName          string        `gorm:"type:character varying"`
+	FieldValue         string        `gorm:"type:character varying"`
+	FieldTypeId        int           `gorm:"-:migration;<-:false"`
+	ChannelEntryId     int           `gorm:"type:integer"`
+	FieldId            int           `gorm:"type:integer"`
+	FieldEditorContent template.HTML `gorm:"-"`
+	CreatedOn          time.Time     `gorm:"type:timestamp without time zone"`
+	CreatedBy          int           `gorm:"type:integer"`
+	ModifiedOn         time.Time     `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	ModifiedBy         int           `gorm:"DEFAULT:NULL"`
+	DeletedBy          int           `gorm:"DEFAULT:NULL"`
+	DeletedOn          time.Time     `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	TenantId           string        `gorm:"type:character varying"`
 }
 
 type TblField struct {
