@@ -3,6 +3,7 @@ package channels
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"strconv"
 	"strings"
 	"time"
@@ -86,6 +87,7 @@ type Tblchannelentries struct {
 	Categoriesnew        []categories.TblCategories   `gorm:"-"`
 	AuthorArray          []string                     `gorm:"-"`
 	Index                int                          `gorm:"-"`
+	EditorHTML           template.HTML                `gorm:"-"`
 }
 type Author struct {
 	AuthorID         int       `json:"AuthorId" gorm:"column:id"`
