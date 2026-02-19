@@ -88,6 +88,7 @@ type Tblchannelentries struct {
 	AuthorArray          []string                     `gorm:"-"`
 	Index                int                          `gorm:"-"`
 	EditorHTML           template.HTML                `gorm:"-"`
+	EntryCreatedDate     string                       `gorm:"-:migration;<-:false"`
 }
 type Author struct {
 	AuthorID         int       `json:"AuthorId" gorm:"column:id"`
