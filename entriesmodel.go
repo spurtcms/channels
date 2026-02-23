@@ -1106,6 +1106,24 @@ func (Ch EntriesModel) DeleteSelectedChannelEntryId(chentry *TblChannelEntries, 
 		return err
 	}
 
+	err := DB.
+		Table("tbl_route_slugs").
+		Where("module_name=? and product_id in (?) AND tenant_id = ? AND is_deleted = 0",
+			"Entries",
+			id,
+			tenantid,
+		).
+		Updates(map[string]interface{}{
+
+			"is_deleted": 1,
+			"deleted_on": chentry.DeletedOn,
+			"deleted_by": chentry.DeletedBy,
+		}).Error
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
