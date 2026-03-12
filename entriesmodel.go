@@ -510,7 +510,7 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 	}
 	if input.NoDirectAccess {
 
-		query = query.Debug().Where("en.access_type <> ?", "no_direct_access")
+		query = query.Where("en.access_type <> ?", "no_direct_access")
 
 	}
 	if Ch.Dataaccess == 1 {
@@ -583,7 +583,6 @@ func (Ch EntriesModel) GetFlexibleEntriesData(input EntriesInputs, channel *Chan
 				Where("(ef3.field_value) = ?", now.Format("2006-01-02"))
 
 		case "this week":
-			fmt.Println(input.Posteddate, "postedate")
 			query = query.Joins("INNER JOIN tbl_channel_entry_fields AS ef3 ON ef3.channel_entry_id = en.id").
 				Where(" ef3.field_value>=?  AND ef3.field_value<=? ", startOfWeek.Format("2006-01-02"), now.Format("2006-01-02"))
 
@@ -1471,4 +1470,23 @@ func (Ch EntriesModel) EntryUnsave(entryId int, userId int, tenantId string, DB 
 		return err
 	}
 	return nil
+}
+
+func (Ch EntriesModel) CategoryBasedEntriesCount(catid int, channelId int, tenantId string, DB *gorm.DB) (int64, error) {
+
+	var count int64
+
+	err := DB.Table("tbl_channel_entries AS en").
+		Where(`en.is_deleted = 0 
+			AND en.tenant_id = ? 
+			AND en.channel_id = ?
+			AND ? = ANY(string_to_array(en.categories_id, ',')::int[])`,
+			tenantId, channelId, catid).Debug().
+		Count(&count).Error
+
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }

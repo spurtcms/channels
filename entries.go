@@ -1841,3 +1841,18 @@ func (channel *Channel) EntrySave(entry *EntrySave, save bool) error {
 
 	return nil
 }
+
+func (channel *Channel) CategoryBasedEntriesCount(catid int, channelId int, tenantId string) (int64, error) {
+
+	autherr := AuthandPermission(channel)
+	if autherr != nil {
+		return 0, autherr
+	}
+
+	count, err := EntryModel.CategoryBasedEntriesCount(catid,channelId, tenantId, channel.DB)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

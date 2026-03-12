@@ -72,6 +72,7 @@ type tblchannelcategory struct {
 	ChannelId  int       `gorm:"column:channel_id"`
 	CategoryId string    `gorm:"column:category_id"`
 	CreatedAt  int       `gorm:"column:created_at"`
+	ParentId   int       `gorm:"column:parent_id"`
 	CreatedOn  time.Time `gorm:"column:created_on"`
 }
 
@@ -630,6 +631,24 @@ func (Ch ChannelModel) GetSelectedCategoryChannelById(id int, DB *gorm.DB, tenan
 	return ChannelCategory, nil
 
 }
+
+// func (Ch ChannelModel) GetSelectedCategoryChannelById(id int, DB *gorm.DB, tenantid string) (ChannelCategory []tblchannelcategory, err error) {
+
+// 	err = DB.Table("tbl_channel_categories AS tcc").
+// 		Select("tcc.*, c.parent_id").
+// 		Joins(`
+// 			JOIN tbl_categories c 
+// 			ON c.id = ANY(string_to_array(tcc.category_id, ',')::int[])
+// 		`).
+// 		Where("tcc.channel_id = ? AND tcc.tenant_id = ?", id, tenantid).Debug().
+// 		Find(&ChannelCategory).Error
+
+// 	if err != nil {
+// 		return []tblchannelcategory{}, err
+// 	}
+
+// 	return ChannelCategory, nil
+// }
 
 func (Ch ChannelModel) GetCategoriseById(id []int, DB *gorm.DB, tenantid string) (category []categories.TblCategories, err error) {
 
