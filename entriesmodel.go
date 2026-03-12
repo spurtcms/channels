@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
+	"github.com/lib/pq"
 	"github.com/spurtcms/categories"
 	"github.com/spurtcms/member"
 	access "github.com/spurtcms/member-access"
@@ -353,7 +353,7 @@ var EntryModel EntriesModel
 
 /*List Channel Entry*/
 func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, categoryid string, createonly bool, DB *gorm.DB, tenantid string) (chentry []Tblchannelentries, chentcount int64, err error) {
-
+	fmt.Println("pq", pq.Array("id"))
 	query := DB.Model(TblChannelEntries{}).Select("tbl_channel_entries.*,tbl_categories.id AS cat_id,tbl_categories.category_name AS cat_name,tbl_categories.image_path AS cat_image_path,tbl_categories.parent_id AS cat_parent_id,tbl_categories.created_on AS cat_created_on,tbl_categories.modified_on AS cat_modified_on,tbl_users.username,tbl_users.first_name,tbl_users.last_name,tbl_users.profile_image_path,tbl_channels.channel_name,tbl_channels.slug_name as channel_slug").Joins("inner join tbl_users on tbl_users.id = tbl_channel_entries.created_by").Joins("left join tbl_channels on tbl_channels.id = tbl_channel_entries.channel_id").Where("tbl_channel_entries.is_deleted=0 and tbl_channel_entries.tenant_id=?", tenantid)
 
 	if filter.Sorting == "lastUpdated" {
