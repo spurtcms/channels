@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	"github.com/lib/pq"
 	"github.com/spurtcms/categories"
 	"github.com/spurtcms/member"
@@ -104,23 +105,25 @@ type Author struct {
 }
 
 type Entries struct {
+	Id                       int
 	ChannelId                int //if pass the channelid it will return that particular channel entries only otherwise return all
 	Limit                    int
 	Offset                   int
-	Keyword                  string //filter
-	Title                    string //filter
-	ChannelName              string //filter
-	Status                   string //filter
-	UserName                 string //filter
-	CategoryId               int    //filter
-	CategoryName             string //filter
-	SelectedCategoryFilter   bool   //selected category filter or selected category child filter also
-	Publishedonly            bool   //if you want published entries only set true
-	ActiveChannelEntriesonly bool   //if you want active channel entries only set true
-	MemberProfile            bool   //if you want member profile set true
-	AdditionalFields         bool   //if you want additionalfields set true
-	AuthorDetails            bool   //if you want authordetails set true
-	ContentHide              bool   //if you want hide content only for memberaccesscontrol set true otherwise it doesn't fetch the entry
+	Keyword                  string   //filter
+	Title                    string   //filter
+	ChannelName              string   //filter
+	Status                   string   //filter
+	UserName                 string   //filter
+	CategoryId               int      //filter
+	CategoryIds              []string //filter
+	CategoryName             string   //filter
+	SelectedCategoryFilter   bool     //selected category filter or selected category child filter also
+	Publishedonly            bool     //if you want published entries only set true
+	ActiveChannelEntriesonly bool     //if you want active channel entries only set true
+	MemberProfile            bool     //if you want member profile set true
+	AdditionalFields         bool     //if you want additionalfields set true
+	AuthorDetails            bool     //if you want authordetails set true
+	ContentHide              bool     //if you want hide content only for memberaccesscontrol set true otherwise it doesn't fetch the entry
 	MemberAccessControl      bool
 	MemberId                 int
 	ImageUrlPath             string
@@ -460,6 +463,10 @@ func (Ch EntriesModel) ChannelEntryList(filter Entries, channel *Channel, catego
 
 		query = query.Where("STRING_TO_ARRAY(categories_id, ',')::integer[] && ARRAY[" + categoryid + "]")
 
+	}
+
+	if len(filter.CategoryIds) != 0 {
+		query = query.Where("STRING_TO_ARRAY(categories_id, ',')::text[] && ? AND tbl_channel_entries.id <> ?", pq.Array(filter.CategoryIds), filter.Id)
 	}
 
 	if filter.MemberAccessControl {
