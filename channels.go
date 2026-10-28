@@ -1328,3 +1328,41 @@ func (channel *Channel) CheckSlugInRoutes(productid int, slug string, modulename
 	}
 	return Routedata, nil
 }
+
+
+// New section added for the channel entries slug checking
+
+func (channel *Channel) CheckDupliateRouteChannelEntries(productid int, slug string, modulename string, tenantid string) (bool, error) {
+
+	channeldet, err := CH.CheckDupliateRouteChannelEntries(productid, slug, modulename, channel.DB, tenantid)
+
+	if err != nil {
+		return false, nil
+	}
+	if channeldet.Id == 0 {
+
+		return false, nil
+	}
+
+	return true, nil
+
+}
+
+// New section added for the channel  slug checking
+
+
+func (channel *Channel) CheckDupliateRouteForChannel(productid int, slug string, modulename string, tenantid string) (bool, error) {
+
+	channeldet, err := CH.CheckDupliateRouteForChannels(productid, slug, modulename, channel.DB, tenantid)
+
+	if err != nil {
+		return false, nil
+	}
+	if channeldet.Id == 0 {
+
+		return false, nil
+	}
+
+	return true, nil
+
+}
