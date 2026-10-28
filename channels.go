@@ -1334,15 +1334,16 @@ func (channel *Channel) CheckSlugInRoutes(productid int, slug string, modulename
 
 func (channel *Channel) CheckDupliateRouteChannelEntries(productid int, slug string, modulename string, tenantid string) (bool, error) {
 
-	channeldet, err := CH.CheckDupliateRouteChannelEntries(productid, slug, modulename, channel.DB, tenantid)
+	channeldet, err := CH.CheckDupliateRouteChannelEntries(productid, slug,tenantid, channel.DB,modulename )
+	fmt.Println("channeldet:: ",channeldet)
 
 	if err != nil {
 		return false, nil
 	}
-	if channeldet.Id == 0 {
+	// if channeldet.Id == 0 {
 
-		return false, nil
-	}
+	// 	return false, nil
+	// }
 
 	return true, nil
 

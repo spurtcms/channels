@@ -1149,30 +1149,39 @@ func (Ch ChannelModel) CheckSlugInRoutes(productid int, slug string, modulename 
 
 // New section added for the channel entries slug checking 
 
-func (ch ChannelModel) CheckDupliateRouteChannelEntries(productid int, slugname string, modulename string, DB *gorm.DB, tenantid string) (routes TblChannelEntries, err error) {
+func (ch ChannelModel) CheckDupliateRouteChannelEntries(productid int, slugname string, tenantid string,DB *gorm.DB,modulename string) (bool, error) {
+	tenantIDD,_:=strconv.Atoi(tenantid)
+	type TblChannelEntries struct {
+		Id int
+	}
+
+	var routes TblChannelEntries
 
 	if productid == 0 {
 
-		if err := DB.Table("tbl_channel_entries").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and tenant_id=?   and is_deleted=0", slugname, tenantid).First(&routes).Error; err != nil {
+		if err := DB.Table("tbl_channel_entries").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and tenant_id=? and is_deleted=0", slugname, tenantid).First(&routes).Error; err != nil {
 
 			if err.Error() == "record not found" {
-				return TblChannelEntries{}, nil
+				return false, nil
 			}
-			return TblChannelEntries{}, err
+			return false, err
 		}
 	} else {
 
-		if err := DB.Table("tbl_channel_entries").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and id != ? and tenant_id=?   and is_deleted=0", slugname, productid, tenantid).First(&routes).Error; err != nil {
+		if err := DB.Debug().Table("tbl_channel_entries").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and id = ? and tenant_id= 1 and is_deleted=0", slugname, productid, tenantIDD).First(&routes).Error; err != nil {
 
 			if err.Error() == "record not found" {
-				return TblChannelEntries{}, nil
+				return false, nil
 			}
-			return TblChannelEntries{}, err
+			return false, err
 		}
 	}
 
-	return routes, nil
+	if routes.Id == 0 {
+		return false, nil
+	}
 
+	return true, nil
 }
 
 // New section added for the channel  slug checking
