@@ -1149,7 +1149,7 @@ func (Ch ChannelModel) CheckSlugInRoutes(productid int, slug string, modulename 
 
 // New section added for the channel entries slug checking 
 
-func (ch ChannelModel) CheckDupliateRouteChannelEntries(productid int, slugname string, tenantid string,DB *gorm.DB,modulename string) (bool, error) {
+func (ch ChannelModel) CheckDupliateRouteChannelEntries(productid int, slugname string, tenantid string,DB *gorm.DB,modulename string) (route TblChannelEntries,err error) {
 	tenantIDD,_:=strconv.Atoi(tenantid)
 	type TblChannelEntries struct {
 		Id int
@@ -1162,26 +1162,26 @@ func (ch ChannelModel) CheckDupliateRouteChannelEntries(productid int, slugname 
 		if err := DB.Table("tbl_channel_entries").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and tenant_id=? and is_deleted=0", slugname, tenantid).First(&routes).Error; err != nil {
 
 			if err.Error() == "record not found" {
-				return false, nil
+				return route, nil
 			}
-			return false, err
+			return route, err
 		}
 	} else {
 
 		if err := DB.Debug().Table("tbl_channel_entries").Where("LOWER(TRIM(slug))=LOWER(TRIM(?)) and id = ? and tenant_id= 1 and is_deleted=0", slugname, productid, tenantIDD).First(&routes).Error; err != nil {
 
 			if err.Error() == "record not found" {
-				return false, nil
+				return route, nil
 			}
-			return false, err
+			return route, err
 		}
 	}
 
 	if routes.Id == 0 {
-		return false, nil
+		return route, nil
 	}
 
-	return true, nil
+	return route, nil
 }
 
 // New section added for the channel  slug checking

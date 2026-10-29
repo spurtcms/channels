@@ -1340,10 +1340,10 @@ func (channel *Channel) CheckDupliateRouteChannelEntries(productid int, slug str
 	if err != nil {
 		return false, nil
 	}
-	// if channeldet.Id == 0 {
+	if channeldet.Id == 0 {
 
-	// 	return false, nil
-	// }
+		return false, nil
+	}
 
 	return true, nil
 
