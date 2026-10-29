@@ -1165,6 +1165,7 @@ func (ch ChannelModel) CheckDupliateRouteChannelEntries(productid int, slugname 
 				return route, nil
 			}
 			return route, err
+			fmt.Println("Product id")
 		}
 	} else {
 
